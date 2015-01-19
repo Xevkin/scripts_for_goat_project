@@ -55,12 +55,20 @@ for lines in f:
 
 	trimmed_fastq = split_file[0] + "_trimmed" + "." + split_file[1]
 	
-	call("cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 " + unzipped_fastq + " > " + trimmed_fastq + 2> trimmed_fastq + ".log", shell=True)
+	call("cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 " + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
 	#print "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 " + unzipped_fastq + " > " + trimmed_fastq
 	
 	#rezip original fastq files
+	
 	call("gzip " + unzipped_fastq, shell=True)
-	#print "gzip " + unzipped_fastq	
+	
+	#run fastqc on trimmed fastq file
+	#first we want to create an output directory if there is none to begin with
+	output_dir = "fastqc_output/"
+	if not os.path.exists(output_dir):
+		os.makedirs(output_dir)
+	#print "fastqc " + trimmed_fastq + " -o fastqc_output/ "	
+	call("fastqc " + trimmed_fastq + " -o fastqc_output/", shell=True)
 
 print "Here a list of the files which failed:"
 
