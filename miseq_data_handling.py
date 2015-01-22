@@ -2,6 +2,7 @@
 
 #apparently this is a better way to ake system calls using python, rather than "os.system"
 from subprocess import call
+
 #need to import sys anyways to access intput file (a list)
 import sys
 
@@ -9,7 +10,6 @@ import sys
 import os.path
 
 #sys.argv[1] refers to the list input
-
 #create list that will carry any lines in the file which fail at any stage
 failures = []
 
@@ -69,6 +69,13 @@ for lines in f:
 		os.makedirs(output_dir)
 	#print "fastqc " + trimmed_fastq + " -o fastqc_output/ "	
 	call("fastqc " + trimmed_fastq + " -o fastqc_output/", shell=True)
+
+
+#Move all cutadapt logs to a cutadapt log directory - if there is no such dir, create it
+if not os.path.exists("cutadapt_logs/"):
+	os.makedirs("cutadapt_logs/")
+
+call("mv *.log cutadapt_logs/", shell=True)
 
 print "Here a list of the files which failed:"
 
