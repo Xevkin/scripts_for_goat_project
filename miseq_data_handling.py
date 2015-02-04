@@ -3,6 +3,7 @@
 
 #this script takes a list of .fastq.gz files, and does intial processing of the files
 #also need to supply a date for the Miseq run - will automatically make results file
+#python script <input.list> <date_of_miseq>
 
 #apparently this is a better way to ake system calls using python, rather than "os.system"
 from subprocess import call
@@ -17,9 +18,12 @@ import os.path
 
 miseq_date = sys.argv[2]
 
-call("mkdir ~/goat/results/"+ miseq_date, shell=True)
-
 out_dir = "~/goat/results/" + miseq_date + "/"
+
+call("mkdir " + out_dir, shell=True)
+
+#if not os.path.exists(out_dir):
+#	os.makedirs(out_dir)
 
 #sys.argv[1] refers to the list input
 #create list that will carry any lines in the file which fail at any stage
@@ -63,7 +67,7 @@ for lines in f:
 	split_file = current_file.split(".")
 	
 	sample = split_file[0]
-	
+	print sample
 	unzipped_fastq = sample + "." + split_file[1]
 
 	trimmed_fastq = sample + "_trimmed" + "." + split_file[1]
@@ -82,18 +86,31 @@ for lines in f:
 	#	os.makedirs(output_dir)
 	
 	#print "fastqc " + trimmed_fastq + " -o fastqc_output/ "	
-	call("fastqc " + trimmed_fastq + " -o " + out_dir + "/fastqc/", shell=True)
+	#if not os.path.exists(out_dir + "fastqc/"):
+	#	os.makedirs(out_dir + "fastqc/")
+	call("mkdir " +  out_dir + "fastqc/", shell=True)
+	call("fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
 
 	#run fastq_screen on each fastq, making a directory for each output
-	call("mkdir " + out_dir + trimmed_fastq, shell=True)
+	#if not os.path.exists(out_dir + "fastq_screen/"):
+	#	os.makedirs(out_dir + "fastq_screen/")
 	
-	call("~/goat/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir " + out_dir + "fastq_screen/" +  trimmed_fastq + " " + trimmed_fastq, shell=True)
+	#if not os.path.exists("./" + sample):
+	#	os.makedirs("./" + sample)
+	
+	call("mkdir " + out_dir + "fastq_screen/" + sample, shell=True)
+	call("mkdir ./" + sample, shell=True)
+	
+	call("~/goat/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./" + sample + " " + trimmed_fastq, shell=True)
+	print "Output of fastq_screen:"
+	call("ls ./" + sample,shell=True)
+	#call("rsync --remove-source-files ./" + sample + " " + out_dir + "fastq_screen/" + sample,shell=True)
+	call("mv ./" + sample + " " +  out_dir + "fastq_screen/",shell=True)
+	call("rm -r ./" + sample,shell=True)
 
 #Move all cutadapt logs to a cutadapt log directory - if there is no such dir, create it
-if not os.path.exists("cutadapt_logs/"):
-	os.makedirs("cutadapt_logs/")
-
-call("mv *.log cutadapt_logs/", shell=True)
+call("mkdir " + out_dir + "cutadapt_logs/", shell=True)
+call("mv *.log " + out_dir + "cutadapt_logs/", shell=True)
 
 print "Here a list of the files which failed:"
 
