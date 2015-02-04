@@ -1,4 +1,8 @@
+#!/bin/python
+
+
 #this script takes a list of .fastq.gz files, and does intial processing of the files
+#also need to supply a date for the Miseq run - will automatically make results file
 
 #apparently this is a better way to ake system calls using python, rather than "os.system"
 from subprocess import call
@@ -9,10 +13,17 @@ import sys
 #we will use this later to check if the input files actually exist
 import os.path
 
+#Prepare output directory
+
+miseq_date = sys.argv[2]
+
+call("mkdir ~/goat/results/"+ miseq_date, shell=True)
+
+out_dir = "~/goat/results/" + miseq_date + "/"
+
 #sys.argv[1] refers to the list input
 #create list that will carry any lines in the file which fail at any stage
 failures = []
-
 f = open(sys.argv[1])
 #cycle through each line in the input file
 for lines in f:
@@ -51,9 +62,11 @@ for lines in f:
 	#seperate fastq.gz file name so the file names generated during the process can be used
 	split_file = current_file.split(".")
 	
-	unzipped_fastq = split_file[0] + "." + split_file[1]
+	sample = split_file[0]
+	
+	unzipped_fastq = sample + "." + split_file[1]
 
-	trimmed_fastq = split_file[0] + "_trimmed" + "." + split_file[1]
+	trimmed_fastq = sample + "_trimmed" + "." + split_file[1]
 	
 	call("cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 " + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
 	#print "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 " + unzipped_fastq + " > " + trimmed_fastq
@@ -64,12 +77,17 @@ for lines in f:
 	
 	#run fastqc on trimmed fastq file
 	#first we want to create an output directory if there is none to begin with
-	output_dir = "fastqc_output/"
-	if not os.path.exists(output_dir):
-		os.makedirs(output_dir)
+	#output_dir = "fastqc_output/"
+	#if not os.path.exists(output_dir):
+	#	os.makedirs(output_dir)
+	
 	#print "fastqc " + trimmed_fastq + " -o fastqc_output/ "	
-	call("fastqc " + trimmed_fastq + " -o fastqc_output/", shell=True)
+	call("fastqc " + trimmed_fastq + " -o " + out_dir + "/fastqc/", shell=True)
 
+	#run fastq_screen on each fastq, making a directory for each output
+	call("mkdir " + out_dir + trimmed_fastq, shell=True)
+	
+	call("~/goat/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir " + out_dir + "fastq_screen/" +  trimmed_fastq + " " + trimmed_fastq, shell=True)
 
 #Move all cutadapt logs to a cutadapt log directory - if there is no such dir, create it
 if not os.path.exists("cutadapt_logs/"):
