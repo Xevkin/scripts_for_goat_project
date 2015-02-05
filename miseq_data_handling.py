@@ -14,6 +14,9 @@ import sys
 #we will use this later to check if the input files actually exist
 import os.path
 
+#reference genomes
+goat_ref = "~/goat/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta"
+
 #Prepare output directory
 
 miseq_date = sys.argv[2]
@@ -107,6 +110,29 @@ for lines in f:
 	#call("rsync --remove-source-files ./" + sample + " " + out_dir + "fastq_screen/" + sample,shell=True)
 	call("mv ./" + sample + " " +  out_dir + "fastq_screen/",shell=True)
 	call("rm -r ./" + sample,shell=True)
+
+	#at this stage we have our fastq files with adaptors trimmed
+	#we can now move on to the next step: alignment
+	#going to align to CHIR1.0, as that what was used for AdaptMap
+	call("bwa aln -l 1000 " + goat_ref + " " + trimmed_fastq + " > sample.sai",shell=True)	
+	#produce bam with all reads
+	call("bwa samse " + goat_ref + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
+	#add RGs
+	call("java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar RGID=MG2b_MiSeq RGLB=MG2b RGPL=ILLUMINA RGPU=index1 RGSM=MG2 INPUT=MG2b_rmdup.bam  OUTPUT=MG2b_rmdup_RG.bam ,shell=True)
+	
+	#sort this bam
+	call("samtools sort " + sample + ".bam " + sample + "_sort",shell=True)
+	#remove duplicates from the sorted bam
+	call("samtools rmdup -s " + sample + "_sort.bam" + sample + "_rmdup.bam", shell=True)
+	#remove the "sorted with duplicates" bam
+	call("rm " + sample + "_sort.bam",shell=True)
+	#make a copy of the samtools flagstat
+	call("samtools flagstat " + sample + "_rmdup.bam > " + sample + "_flagstat.txt",shell=True)
+	#remove unaligned reads from this bam
+	call("samtools view -b -F " + sample + "_rmdup.bam > " + sample + "_rmdup_only_aligned.bam",shell=True)
+	#gzip this file
+	call("gzip " + sample + "_rmdup_only_aligned.bam",shell=True)
+
 
 #Move all cutadapt logs to a cutadapt log directory - if there is no such dir, create it
 call("mkdir " + out_dir + "cutadapt_logs/", shell=True)
