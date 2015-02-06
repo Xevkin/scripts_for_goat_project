@@ -114,30 +114,35 @@ for lines in f:
 	#at this stage we have our fastq files with adaptors trimmed
 	#we can now move on to the next step: alignment
 	#going to align to CHIR1.0, as that what was used for AdaptMap
-	call("bwa aln -l 1000 " + goat_ref + " " + trimmed_fastq + " > sample.sai",shell=True)	
+	print("bwa aln -l 1000 " + goat_ref + " " + trimmed_fastq + " > " + sample + ".sai")
+	call("bwa aln -l 1000 " + goat_ref + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)	
+	
 	#produce bam with all reads
+	print("bwa samse " + goat_ref + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam")
 	call("bwa samse " + goat_ref + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
 	#add RGs
-	call("java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar RGID=MG2b_MiSeq RGLB=MG2b RGPL=ILLUMINA RGPU=index1 RGSM=MG2 INPUT=MG2b_rmdup.bam  OUTPUT=MG2b_rmdup_RG.bam ,shell=True)
+	#call("java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar RGID=MG2b_MiSeq RGLB=" + sample + "RGPL=ILLUMINA_Miseq RGPU=index1 RGSM=MG2 INPUT=" + sample + "OUTPUT=" + sample + "_RG.bam",shell=True)
 	
 	#sort this bam
 	call("samtools sort " + sample + ".bam " + sample + "_sort",shell=True)
 	#remove duplicates from the sorted bam
-	call("samtools rmdup -s " + sample + "_sort.bam" + sample + "_rmdup.bam", shell=True)
+	call("samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam", shell=True)
 	#remove the "sorted with duplicates" bam
 	call("rm " + sample + "_sort.bam",shell=True)
 	#make a copy of the samtools flagstat
 	call("samtools flagstat " + sample + "_rmdup.bam > " + sample + "_flagstat.txt",shell=True)
 	#remove unaligned reads from this bam
-	call("samtools view -b -F " + sample + "_rmdup.bam > " + sample + "_rmdup_only_aligned.bam",shell=True)
-	#gzip this file
+	call("samtools view -b -F 4 " + sample + "_rmdup.bam > " + sample + "_rmdup_only_aligned.bam",shell=True)
+	#gzip both files
 	call("gzip " + sample + "_rmdup_only_aligned.bam",shell=True)
-
-
+	call("gzip " + sample + "_rmdup.bam",shell=True)
+	call("gzip " + sample + ".bam",shell=True)
 #Move all cutadapt logs to a cutadapt log directory - if there is no such dir, create it
 call("mkdir " + out_dir + "cutadapt_logs/", shell=True)
 call("mv *.log " + out_dir + "cutadapt_logs/", shell=True)
 
+#remove all .sai files
+call("rm *sai*",shell=True)
 print "Here a list of the files which failed:"
 
 print failures
