@@ -25,8 +25,16 @@ out_dir = "~/goat/results/" + miseq_date + "/"
 
 call("mkdir " + out_dir, shell=True)
 
-#if not os.path.exists(out_dir):
-#	os.makedirs(out_dir)
+#allow meyer option to be used
+meyer_input = sys.argv[3].rstrip("\n").lower()
+
+alignment_option = "bwa aln -l 1000 "  
+
+if meyer_input == "meyer":
+
+	alignment_option = "bwa aln -l 1000 -n 0.01 -o 2 " 
+
+	
 
 #sys.argv[1] refers to the list input
 #create list that will carry any lines in the file which fail at any stage
@@ -114,8 +122,8 @@ for lines in f:
 	#at this stage we have our fastq files with adaptors trimmed
 	#we can now move on to the next step: alignment
 	#going to align to CHIR1.0, as that what was used for AdaptMap
-	print("bwa aln -l 1000 " + goat_ref + " " + trimmed_fastq + " > " + sample + ".sai")
-	call("bwa aln -l 1000 " + goat_ref + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)	
+	print(alignment_option + goat_ref + " " + trimmed_fastq + " > " + sample + ".sai")
+	call(alignment_option + goat_ref + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)	
 	
 	#produce bam with all reads
 	print("bwa samse " + goat_ref + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam")
@@ -133,10 +141,35 @@ for lines in f:
 	call("samtools flagstat " + sample + "_rmdup.bam > " + sample + "_flagstat.txt",shell=True)
 	#remove unaligned reads from this bam
 	call("samtools view -b -F 4 " + sample + "_rmdup.bam > " + sample + "_rmdup_only_aligned.bam",shell=True)
+	
+	#produce q30 bams
+	call("samtools view -b -q30 " + sample + ".bam" > sample + "_q30.bam",shell=True)
+	#process as normal
+	#sort this bam
+        call("samtools sort " + sample + "_q30.bam " + sample + "_q30_sort",shell=True)
+        #remove duplicates from the sorted bam
+        call("samtools rmdup -s " + sample + "_q30_sort.bam " + sample + "_q30_rmdup.bam", shell=True)
+        #remove the "sorted with duplicates" bam
+        call("rm " + sample + "_q30_sort.bam",shell=True)
+        #make a copy of the samtools flagstat
+        call("samtools flagstat " + sample + "_q30_rmdup.bam > " + sample + "_q30_flagstat.txt",shell=True)
+        #remove unaligned reads from this bam
+        call("samtools view -b -F 4 " + sample + "_30_rmdup.bam > " + sample + "_rmdup_only_aligned.bam",shell=True)
+
+	#index the q30 bam
+	call("samtools index "+ sample + "_q30_rmdup_only_aligned.bam",shell=True)
+	
+	#get idx stats
+	call("samtools idxstats "+ sample + "_q30_rmdup_only_aligned.bam",shell=True)
+
 	#gzip both files
 	call("gzip " + sample + "_rmdup_only_aligned.bam",shell=True)
 	call("gzip " + sample + "_rmdup.bam",shell=True)
 	call("gzip " + sample + ".bam",shell=True)
+        call("gzip " + sample + "_q30_rmdup_only_aligned.bam",shell=True)
+        call("gzip " + sample + "_q30_rmdup.bam",shell=True)
+        call("gzip " + sample + "_q30.bam",shell=True)
+
 #Move all cutadapt logs to a cutadapt log directory - if there is no such dir, create it
 call("mkdir " + out_dir + "cutadapt_logs/", shell=True)
 call("mv *.log " + out_dir + "cutadapt_logs/", shell=True)
