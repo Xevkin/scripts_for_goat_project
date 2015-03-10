@@ -61,8 +61,6 @@ if (sheep_option == "sheep"):
 master_list = []
 master_list.append(["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q30", "percentage_reads_aligned_q30"])
 
-
-
 #create list that will carry any lines in the file which fail at any stage
 failures = []
 
@@ -113,7 +111,7 @@ for file in files:
 	
 	cmd = "wc -l " + unzipped_fastq + " | cut -f1 -d' '" 
 	summary.append(subprocess.check_output(cmd,shell=True))
-	print "wc -l " + unzipped_fastq + " | cut -f1 -d' '"
+	
 	call(cmd,shell=True)
 	#raw reads
 	raw_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
@@ -205,12 +203,15 @@ for file in files:
 	#get idx stats
 	call("samtools idxstats "+ sample + "_q30_rmdup_only_aligned.bam > "  + sample + ".idx",shell=True)
 	#gzip both files
-	call("gzip " + sample + "_rmdup_only_aligned.bam",shell=True)
-	call("gzip " + sample + "_rmdup.bam",shell=True)
-	call("gzip " + sample + ".bam",shell=True)
-       	call("gzip " + sample + "_q30_rmdup_only_aligned.bam",shell=True)
-    	call("gzip " + sample + "_q30_rmdup.bam",shell=True)
-       	call("gzip " + sample + "_q30.bam",shell=True)
+	#call("gzip " + sample + "_rmdup_only_aligned.bam",shell=True)
+	#call("gzip " + sample + "_rmdup.bam",shell=True)
+	#call("gzip " + sample + ".bam",shell=True)
+       	#call("gzip " + sample + "_q30_rmdup_only_aligned.bam",shell=True)
+    	#call("gzip " + sample + "_q30_rmdup.bam",shell=True)
+       	#call("gzip " + sample + "_q30.bam",shell=True)
+	call("gzip "+ sample + "*",shell=True)
+	call("mkdir " + out_dir + "bams",shell=True)
+	call("mv *.bam* " + out_dir + "bams",shell=True)
 	
 	#add sample summary to the masterlist
 	fixed_summary = []
@@ -228,6 +229,10 @@ call("mv *.log " + out_dir + "cutadapt_logs/", shell=True)
 
 #remove all .sai files
 call("rm *sai*",shell=True)
+
+#move leftover files to results folder
+call("mv *.idx* *.txt* *trim* " + out_dir,shell=True)
+
 print "Here a list of the files which failed:"
 
 print failures
@@ -240,3 +245,5 @@ with open(output_summary, "w") as f:
 
 	writer = csv.writer(f, delimiter='\t', lineterminator='\n')
 	writer.writerows(master_list)
+
+call("mv " + output_summary + " " + out_dir,shell=True)
