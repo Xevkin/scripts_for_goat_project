@@ -212,7 +212,8 @@ for file in files:
 	call("gzip "+ sample + "*",shell=True)
 	call("mkdir " + out_dir + "bams",shell=True)
 	call("mv *.bam* " + out_dir + "bams",shell=True)
-	
+	#move leftover files to results folder
+	call("mv *.idx* *.txt* *trim* " + out_dir,shell=True)	
 	#add sample summary to the masterlist
 	fixed_summary = []
 	for entry in summary:
@@ -229,9 +230,6 @@ call("mv *.log " + out_dir + "cutadapt_logs/", shell=True)
 
 #remove all .sai files
 call("rm *sai*",shell=True)
-
-#move leftover files to results folder
-call("mv *.idx* *.txt* *trim* " + out_dir,shell=True)
 
 print "Here a list of the files which failed:"
 
