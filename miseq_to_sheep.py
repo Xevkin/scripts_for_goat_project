@@ -31,13 +31,13 @@ for file in files:
 
 
 #reference genomes
-reference = "~/goat/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta"
+reference = "~/goat/miseq/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta"
 
 #Prepare output directory
 
 miseq_date = sys.argv[1]
 
-out_dir = "~/goat/results/" + miseq_date + "/"
+out_dir = "~/goat/miseq/results/" + miseq_date + "/"
 
 call("mkdir " + out_dir, shell=True)
 
@@ -55,7 +55,7 @@ sheep_option = sys.argv[3].rstrip("\n").lower()
 
 if (sheep_option == "sheep"):
 	print "Sheep alignment selected."
-	reference = "~/goat/data/reference_genomes/sheep_oviAri3/oviAri3.fa" 
+	reference = "~/goat/miseq/data/reference_genomes/sheep_oviAri3/oviAri3.fa" 
 
 #initialize a masterlist that will carry summary stats of each sample
 master_list = []
