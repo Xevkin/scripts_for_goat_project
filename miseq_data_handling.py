@@ -165,55 +165,66 @@ for file in files:
 	call("samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam", shell=True)
 	#remove the "sorted with duplicates" bam
 	call("rm " + sample + "_sort.bam",shell=True)
+
 	#make a copy of the samtools flagstat
 	call("samtools flagstat " + sample + "_rmdup.bam > " + sample + "_flagstat.txt",shell=True)
+
 	#remove unaligned reads from this bam
 	call("samtools view -b -F 4 " + sample + "_rmdup.bam > " + sample + "_rmdup_only_aligned.bam",shell=True)
+
 	#produce q30 bams
 	call("samtools view -b -q30 " + sample + ".bam >" + sample + "_q30.bam",shell=True)
-	#process as normal
+
 	#sort this bam
        	call("samtools sort " + sample + "_q30.bam " + sample + "_q30_sort",shell=True)
+
        	#remove duplicates from the sorted bam
        	call("samtools rmdup -s " + sample + "_q30_sort.bam " + sample + "_q30_rmdup.bam", shell=True)
+
        	#remove the "sorted with duplicates" bam
        	call("rm " + sample + "_q30_sort.bam",shell=True)
+
        	#make a copy of the samtools flagstat
        	call("samtools flagstat " + sample + "_q30_rmdup.bam > " + sample + "_q30_flagstat.txt",shell=True)
+
 	#get number of reads aligned without rmdup
 	raw_reads_aligned = subprocess.check_output("samtools flagstat " + sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
 	summary.append(raw_reads_aligned)
+
 	#get reads that aligned following rmdup
 	rmdup_reads_aligned = subprocess.check_output("more " + sample + "_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
 	summary.append(rmdup_reads_aligned)
+
   	#capture the alignment percentage of the flagstat file, both no q and q30
 	raw_alignment = subprocess.check_output("more " + sample + "_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
 	summary.append(raw_alignment)
+
 	#get q30 reads aligned
 	q30_reads_aligned = subprocess.check_output("more " + sample + "_q30_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
        	summary.append(q30_reads_aligned)
+
 	#q30_percent_aligned = subprocess.check_output("more " + sample + "_q30_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
-	
 	fixed_percentage = (int(q30_reads_aligned)) / int(trimmed_read_number)
 	summary.append(fixed_percentage)
+	
 	#remove unaligned reads from this bam
        	call("samtools view -b -F 4 " + sample + "_q30_rmdup.bam > " + sample + "_q30_rmdup_only_aligned.bam",shell=True)
+	
 	#index the q30 bam
 	call("samtools index "+ sample + "_q30_rmdup_only_aligned.bam",shell=True)
+	
 	#get idx stats
 	call("samtools idxstats "+ sample + "_q30_rmdup_only_aligned.bam > "  + sample + ".idx",shell=True)
-	#gzip both files
-	#call("gzip " + sample + "_rmdup_only_aligned.bam",shell=True)
-	#call("gzip " + sample + "_rmdup.bam",shell=True)
-	#call("gzip " + sample + ".bam",shell=True)
-       	#call("gzip " + sample + "_q30_rmdup_only_aligned.bam",shell=True)
-    	#call("gzip " + sample + "_q30_rmdup.bam",shell=True)
-       	#call("gzip " + sample + "_q30.bam",shell=True)
+	
+	#clean up files
 	call("gzip "+ sample + "*",shell=True)
-	call("mkdir " + out_dir + "bams",shell=True)
-	call("mv *.bam* " + out_dir + "bams",shell=True)
-	#move leftover files to results folder
-	call("mv *.idx* *.txt* *trim* " + out_dir,shell=True)	
+	
+	#going to make an output directory for each sample
+	#then move all produced files to this directory
+	call("mkdir " + out_dir + sample,shell=True)
+
+	call("mv *.bam* *.idx* *trim* *.txt* " + out_dir + sample,shell=True)
+	
 	#add sample summary to the masterlist
 	fixed_summary = []
 	for entry in summary:
@@ -224,6 +235,7 @@ for file in files:
 	print fixed_summary
 
 	master_list.append(fixed_summary)
+
 #Move all cutadapt logs to a cutadapt log directory - if there is no such dir, create it
 call("mkdir " + out_dir + "cutadapt_logs/", shell=True)
 call("mv *.log " + out_dir + "cutadapt_logs/", shell=True)
