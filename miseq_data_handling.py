@@ -140,7 +140,7 @@ for file in files:
 	call("mkdir " + out_dir + "fastq_screen/" + sample, shell=True)
 	call("mkdir ./" + sample, shell=True)
 	
-	call("~/goat/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./" + sample + " " + trimmed_fastq, shell=True)
+	call("~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./" + sample + " " + trimmed_fastq, shell=True)
 	print "Output of fastq_screen:"
 	call("ls ./" + sample,shell=True)
 	#call("rsync --remove-source-files ./" + sample + " " + out_dir + "fastq_screen/" + sample,shell=True)
