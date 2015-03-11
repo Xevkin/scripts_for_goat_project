@@ -2,7 +2,10 @@
 
 
 #also need to supply a date for the Miseq run - will automatically make results file
-#python script <date_of_miseq> <meyer> <sheep>
+#python script <date_of_miseq> <meyer> <sheep> <read group file>
+
+#read group file needs to be in the follow format: 
+#Sample_name\tRGs_to_add (in following format- ID:X\tSM:X\tPL:X\tLB:X)
 
 #import csv module to easily write the list of list used as a .csv file
 import csv
@@ -10,6 +13,7 @@ import csv
 #apparently this is a better way to ake system calls using python, rather than "os.system"
 import subprocess 
 from subprocess import call
+
 #need to import sys anyways to access intput file (a list)
 import sys
 
@@ -56,6 +60,9 @@ sheep_option = sys.argv[3].rstrip("\n").lower()
 if (sheep_option == "sheep"):
 	print "Sheep alignment selected."
 	reference = "~/goat/miseq/data/reference_genomes/sheep_oviAri3/oviAri3.fa" 
+
+#variable for RG file
+RG_file = sys.argv[4].rstrip("\n")
 
 #initialize a masterlist that will carry summary stats of each sample
 master_list = []
@@ -153,16 +160,35 @@ for file in files:
 	print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
 	call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)	
 	
-	#produce bam with all reads
-	print("bwa samse " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam")
-	call("bwa samse " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
-	#add RGs
-	#call("java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar RGID=MG2b_MiSeq RGLB=" + sample + "RGPL=ILLUMINA_Miseq RGPU=index1 RGSM=MG2 INPUT=" + sample + "OUTPUT=" + sample + "_RG.bam",shell=True)
+	#Obtain the appropriate read group from the supplied read group file
+	with open(RG_file) as file:
+
+		for line in file:
+
+			split_line = line.split("\t")
+			print sample
+			print split_line
+			if (sample == split_line[0]):
+
+				RG = split_line[1].rstrip("\n")
+
+		#check if RG is an empty string
+		if not RG:
+		
+			print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree" 
 	
+	#produce bam with all reads
+	#at this stage we also add read groups
+	call("bwa samse -r \'@RG\t" + RG + "\t\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
+	#print("bwa samse " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam")
+	#call("bwa samse " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
+		
 	#sort this bam
 	call("samtools sort " + sample + ".bam " + sample + "_sort",shell=True)
+	
 	#remove duplicates from the sorted bam
 	call("samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam", shell=True)
+	
 	#remove the "sorted with duplicates" bam
 	call("rm " + sample + "_sort.bam",shell=True)
 
@@ -223,7 +249,7 @@ for file in files:
 	#then move all produced files to this directory
 	call("mkdir " + out_dir + sample,shell=True)
 
-	call("mv *.bam* *.idx* *trim* *.txt* " + out_dir + sample,shell=True)
+	call("mv *.bam* *.idx* *trimmed.fastq *.txt* " + out_dir + sample,shell=True)
 	
 	#add sample summary to the masterlist
 	fixed_summary = []
