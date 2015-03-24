@@ -2,7 +2,7 @@
 
 
 #also need to supply a date for the Miseq run - will automatically make results file
-#python script <date_of_miseq> <meyer> <sheep> <read group file>
+#python script <date_of_miseq> <meyer> <option> <read group file>
 
 #read group file needs to be in the follow format: 
 #Sample_name\tRGs_to_add (in following format- ID:X\tSM:X\tPL:X\tLB:X)
@@ -14,7 +14,7 @@ import csv
 import subprocess 
 from subprocess import call
 
-#need to import sys anyways to access intput file (a list)
+#need to import sys anyways to access input file (a list)
 import sys
 
 #we will use this later to check if the input files actually exist
@@ -55,11 +55,27 @@ if (meyer_input == "meyer"):
 	alignment_option = "bwa aln -l 1000 -n 0.01 -o 2 " 
 
 #turn the reference genome path to the sheep if sheep option is selected
-sheep_option = sys.argv[3].rstrip("\n").lower()
+option = sys.argv[3].rstrip("\n").lower()
 
-if (sheep_option == "sheep"):
+if (option == "sheep"):
 	print "Sheep alignment selected."
 	reference = "~/goat/miseq/data/reference_genomes/sheep_oviAri3/oviAri3.fa" 
+
+#if option is mit, then several changes need to occur
+
+cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
+
+fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
+
+if (option = "mit"):
+
+	print "Mitochondrial alignment selected."
+
+	cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 25 "
+
+	reference = "~/goat/miseq/data/mit_genomes_fastq_screen/goat_mit/goat_mit.fasta"
+
+	fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf ~/goat/miseq/src/fastq_screen_v0.4.4/capture_config --outdir ./"
 
 #variable for RG file
 RG_file = sys.argv[4].rstrip("\n")
@@ -123,13 +139,8 @@ for file in files:
 	#raw reads
 	raw_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
 	summary.append(raw_read_number)
-
-	call("cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 " + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
+	call(cut_adapt + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
 	#print "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 " + unzipped_fastq + " > " + trimmed_fastq
-	
-	#rezip original fastq files
-
-	call("gzip " + unzipped_fastq, shell=True)
 	
 	#grab summary statistics of trimmed file
 	cmd = "wc -l " + trimmed_fastq + "| cut -f1 -d' '"
@@ -142,12 +153,18 @@ for file in files:
 	#first we want to create an output directory if there is none to begin with
 			
 	call("mkdir " +  out_dir + "fastqc/", shell=True)
+	
+	call("fastqc " + unzipped_fastq + " -o " + out_dir + "fastqc/", shell=True)
 	call("fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
 
 	call("mkdir " + out_dir + "fastq_screen/" + sample, shell=True)
 	call("mkdir ./" + sample, shell=True)
 	
-	call("~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./" + sample + " " + trimmed_fastq, shell=True)
+	 #rezip original fastq files
+
+        call("gzip " + unzipped_fastq, shell=True)
+
+	call(fastq_screen + sample + " " + trimmed_fastq, shell=True)
 	print "Output of fastq_screen:"
 	call("ls ./" + sample,shell=True)
 	#call("rsync --remove-source-files ./" + sample + " " + out_dir + "fastq_screen/" + sample,shell=True)
@@ -176,6 +193,7 @@ for file in files:
 		if not RG:
 		
 			print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree" 
+			failures.append(current_file)
 	
 	#produce bam with all reads
 	#at this stage we also add read groups
@@ -230,7 +248,7 @@ for file in files:
        	summary.append(q30_reads_aligned)
 
 	#q30_percent_aligned = subprocess.check_output("more " + sample + "_q30_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
-	fixed_percentage = (int(q30_reads_aligned)) / int(trimmed_read_number)
+	fixed_percentage = (float(q30_reads_aligned)) / float(trimmed_read_number)
 	summary.append(fixed_percentage)
 	
 	#remove unaligned reads from this bam
@@ -249,7 +267,7 @@ for file in files:
 	#then move all produced files to this directory
 	call("mkdir " + out_dir + sample,shell=True)
 
-	call("mv *.bam* *.idx* *trimmed.fastq *.txt* " + out_dir + sample,shell=True)
+	call("mv *.bam* *.idx* *trimmed.fastq* *flagstat* " + out_dir + sample,shell=True)
 	
 	#add sample summary to the masterlist
 	fixed_summary = []
