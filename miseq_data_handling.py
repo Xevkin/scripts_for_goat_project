@@ -33,6 +33,8 @@ print "fastq.gz files in current directory:"
 for file in files:
 	print file
 
+#variables will be initialized here so they can be modified by options 
+
 
 #reference genomes
 reference = "~/goat/miseq/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta"
@@ -67,7 +69,9 @@ cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
 
 fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
 
-if (option = "mit"):
+#now change variables if the mitochondrial option has been selected
+
+if (option == "mit"):
 
 	print "Mitochondrial alignment selected."
 
@@ -75,7 +79,7 @@ if (option = "mit"):
 
 	reference = "~/goat/miseq/data/mit_genomes_fastq_screen/goat_mit/goat_mit.fasta"
 
-	fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf ~/goat/miseq/src/fastq_screen_v0.4.4/capture_config --outdir ./"
+	fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf ~/goat/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
 
 #variable for RG file
 RG_file = sys.argv[4].rstrip("\n")
@@ -123,12 +127,13 @@ for file in files:
 	split_file = current_file.split(".")
 	
 	sample = split_file[0].rstrip("\n")
-	print sample
+	print "Current samples is: " + sample
 	
 	#initialize variable to carry summary statistics
 	summary = []
 	summary.append(sample)
-	#wc -l raw fastq
+	
+	#Get number of lines (and from that reads - divide by four) from raw fastq
 	unzipped_fastq = sample + "." + split_file[1]
 	trimmed_fastq = sample + "_trimmed" + "." + split_file[1]
 	
@@ -136,11 +141,13 @@ for file in files:
 	summary.append(subprocess.check_output(cmd,shell=True))
 	
 	call(cmd,shell=True)
+	
 	#raw reads
 	raw_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
 	summary.append(raw_read_number)
+	
+	#cut raw fastq files
 	call(cut_adapt + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
-	#print "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 " + unzipped_fastq + " > " + trimmed_fastq
 	
 	#grab summary statistics of trimmed file
 	cmd = "wc -l " + trimmed_fastq + "| cut -f1 -d' '"
@@ -151,25 +158,18 @@ for file in files:
 
 	#run fastqc on trimmed fastq file
 	#first we want to create an output directory if there is none to begin with
-			
 	call("mkdir " +  out_dir + "fastqc/", shell=True)
 	
 	call("fastqc " + unzipped_fastq + " -o " + out_dir + "fastqc/", shell=True)
 	call("fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
 
+	#run fastq screen
 	call("mkdir " + out_dir + "fastq_screen/" + sample, shell=True)
-	call("mkdir ./" + sample, shell=True)
 	
-	 #rezip original fastq files
-
-        call("gzip " + unzipped_fastq, shell=True)
-
 	call(fastq_screen + sample + " " + trimmed_fastq, shell=True)
-	print "Output of fastq_screen:"
-	call("ls ./" + sample,shell=True)
-	#call("rsync --remove-source-files ./" + sample + " " + out_dir + "fastq_screen/" + sample,shell=True)
+	
+	#clean up files after fastq screen
 	call("mv ./" + sample + " " +  out_dir + "fastq_screen/",shell=True)
-	call("rm -r ./" + sample,shell=True)
 
 	#at this stage we have our fastq files with adaptors trimmed
 	#we can now move on to the next step: alignment
@@ -183,12 +183,12 @@ for file in files:
 		for line in file:
 
 			split_line = line.split("\t")
-			print sample
-			print split_line
+			
 			if (sample == split_line[0]):
 
 				RG = split_line[1].rstrip("\n")
-
+				print "Reads groups being used are:"
+				print RG
 		#check if RG is an empty string
 		if not RG:
 		
@@ -198,9 +198,12 @@ for file in files:
 	#produce bam with all reads
 	#at this stage we also add read groups
 	call("bwa samse -r \'@RG\t" + RG + "\t\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
-	#print("bwa samse " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam")
-	#call("bwa samse " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
-		
+			
+	#Run mapDamage on  bam to check degradation patterns 
+	mapdmg_out = out_dir + "mapDamage/" + sample
+	call("mkdir "+ mapdmg_out,shell=True)	
+	call("mapDamage map -i " + sample + ".bam -d " + mapdmg_out +" -r " +reference +" -t sample",shell=True)
+	
 	#sort this bam
 	call("samtools sort " + sample + ".bam " + sample + "_sort",shell=True)
 	
@@ -267,7 +270,9 @@ for file in files:
 	#then move all produced files to this directory
 	call("mkdir " + out_dir + sample,shell=True)
 
-	call("mv *.bam* *.idx* *trimmed.fastq* *flagstat* " + out_dir + sample,shell=True)
+	call("mv *.bam* *.idx* *flagstat* " + out_dir + sample,shell=True)
+	call("mkdir trimmed_bams",shell=True)
+	call("mv *trimmed* trimmed_bams/",shell=True)
 	
 	#add sample summary to the masterlist
 	fixed_summary = []
@@ -282,7 +287,9 @@ for file in files:
 
 #Move all cutadapt logs to a cutadapt log directory - if there is no such dir, create it
 call("mkdir " + out_dir + "cutadapt_logs/", shell=True)
-call("mv *.log " + out_dir + "cutadapt_logs/", shell=True)
+print "log files present in the directory"
+call("ls *.log*",shell=True)
+call("mv *.log* " + out_dir + "cutadapt_logs/", shell=True)
 
 #remove all .sai files
 call("rm *sai*",shell=True)
