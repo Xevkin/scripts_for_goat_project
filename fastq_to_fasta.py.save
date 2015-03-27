@@ -1,4 +1,6 @@
 from Bio import SeqIO 
+gunzip "KD005-2/KD005-2_trimmed.fastq"
+
 
 count = SeqIO.convert("KD005-2/KD005-2_trimmed.fastq", "fastq", "KD005-2/KD005-2_trimmed.fa", "fasta")
 count = SeqIO.convert("KD007-2/KD007-2_trimmed.fastq", "fastq", "KD007-2/KD007-2_trimmed.fa", "fasta")

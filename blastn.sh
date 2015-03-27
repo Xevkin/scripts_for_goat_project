@@ -1,0 +1,13 @@
+blastn -db /d1/blast_db/dataBase/nt -query KD005-2/KD005-2_trimmed.fa -num_threads 10 -outfmt 5 -out KD005-2/KD005-2.xml 2> KD005-2/KD005-2.log 
+blastn -db /d1/blast_db/dataBase/nt -query KD007-2/KD007-2_trimmed.fa -num_threads 10 -outfmt 5 -out KD007-2/KD007-2.xml 2> KD007-2/KD007-2.log
+blastn -db /d1/blast_db/dataBase/nt -query KD008-2/KD008-2_trimmed.fa -num_threads 10 -outfmt 5 -out KD008-2/KD008-2.xml 2> KD008-2/KD008-2.log
+blastn -db /d1/blast_db/dataBase/nt -query KD009-2/KD009-2_trimmed.fa -num_threads 10 -outfmt 5 -out KD009-2/KD009-2.xml 2> KD009-2/KD009-2.log
+blastn -db /d1/blast_db/dataBase/nt -query KD010-2/KD010-2_trimmed.fa -num_threads 10 -outfmt 5 -out KD010-2/KD010-2.xml 2> KD010-2/KD010-2.log
+blastn -db /d1/blast_db/dataBase/nt -query KD011-2/KD011-2_trimmed.fa -num_threads 10 -outfmt 5 -out KD011-2/KD011-2.xml 2> KD011-2/KD011-2.log
+blastn -db /d1/blast_db/dataBase/nt -query KD012-2/KD012-2_trimmed.fa -num_threads 10 -outfmt 5 -out KD012-2/KD012-2.xml 2> KD012-2/KD012-2.log
+blastn -db /d1/blast_db/dataBase/nt -query KD013/KD013_trimmed.fa -num_threads 10 -outfmt 5 -out KD013/KD013.xml 2> KD013/KD013.log
+blastn -db /d1/blast_db/dataBase/nt -query KD015/KD015_trimmed.fa -num_threads 10 -outfmt 5 -out KD015/KD015.xml 2> KD015/KD015.log
+blastn -db /d1/blast_db/dataBase/nt -query KD017/KD017_trimmed.fa -num_threads 10 -outfmt 5 -out KD017/KD017.xml 2> KD017/KD017.log
+blastn -db /d1/blast_db/dataBase/nt -query KD018/KD018_trimmed.fa -num_threads 10 -outfmt 5 -out KD018/KD018.xml 2> KD018/KD018.log
+blastn -db /d1/blast_db/dataBase/nt -query KD020/KD020_trimmed.fa -num_threads 10 -outfmt 5 -out KD020/KD020.xml 2> KD020/KD020.log
+blastn -db /d1/blast_db/dataBase/nt -query KD022/KD022_trimmed.fa -num_threads 10 -outfmt 5 -out KD022/KD022.xml 2> KD022/KD022.log

@@ -164,13 +164,11 @@ for file in files:
 	call("fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
 
 	#run fastq screen
+	call("mkdir " + out_dir + "fastq_screen/",shell=True)
 	call("mkdir " + out_dir + "fastq_screen/" + sample, shell=True)
 	
-	call(fastq_screen + sample + " " + trimmed_fastq, shell=True)
+	call(fastq_screen + sample + " " + trimmed_fastq + " --outdir " + out_dir + "fastq_screen/" + sample, shell=True)
 	
-	#clean up files after fastq screen
-	call("mv ./" + sample + " " +  out_dir + "fastq_screen/",shell=True)
-
 	#at this stage we have our fastq files with adaptors trimmed
 	#we can now move on to the next step: alignment
 	#going to align to CHIR1.0, as that what was used for AdaptMap
