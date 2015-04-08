@@ -198,9 +198,9 @@ for file in files:
 	call("bwa samse -r \'@RG\t" + RG + "\t\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
 			
 	#Run mapDamage on  bam to check degradation patterns 
-	mapdmg_out = out_dir + "mapDamage/" + sample
-	call("mkdir "+ mapdmg_out,shell=True)	
-	call("mapDamage map -i " + sample + ".bam -d " + mapdmg_out +" -r " +reference +" -t sample",shell=True)
+	#mapdmg_out = out_dir + "mapDamage/" + sample
+	#call("mkdir "+ mapdmg_out,shell=True)	
+	#call("mapDamage map -i " + sample + ".bam -d " + mapdmg_out +" -r " +reference +" -t sample",shell=True)
 	
 	#sort this bam
 	call("samtools sort " + sample + ".bam " + sample + "_sort",shell=True)
