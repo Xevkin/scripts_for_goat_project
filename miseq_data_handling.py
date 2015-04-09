@@ -249,7 +249,7 @@ for file in files:
        	summary.append(q30_reads_aligned)
 
 	#q30_percent_aligned = subprocess.check_output("more " + sample + "_q30_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
-	fixed_percentage = (float(q30_reads_aligned)) / float(trimmed_read_number)
+	fixed_percentage = ((float(q30_reads_aligned)) * 100)/ float(trimmed_read_number)
 	summary.append(fixed_percentage)
 	
 	#remove unaligned reads from this bam
@@ -267,10 +267,8 @@ for file in files:
 	#going to make an output directory for each sample
 	#then move all produced files to this directory
 	call("mkdir " + out_dir + sample,shell=True)
-
-	call("mv *.bam* *.idx* *flagstat* " + out_dir + sample,shell=True)
-	call("mkdir trimmed_bams",shell=True)
-	call("mv *trimmed* trimmed_bams/",shell=True)
+	call("mkdir trimmed_fastq_files_and_logs",shell=True)
+	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
 	
 	#add sample summary to the masterlist
 	fixed_summary = []
@@ -282,12 +280,6 @@ for file in files:
 	print fixed_summary
 
 	master_list.append(fixed_summary)
-
-#Move all cutadapt logs to a cutadapt log directory - if there is no such dir, create it
-call("mkdir " + out_dir + "cutadapt_logs/", shell=True)
-print "log files present in the directory"
-call("ls *.log*",shell=True)
-call("mv *.log* " + out_dir + "cutadapt_logs/", shell=True)
 
 #remove all .sai files
 call("rm *sai*",shell=True)
