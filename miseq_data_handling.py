@@ -10,7 +10,7 @@
 #import csv module to easily write the list of list used as a .csv file
 import csv
 
-#apparently this is a better way to ake system calls using python, rather than "os.system"
+#apparently this is a better way to make system calls using python, rather than "os.system"
 import subprocess 
 from subprocess import call
 
@@ -125,7 +125,7 @@ for file in files:
 
 	#rename the file
 	#also save the current sample as a variable to be used later
-	split_file = current_file.split("_")
+	split_file = current_file.split(".")[0].split("_")
 	print split_file[0]
 	call("mv " + current_file + " " + split_file[0] + ".fastq",shell=True)
 	
@@ -192,14 +192,18 @@ for file in files:
 			if (sample == split_line[0]):
 
 				RG = split_line[1].rstrip("\n")
-				print "Reads groups being used are:"
 				print RG
-		#check if RG is an empty string
-		if not RG:
+				#check if RG is an empty string
+				if not RG:
 		
-			print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree" 
-			failures.append(current_file)
+					print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree" 
+					failures.append(current_file)
 	
+				else:
+		
+					print "Reads groups being used are:"
+                                	print RG
+
 	#produce bam with all reads
 	#at this stage we also add read groups
 	call("bwa samse -r \'@RG\t" + RG + "\t\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
@@ -288,9 +292,11 @@ for file in files:
 
 	master_list.append(fixed_summary)
 
+	call("mv *.bam* *.idx* *flagstat* " + out_dir + sample,shell=True)
+
 #remove all .sai files
 call("rm *sai*",shell=True)
-
+call("mv trimmed_fastq_files_and_logs/ " + out_dir,shell=True)
 print "Here a list of the files which failed:"
 
 print failures
