@@ -121,13 +121,18 @@ for file in files:
 	
 	#unzip fastq
 	call("gunzip " + current_file, shell=True)
-	
+	current_file = current_file.split(".")[0] + ".fastq"
+
 	#rename the file
 	#also save the current sample as a variable to be used later
-	split_file = current_file("_")
-	call("mv " + current_file + " " + split_file[0] + ".fastq")
+	split_file = current_file.split("_")
+	print split_file[0]
+	call("mv " + current_file + " " + split_file[0] + ".fastq",shell=True)
+	
 	current_file = split_file[0] + ".fastq"
+	
 	sample = split_file[0].rstrip("\n")
+	
 	print "Current samples is: " + sample
 	
 	
