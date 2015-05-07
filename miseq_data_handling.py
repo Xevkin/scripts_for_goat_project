@@ -120,22 +120,24 @@ for file in files:
 	#note that the -m 30 option is not appropriate for mitochondrial captures
 	
 	#unzip fastq
-	#print "gunzip " + current_file
 	call("gunzip " + current_file, shell=True)
 	
-	#seperate fastq.gz file name so the file names generated during the process can be used
-	split_file = current_file.split(".")
-	
+	#rename the file
+	#also save the current sample as a variable to be used later
+	split_file = current_file("_")
+	call("mv " + current_file + " " + split_file[0] + ".fastq")
+	current_file = split_file[0] + ".fastq"
 	sample = split_file[0].rstrip("\n")
 	print "Current samples is: " + sample
+	
 	
 	#initialize variable to carry summary statistics
 	summary = []
 	summary.append(sample)
 	
 	#Get number of lines (and from that reads - divide by four) from raw fastq
-	unzipped_fastq = sample + "." + split_file[1]
-	trimmed_fastq = sample + "_trimmed" + "." + split_file[1]
+	unzipped_fastq = current_file
+	trimmed_fastq = sample + "_trimmed" + ".fastq" 
 	
 	cmd = "wc -l " + unzipped_fastq + " | cut -f1 -d' '" 
 	summary.append(subprocess.check_output(cmd,shell=True))
