@@ -10,7 +10,7 @@ def main(input_file):
 	with open(input_file) as vcf_file:
 
 		#initialize some variables
-		prev_pos = "0"
+		ObsHetPos = "0"
 		prev_chrom = "0"
 
 		#initialize a list that will take individual entries
@@ -24,15 +24,23 @@ def main(input_file):
 				
 				split_line = line.split("\t")
 				
+				#skip this variant if it is not a SNP
+				if  (split_line[4] not in ["A", "G", "T", "C"]):
+
+					continue
+
+				#skip variant if it is not a heterozygous position
+				if (split_line[9].split(":")[0] not in ["1/0", "0/1", "1|0", "0|1"]):
+
+					continue
 				#take chromosome and position information
 				chrom = split_line[0] 
 
 				NextHetPos = split_line[1]
-				
-				#if the script has moved onto a new chromosome, set the previous position back to "0"
-				if (int(prev_chrom) < int(chrom)):
+								
+				if (int(ObsHetPos) > int(NextHetPos)):
 
-					ObsHetPos = "0" 
+						ObsHetPos = "0"
 				
 				#calculate the length of the ROH
 				ROH_length = str(int(NextHetPos) - int(ObsHetPos))
