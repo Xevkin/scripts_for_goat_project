@@ -1,6 +1,7 @@
 #takes input vcf file, and returns output in the format required for HHn
 #Chromosome ObsHeterozPos_bp NextHeterozPos_bp LengthHomozRoh_bp
 #I will assume \s seperation for output
+#Going to ignore the X and Y chromosomes,as X het calls are errors in males, only relevant in females
 
 from os import sys
 
@@ -19,7 +20,7 @@ def main(input_file):
 		for line in vcf_file:
 	
 			#skip header lines
-			if not line.startswith(r"#"):
+			if not line.startswith(r"#") or not line.startswith("chrX") or not line.startswith("chrY"):
 
 				
 				split_line = line.split("\t")
