@@ -13,14 +13,14 @@ def main(input_file):
 		#initialize some variables
 		ObsHetPos = "0"
 		prev_chrom = "0"
-
+		
 		#initialize a list that will take individual entries
 		ROH_list = [["Chromosome" ,"ObsHeterozPos_bp", "NextHeterozPos_bp","LengthHomozRoh_bp"]]
 
 		for line in vcf_file:
-	
+			
 			#skip header lines
-			if not line.startswith(r"#") or not line.startswith("chrX") or not line.startswith("chrY"):
+			if not (line.startswith(r"#") or line.startswith("chrX") or line.startswith("chrY")):
 
 				
 				split_line = line.split("\t")
