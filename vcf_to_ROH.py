@@ -44,8 +44,8 @@ def main(input_file):
 						ObsHetPos = "0"
 				
 				#calculate the length of the ROH
-				#I *think* you add one here - all my ROHs were out by one later 
-				ROH_length = str(int(NextHetPos) - int(ObsHetPos) + 1)
+				#I *think* you subtract one here - all my ROHs were out by one later 
+				ROH_length = str(int(NextHetPos) - int(ObsHetPos) - 1)
 		
 				#add entry to ROH_list if it ISN'T a stretch starting from 0
 				if (ObsHetPos != "0"):
