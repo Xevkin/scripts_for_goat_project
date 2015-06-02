@@ -35,7 +35,9 @@ def main(input_file):
 
 					continue
 				#take chromosome and position information
-				chrom = split_line[0] 
+				chrom = split_line[0]
+
+				chrom = chrom.replace("chr", "") 
 
 				NextHetPos = split_line[1]
 								
@@ -45,6 +47,8 @@ def main(input_file):
 				
 				#calculate the length of the ROH
 				#I *think* you subtract one here - all my ROHs were out by one later 
+				#in Iona's example, she subtracts by two in her first row, and then by one in every other row
+				#Most likely a mistake in the first row 
 				ROH_length = str(int(NextHetPos) - int(ObsHetPos) - 1)
 		
 				#add entry to ROH_list if it ISN'T a stretch starting from 0
