@@ -228,8 +228,20 @@ for file in files:
 	#remove unaligned reads from this bam
 	call("samtools view -b -F 4 " + sample + "_rmdup.bam > " + sample + "_rmdup_only_aligned.bam",shell=True)
 
+	#produce q25 bams
+        call("samtools view -b -q25 " + sample + ""_rmdup_only_aligned.bam" >" + sample + "_q25.bam",shell=True)
+
+        #sort this bam
+        call("samtools sort " + sample + "_q25.bam " + sample + "_q25_sort",shell=True)
+
+        #remove duplicates from the sorted bam
+        call("samtools rmdup -s " + sample + "_q25_sort.bam " + sample + "_q25_rmdup.bam", shell=True)
+
+        #remove the "sorted with duplicates" bam
+        call("rm " + sample + "_q25_sort.bam",shell=True)
+        
 	#produce q30 bams
-	call("samtools view -b -q30 " + sample + ".bam >" + sample + "_q30.bam",shell=True)
+	call("samtools view -b -q30 " + sample + ""_rmdup_only_aligned.bam" >" + sample + "_q30.bam",shell=True)
 
 	#sort this bam
        	call("samtools sort " + sample + "_q30.bam " + sample + "_q30_sort",shell=True)
@@ -262,15 +274,12 @@ for file in files:
 	#q30_percent_aligned = subprocess.check_output("more " + sample + "_q30_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
 	fixed_percentage = ((float(q30_reads_aligned)) * 100)/ float(trimmed_read_number)
 	summary.append(fixed_percentage)
-	
-	#remove unaligned reads from this bam
-       	call("samtools view -b -F 4 " + sample + "_q30_rmdup.bam > " + sample + "_q30_rmdup_only_aligned.bam",shell=True)
-	
+		
 	#index the q30 bam
-	call("samtools index "+ sample + "_q30_rmdup_only_aligned.bam",shell=True)
+	call("samtools index "+ sample + "_q30_rmdup.bam",shell=True)
 	
 	#get idx stats
-	call("samtools idxstats "+ sample + "_q30_rmdup_only_aligned.bam > "  + sample + ".idx",shell=True)
+	call("samtools idxstats "+ sample + "_q30_rmdup.bam > "  + sample + ".idx",shell=True)
 	
 	#clean up files
 	call("gzip "+ sample + "*",shell=True)
