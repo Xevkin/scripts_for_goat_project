@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/python
 
 
 #also need to supply a date for the Miseq run - will automatically make results file
