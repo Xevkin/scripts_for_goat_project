@@ -229,7 +229,7 @@ for file in files:
 	call("samtools view -b -F 4 " + sample + "_rmdup.bam > " + sample + "_rmdup_only_aligned.bam",shell=True)
 
 	#produce q25 bams
-        call("samtools view -b -q25 " + sample + ""_rmdup_only_aligned.bam" >" + sample + "_q25.bam",shell=True)
+        call("samtools view -b -q25 " + sample + "_rmdup_only_aligned.bam >" + sample + "_q25.bam",shell=True)
 
         #sort this bam
         call("samtools sort " + sample + "_q25.bam " + sample + "_q25_sort",shell=True)
@@ -241,7 +241,7 @@ for file in files:
         call("rm " + sample + "_q25_sort.bam",shell=True)
         
 	#produce q30 bams
-	call("samtools view -b -q30 " + sample + ""_rmdup_only_aligned.bam" >" + sample + "_q30.bam",shell=True)
+	call("samtools view -b -q30 " + sample + "_rmdup_only_aligned.bam >" + sample + "_q30.bam",shell=True)
 
 	#sort this bam
        	call("samtools sort " + sample + "_q30.bam " + sample + "_q30_sort",shell=True)
