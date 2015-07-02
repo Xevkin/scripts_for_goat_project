@@ -21,8 +21,14 @@ for i in $(ls *_1.fq.gz | cut -f1 -d'_');
 
 	gzip $i"_1_trimmed.fq" $i"_2_trimmed.fq";
 
-	angsd -i $i"_to_deer.bam" -doFasta 1;
+	samtools sort  $i"_to_deer.bam" $i"_sort_to_deer";
 
-	gzip $i"_to_deer.bam"; 
+	samtools rmdup $i"_sort_to_deer.bam" $i"_rmdup_to_deer.bam";
+
+	rm $i"_sort_to_deer.bam"; gzip $i"_to_deer.bam"; 
+	
+	angsd -i $i"_rmdup_to_deer.bam" -doFasta 1;
+
+	gzip $i"_rmdup_to_deer.bam"; 
 
 done
