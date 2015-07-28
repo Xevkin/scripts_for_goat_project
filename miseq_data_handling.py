@@ -26,81 +26,79 @@ import sys
 #we will use this later to check if the input files actually exist
 import os
 
-#take all .fastq.gz files in current directory; print them
+def main(date_of_miseq, meyer, option, RG_file)
+	#take all .fastq.gz files in current directory; print them
 
-files = []
+	files = []
 
-for file in os.listdir("."):
+	for file in os.listdir("."):
 
-        if file.endswith(".fastq.gz"):
+        	if file.endswith(".fastq.gz"):
 
-                files.append(file)
-print "fastq.gz files in current directory:"
-for file in files:
-	print file
+                	files.append(file)
+	print "fastq.gz files in current directory:"
+	for file in files:
+		print file
 
-#variables will be initialized here so they can be modified by options 
-
-
-#reference genomes
-reference = "~/goat/miseq/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta"
-
-#Prepare output directory
-
-miseq_date = sys.argv[1]
-
-out_dir = "~/goat/miseq/results/" + miseq_date + "/"
-
-call("mkdir " + out_dir, shell=True)
-
-#allow meyer option to be used
-meyer_input = sys.argv[2].rstrip("\n").lower()
-
-alignment_option = "bwa aln -l 1000 "  
-
-if (meyer_input == "meyer"):
-	print "Meyer option selected."
-	alignment_option = "bwa aln -l 1000 -n 0.01 -o 2 " 
-
-#turn the reference genome path to the sheep if sheep option is selected
-option = sys.argv[3].rstrip("\n").lower()
-
-if (option == "sheep"):
-	print "Sheep alignment selected."
-	reference = "~/goat/miseq/data/reference_genomes/sheep_oviAri3/oviAri3.fa" 
-
-#if option is mit, then several changes need to occur
-
-cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
-
-fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
-
-#now change variables if the mitochondrial option has been selected
-
-if (option == "mit"):
-
-	print "Mitochondrial alignment selected."
-
-	cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 25 "
-
-	reference = "~/goat/miseq/data/mit_genomes_fastq_screen/goat_mit/goat_mit.fasta"
-
-	fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf ~/goat/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
-
-#variable for RG file
-RG_file = sys.argv[4].rstrip("\n")
-
-#initialize a masterlist that will carry summary stats of each sample
-master_list = []
-master_list.append(["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"])
-
-#create list that will carry any lines in the file which fail at any stage
-failures = []
+	#variables will be initialized here so they can be modified by options 
 
 
-def main(fq.gz_files_in_dir):
+	#reference genomes
+	reference = "~/goat/miseq/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta"
+
+	#Prepare output directory
+
+	out_dir = "~/goat/miseq/results/" + date_of_miseq +  "/"
+
+	call("mkdir " + out_dir, shell=True)
+
+	#allow meyer option to be used
+	meyer_input = meyer.rstrip("\n").lower()
+
+	alignment_option = "bwa aln -l 1000 "  
+
+	if (meyer_input == "meyer"):
+		print "Meyer option selected."
+		alignment_option = "bwa aln -l 1000 -n 0.01 -o 2 " 
+
+	#turn the reference genome path to the sheep if sheep option is selected
+	option = option.rstrip("\n").lower()
+
+	if (option == "sheep"):
+		print "Sheep alignment selected."
+		reference = "~/goat/miseq/data/reference_genomes/sheep_oviAri3/oviAri3.fa" 
+
+	#if option is mit, then several changes need to occur
+
+	cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
+
+	fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
+
+	#now change variables if the mitochondrial option has been selected
+
+	if (option == "mit"):
+
+		print "Mitochondrial alignment selected."
+
+		cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 25 "
+
+		reference = "~/goat/miseq/data/mit_genomes_fastq_screen/goat_mit/goat_mit.fasta"
+
+		fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf ~/goat/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
+
+	#variable for RG file
+	RG_file = RG_file.rstrip("\n")
+
+	#initialize a masterlist that will carry summary stats of each sample
+	master_list = []
+	master_list.append(["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"])
+
+	#create list that will carry any lines in the file which fail at any stage
+	failures = []
+
+
 	#cycle through each line in the input file
-	for file in fq.gz_files_in_dir:
+	for file in files:
 	
 		current_file = file.strip()
 		#if the line in the file is not a .fastq.gz, report an error and skip to next one
@@ -318,4 +316,4 @@ def main(fq.gz_files_in_dir):
 
 	call("mv " + output_summary + " " + out_dir,shell=True)
 
-main(files)
+main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]y)
