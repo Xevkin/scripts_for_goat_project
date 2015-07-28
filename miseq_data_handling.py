@@ -1,11 +1,17 @@
 #!/usr/bin/python
+"""
+Script is run in a directory with bam files to be aligned to the goat genome
+Bams will be trimmed, quality metrics obtained, screened using fastq screen
+
+Also need to supply a date for the Miseq run - will automatically make results file
+python script <date_of_miseq> <meyer> <option> <read group file>
+
+read group file needs to be in the follow format: 
+Sample_name\tRGs_to_add (in following format- ID:X\tSM:X\tPL:X\tLB:X)
 
 
-#also need to supply a date for the Miseq run - will automatically make results file
-#python script <date_of_miseq> <meyer> <option> <read group file>
 
-#read group file needs to be in the follow format: 
-#Sample_name\tRGs_to_add (in following format- ID:X\tSM:X\tPL:X\tLB:X)
+"""
 
 #import csv module to easily write the list of list used as a .csv file
 import csv
@@ -86,7 +92,7 @@ RG_file = sys.argv[4].rstrip("\n")
 
 #initialize a masterlist that will carry summary stats of each sample
 master_list = []
-master_list.append(["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q30", "percentage_reads_aligned_q30"])
+master_list.append(["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"])
 
 #create list that will carry any lines in the file which fail at any stage
 failures = []
@@ -229,31 +235,19 @@ for file in files:
 	call("samtools view -b -F 4 " + sample + "_rmdup.bam > " + sample + "_rmdup_only_aligned.bam",shell=True)
 
 	#produce q25 bams
-        call("samtools view -b -q25 " + sample + "_rmdup_only_aligned.bam >" + sample + "_q25.bam",shell=True)
-
-        #sort this bam
-        call("samtools sort " + sample + "_q25.bam " + sample + "_q25_sort",shell=True)
-
-        #remove duplicates from the sorted bam
-        call("samtools rmdup -s " + sample + "_q25_sort.bam " + sample + "_q25_rmdup.bam", shell=True)
-
-        #remove the "sorted with duplicates" bam
-        call("rm " + sample + "_q25_sort.bam",shell=True)
-        
-	#produce q30 bams
-	call("samtools view -b -q30 " + sample + "_rmdup_only_aligned.bam >" + sample + "_q30.bam",shell=True)
+	call("samtools view -b -q25 " + sample + "_rmdup_only_aligned.bam >" + sample + "_q25.bam",shell=True)
 
 	#sort this bam
-       	call("samtools sort " + sample + "_q30.bam " + sample + "_q30_sort",shell=True)
+       	call("samtools sort " + sample + "_q25.bam " + sample + "_q25_sort",shell=True)
 
        	#remove duplicates from the sorted bam
-       	call("samtools rmdup -s " + sample + "_q30_sort.bam " + sample + "_q30_rmdup.bam", shell=True)
+       	call("samtools rmdup -s " + sample + "_q25_sort.bam " + sample + "_q25_rmdup.bam", shell=True)
 
        	#remove the "sorted with duplicates" bam
-       	call("rm " + sample + "_q30_sort.bam",shell=True)
+       	call("rm " + sample + "_q25_sort.bam",shell=True)
 
        	#make a copy of the samtools flagstat
-       	call("samtools flagstat " + sample + "_q30_rmdup.bam > " + sample + "_q30_flagstat.txt",shell=True)
+       	call("samtools flagstat " + sample + "_q25_rmdup.bam > " + sample + "_q25_flagstat.txt",shell=True)
 
 	#get number of reads aligned without rmdup
 	raw_reads_aligned = subprocess.check_output("samtools flagstat " + sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
@@ -267,19 +261,19 @@ for file in files:
 	raw_alignment = subprocess.check_output("more " + sample + "_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
 	summary.append(raw_alignment)
 
-	#get q30 reads aligned
-	q30_reads_aligned = subprocess.check_output("more " + sample + "_q30_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
-       	summary.append(q30_reads_aligned)
+	#get q25 reads aligned
+	q25_reads_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
+       	summary.append(q25_reads_aligned)
 
-	#q30_percent_aligned = subprocess.check_output("more " + sample + "_q30_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
-	fixed_percentage = ((float(q30_reads_aligned)) * 100)/ float(trimmed_read_number)
+	#q25_percent_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
+	fixed_percentage = ((float(q25_reads_aligned)) * 100)/ float(trimmed_read_number)
 	summary.append(fixed_percentage)
 		
-	#index the q30 bam
-	call("samtools index "+ sample + "_q30_rmdup.bam",shell=True)
+	#index the q25 bam
+	call("samtools index "+ sample + "_q25_rmdup.bam",shell=True)
 	
 	#get idx stats
-	call("samtools idxstats "+ sample + "_q30_rmdup.bam > "  + sample + ".idx",shell=True)
+	call("samtools idxstats "+ sample + "_q25_rmdup.bam > "  + sample + ".idx",shell=True)
 	
 	#clean up files
 	call("gzip "+ sample + "*",shell=True)
