@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/python
 
 #input file is a TRIMMED fastq file
 
