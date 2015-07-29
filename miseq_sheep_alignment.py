@@ -1,5 +1,6 @@
 #!/bin/python
 
+#input file is a TRIMMED fastq file
 
 #modified version of the miseq data handling file which only aligns to the sheep genome
 #python script <date_of_miseq> <meyer> <read group file>
@@ -60,7 +61,7 @@ RG_file = sys.argv[3].rstrip("\n")
 
 #initialize a masterlist that will carry summary stats of each sample
 master_list = []
-master_list.append(["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"])
+master_list.append(["Sample", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"])
 
 #create list that will carry any lines in the file which fail at any stage
 failures = []
@@ -107,33 +108,22 @@ for file in files:
 	summary = []
 	summary.append(sample)
 	
-	#Get number of lines (and from that reads - divide by four) from raw fastq
-	unzipped_fastq = sample + "." + split_file[1]
-	trimmed_fastq = sample + "_trimmed" + "." + split_file[1]
+	#Get number of lines (and from that reads - divide by four) from input (trimmed) fastq
+	fastq = sample + "." + split_file[1]
 	
-	cmd = "wc -l " + unzipped_fastq + " | cut -f1 -d' '" 
+	cmd = "wc -l " + fastq + " | cut -f1 -d' '" 
 	summary.append(subprocess.check_output(cmd,shell=True))
 	
 	call(cmd,shell=True)
 	
-	#raw reads
-	raw_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
-	summary.append(raw_read_number)
-	
-	#cut raw fastq files
-	call(cut_adapt + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
-	
-	#grab summary statistics of trimmed file
-	cmd = "wc -l " + trimmed_fastq + "| cut -f1 -d' '"
-       	summary.append(subprocess.check_output(cmd,shell=True))
-       	trimmed_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
-       	summary.append(str(trimmed_read_number)
+      	trimmed_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
+       	
+	summary.append(str(trimmed_read_number)
 
-	#at this stage we have our fastq files with adaptors trimmed
 	#we can now move on to the next step: alignment
 	#going to align to CHIR1.0, as that what was used for AdaptMap
-	print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
-	call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)	
+	print(alignment_option + reference + " " + fastq + " > " + sample + ".sai")
+	call(alignment_option + reference + " " + fastq + " > " + sample + ".sai",shell=True)	
 	
 	#Obtain the appropriate read group from the supplied read group file
 	with open(RG_file) as file:
