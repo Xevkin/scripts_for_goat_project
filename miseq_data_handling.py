@@ -26,7 +26,7 @@ import sys
 #we will use this later to check if the input files actually exist
 import os
 
-def main(date_of_miseq, meyer, option, RG_file)
+def main(date_of_miseq, meyer, option, RG_file):
 	#take all .fastq.gz files in current directory; print them
 
 	files = []
@@ -55,11 +55,11 @@ def main(date_of_miseq, meyer, option, RG_file)
 	#allow meyer option to be used
 	meyer_input = meyer.rstrip("\n").lower()
 
-	alignment_option = "bwa aln -l 1000 "  
+	alignment_option = "bwa aln -t 5 -l 1000 "  
 
 	if (meyer_input == "meyer"):
 		print "Meyer option selected."
-		alignment_option = "bwa aln -l 1000 -n 0.01 -o 2 " 
+		alignment_option = "bwa aln -t 5 -l 1000 -n 0.01 -o 2 " 
 
 	#turn the reference genome path to the sheep if sheep option is selected
 	option = option.rstrip("\n").lower()
@@ -91,7 +91,7 @@ def main(date_of_miseq, meyer, option, RG_file)
 
 	#initialize a masterlist that will carry summary stats of each sample
 	master_list = []
-	master_list.append(["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"])
+	master_list.append(["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"])
 
 	#create list that will carry any lines in the file which fail at any stage
 	failures = []
@@ -219,7 +219,7 @@ def main(date_of_miseq, meyer, option, RG_file)
 		#mapdmg_out = out_dir + "mapDamage/" + sample
 		#call("mkdir "+ mapdmg_out,shell=True)	
 		#call("mapDamage map -i " + sample + ".bam -d " + mapdmg_out +" -r " +reference +" -t sample",shell=True)
-	
+		
 		#sort this bam
 		call("samtools sort " + sample + ".bam " + sample + "_sort",shell=True)
 	
@@ -253,6 +253,10 @@ def main(date_of_miseq, meyer, option, RG_file)
 		#get number of reads aligned without rmdup
 		raw_reads_aligned = subprocess.check_output("samtools flagstat " + sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
 		summary.append(raw_reads_aligned)
+
+		#get %age raw alignment
+		raw_alignment_percentage = ((float(raw_reads_aligned)) * 100)/ float(trimmed_read_number)
+		summary.append(raw_alignment_percentage)
 
 		#get reads that aligned following rmdup
 		rmdup_reads_aligned = subprocess.check_output("more " + sample + "_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
@@ -305,8 +309,7 @@ def main(date_of_miseq, meyer, option, RG_file)
 
 	print failures
 
-
-	output_summary = miseq_date + "_summary.table"
+	output_summary = date_of_miseq + "_summary.table"
 	
 	#print summary stats
 	with open(output_summary, "w") as f:
@@ -316,4 +319,4 @@ def main(date_of_miseq, meyer, option, RG_file)
 
 	call("mv " + output_summary + " " + out_dir,shell=True)
 
-main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]y)
+main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
