@@ -316,6 +316,12 @@ def main(date_of_miseq, meyer, option, RG_file):
 
 		writer = csv.writer(f, delimiter='\t', lineterminator='\n')
 		writer.writerows(master_list)
+	
+	number_of_samples = int(subprocess.check_output("wc -l " + output_summary,shell=True)) - 1
+
+	call("head -n1 " + output_summary "> header.txt ",shell=True)
+	
+	call("tail -n " + str(number_of_samples) "output_summary | sort | cat header.txt - > tmp; mv tmp " + output_summary ";rm header.txt tmp",shell=True)
 
 	call("mv " + output_summary + " " + out_dir,shell=True)
 
