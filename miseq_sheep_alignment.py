@@ -41,7 +41,7 @@ reference = "~/goat/miseq/data/reference_genomes/sheep_oviAri3/oviAri3.fa"
 
 miseq_date = sys.argv[1]
 
-out_dir = "~/goat/sheep/results/" + miseq_date + "/"
+out_dir = "~/sheep/results/" + miseq_date + "/"
 
 call("mkdir " + out_dir, shell=True)
 
@@ -118,11 +118,11 @@ for file in files:
 	
       	trimmed_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
        	
-	summary.append(str(trimmed_read_number)
+	summary.append(str(trimmed_read_number))
 
 	#we can now move on to the next step: alignment
 	#going to align to CHIR1.0, as that what was used for AdaptMap
-	print(alignment_option + reference + " " + fastq + " > " + sample + ".sai")
+	print alignment_option + reference + " " + fastq + " > " + sample + ".sai"
 	call(alignment_option + reference + " " + fastq + " > " + sample + ".sai",shell=True)	
 	
 	#Obtain the appropriate read group from the supplied read group file
