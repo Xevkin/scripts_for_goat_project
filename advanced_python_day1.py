@@ -188,5 +188,198 @@ generate_kmers_rec(3)
 
 #So the function iteratively calls itself UNTIL IT GETS TO THE CONDITION THAT IT DOES NOT CALL ITSELF
 
+tax_dict = { 
+'Pan troglodytes' : 'Hominoidea',       'Pongo abelii' : 'Hominoidea', 
+'Hominoidea' :  'Simiiformes',          'Simiiformes' : 'Haplorrhini', 
+'Tarsius tarsier' : 'Tarsiiformes',     'Haplorrhini' : 'Primates',
+'Tarsiiformes' : 'Haplorrhini',         'Loris tardigradus' : 'Lorisidae',
+'Lorisidae' : 'Strepsirrhini',          'Strepsirrhini' : 'Primates',
+'Allocebus trichotis' : 'Lemuriformes', 'Lemuriformes' : 'Strepsirrhini',
+'Galago alleni' : 'Lorisiformes',       'Lorisiformes' : 'Strepsirrhini',
+'Galago moholi' : ' Lorisiformes'
+} 
+
+def get_ancestors(taxon):
+    if taxon == 'Primates':
+        return []
+    else:
+        parent = tax_dict.get(taxon)
+        parent_ancestors = get_ancestors(parent) 
+        return [parent] + parent_ancestors
+        #so each iteration will return all previous ancestors plus the parent taxon of the current taxon
+        
+        
+new_tax_dict = { 
+    'Primates': ['Haplorrhini', 'Strepsirrhini'], 
+    'Tarsiiformes': ['Tarsius tarsier'], 
+    'Haplorrhini': ['Tarsiiformes', 'Simiiformes'], 
+    'Simiiformes': ['Hominoidea'], 
+    'Lorisidae': ['Loris tardigradus'], 
+    'Lemuriformes': ['Allocebus trichotis'], 
+    'Lorisiformes': ['Galago alleni','Galago moholi'], 
+    'Hominoidea': ['Pongo abelii', 'Pan troglodytes'], 
+    'Strepsirrhini': ['Lorisidae', 'Lemuriformes', 'Lorisiformes'] 
+} 
+
+#two ways of writing a script to get all the descendents of a given taxon - iterative and recursive
+
+def get_descendants(taxon): 
+    result = [] 
+
+    # the stack is the list of taxa whose children we need to include
+    stack = [taxon] 
+
+    while len(stack) != 0: 
+
+        # remove the last element from the stack
+        current_taxon = stack.pop() 
+
+        # look up the children
+        current_taxon_children = new_tax_dict.get(current_taxon, []) 
+        
+        # add the children onto the end of the stack
+        stack.extend(current_taxon_children) 
+
+        # add the children to the result list
+        result.append(current_taxon) 
+
+    # when the stack is empty we are done
+    return result 
+
+get_descendants("Simiiformes")
 
 
+
+
+def get_descendants_rec(taxon): 
+
+    # add the current taxon to the resul
+    result = [taxon] 
+
+    # look up the list of children for this taxon
+    children = new_tax_dict.get(taxon, []) 
+
+    #if the children list is empty, this step is skipped
+    #result ill still contain the taxon so it will return that
+    # for each child taxon...
+    for child in children: 
+
+        # ... add its decendnts to the result
+        result.extend(get_descendants_rec(child)) 
+
+    return result 
+
+get_descendants_rec("Haplorrhini")
+
+#LCA exercise using iterative answer:
+
+tax_dict = { 
+'Pan troglodytes' : 'Hominoidea',       'Pongo abelii' : 'Hominoidea', 
+'Hominoidea' :  'Simiiformes',          'Simiiformes' : 'Haplorrhini', 
+'Tarsius tarsier' : 'Tarsiiformes',     'Haplorrhini' : 'Primates',
+'Tarsiiformes' : 'Haplorrhini',         'Loris tardigradus' : 'Lorisidae',
+'Lorisidae' : 'Strepsirrhini',          'Strepsirrhini' : 'Primates',
+'Allocebus trichotis' : 'Lemuriformes', 'Lemuriformes' : 'Strepsirrhini',
+'Galago alleni' : 'Lorisiformes',       'Lorisiformes' : 'Strepsirrhini',
+'Galago moholi' : ' Lorisiformes'
+} 
+
+#set up the function to get a list of the ancestors of a taxon
+def get_ancestors(taxon):
+    result = [taxon] 
+    while taxon != 'Primates' and taxon != None:
+        parent = tax_dict.get(taxon) 
+        result.append(parent)
+        taxon = parent
+    return result
+
+
+#input is a list of taxons
+def get_LCA(taxon_list):
+    
+    while (len(taxon_list) >= 2) :
+        
+        ancestors1 = get_ancestors(taxon_list[0])
+        
+        ancestors2 = get_ancestors(taxon_list[1])
+        
+        taxon_list.pop(0)
+        taxon_list.pop(0)
+    
+        counter = 0
+    
+        while (counter != 1):
+    
+            last_anc = ancestors1[0]
+            
+            ancestors1 = ancestors1[1:]
+          
+            if last_anc in ancestors2:
+
+                    counter = 1
+                
+        taxon_list.append(last_anc)
+        
+    return last_anc
+
+        
+print get_LCA([ "Hominoidea", "Pan troglodytes","Tarsius tarsier"])
+
+
+#recursive answer
+
+tax_dict = { 
+'Pan troglodytes' : 'Hominoidea',       'Pongo abelii' : 'Hominoidea', 
+'Hominoidea' :  'Simiiformes',          'Simiiformes' : 'Haplorrhini', 
+'Tarsius tarsier' : 'Tarsiiformes',     'Haplorrhini' : 'Primates',
+'Tarsiiformes' : 'Haplorrhini',         'Loris tardigradus' : 'Lorisidae',
+'Lorisidae' : 'Strepsirrhini',          'Strepsirrhini' : 'Primates',
+'Allocebus trichotis' : 'Lemuriformes', 'Lemuriformes' : 'Strepsirrhini',
+'Galago alleni' : 'Lorisiformes',       'Lorisiformes' : 'Strepsirrhini',
+'Galago moholi' : ' Lorisiformes'
+} 
+
+#set up the function to get a list of the ancestors of a taxon
+def get_ancestors(taxon):
+    result = [taxon] 
+    while taxon != 'Primates' and taxon != None:
+        parent = tax_dict.get(taxon) 
+        result.append(parent)
+        taxon = parent
+    return result
+
+def get_LCA(taxa1, taxa2):
+        
+        ancestors1 = get_ancestors(taxa1)
+        
+        ancestors2 = get_ancestors(taxa2)
+    
+        counter = 0
+    
+        while (counter != 1):
+    
+            last_anc = ancestors1[0]
+            
+            ancestors1 = ancestors1[1:]
+          
+            if last_anc in ancestors2:
+
+                    counter = 1
+        
+        return last_anc
+
+
+#input is a list of taxons
+def recursive(taxon_list):
+    
+    if (len(taxon_list) == 2):
+    
+        return get_LCA(taxon_list[0], taxon_list[1])
+    
+    else:
+        
+         return recursive(taxon_list[1:])
+    
+    
+    
+    
