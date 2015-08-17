@@ -1,0 +1,51 @@
+Data Structures
+Dicts
+Dicts of sets are an interesting data structure - can rapidly look up the key and value (eg condition plus genes expressed), and also exploit the set nature e.g. check if one value is a  subset of another value
+
+Dicts of tuples - good for searching for specific records (list of tuples is fine for iteration but slow for the former), as you can do something like this:
+
+records = {
+    'ABC123' : ('actgctagt', 1),
+    'XYZ456' : ('ttaggttta', 1),
+    'HIJ789' : ('cgcgatcgt', 5)
+}
+
+#iteration example
+
+for accession, record in records.items():
+    (sequence, code) = record
+    print("looking at record " + accession + " with genetic code " + str(code))
+    # do something with the record
+
+#searching for something specific
+
+my_record = records.get('XYZ456')
+(this_sequence, this_code) = my_record
+print("looking at record " + accession + " with genetic code " + str(code))
+
+^This works as the ascension number is being used as the key, rather than the record code - would have to iterate if we were interested in that
+
+Collection data structure
+import collections
+
+dna = 'aattggaattggaattg'
+base_counter = collections.Counter(dna)
+print(base_counter)
+
+collections.Counter is a special dict class 
+ 
+
+#We may want to create dicts which have a default value i.e. an empty list
+#We use collections.defaultdict to do this - it avoids us having to do something like creating an empty - {list_of_positions = kmer2list.get(kmer, [])}
+
+dna = 'aattggaattggaattg'
+k = 4 
+kmer2list = {}
+kmer2list = collections.defaultdict(list)
+for start in range(len(dna) - k + 1): 
+    kmer = dna[start:start + k] 
+    kmer2list[kmer].append(start)
+kmer2list
+
+
+
