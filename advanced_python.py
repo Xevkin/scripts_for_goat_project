@@ -1,3 +1,5 @@
+https://dl.dropboxusercontent.com/u/2838022/python_courses/eg_ap_2015/index.html
+
 Data Structures
 Dicts
 Dicts of sets are an interesting data structure - can rapidly look up the key and value (eg condition plus genes expressed), and also exploit the set nature e.g. check if one value is a  subset of another value
