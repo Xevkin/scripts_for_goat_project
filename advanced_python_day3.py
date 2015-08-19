@@ -222,4 +222,168 @@ assert l1 == l3
 [len(dna) for dna in dna_list if get_at(dna) >= 0.5]
 
 #or use an annonymous function
+l2 = [(dna.count('A') + dna.count('T')) / len(dna) for dna in dna_list]
 
+#List comprehensions work on any iterable type:
+
+[line[1:] for line in open('sequences.fasta') if line.startswith('>')]
+
+#list comprehensions can be nested:
+
+bases = ['A', 'T', 'G', 'C']
+[base1 + base2 for base1 in bases for base2 in bases]
+
+#Generator expressions are like list comprehensions, but:
+# - use rounded brackets
+# - are lazy (elements are calculated as-needed)
+
+(len(dna) for dna in dna_list)
+
+#We can also create dict comprehensions:
+
+d = { x : get_at(x) for x in dna_list }
+
+#This only works for very simple dicts i.e. when we can describe an item with a single expression (x : get_at(x)). 
+#It wouldn't work for our kmer counting example because that requires us to update the dict.
+#It's probably better to use the defulat dict and collections
+
+#One very common use: creating an index for a list of complex objects:
+
+records = [
+    ('actgctagt', 'ABC123', 1),
+    ('ttaggttta', 'XYZ456', 1),
+    ('cgcgatcgt', 'HIJ789', 5)
+]
+
+index = {r[1] : r for r in records}
+
+index
+
+{'ABC123': ('actgctagt', 'ABC123', 1),
+ 'HIJ789': ('cgcgatcgt', 'HIJ789', 5),
+ 'XYZ456': ('ttaggttta', 'XYZ456', 1)}
+ 
+ #Set comprehensions for completedness (uses curly brackets, but single elements rather than pairs):
+ 
+ even_integers = {x for x in range(1000) if x % 2 == 0}
+ 'HIJ789': ('cgcgatcgt', 'HIJ789', 5),
+ 'XYZ456': ('ttaggttta', 'XYZ456', 1)}
+ 
+ 
+#Iterable types are very useful in Python:
+# - we can iterate over them, obviously
+# - we can turn them into lists
+# - we can use map/filter/sort on them
+# - we can use them in various types of comprehensions
+
+#We already know about a bunch of iterable types:
+# - lists
+# - sets
+# - tuples
+# - strings (as characters)
+# - File objects (as lines)
+# - generator expressions
+
+#And about methods that return iterable types:
+# - re.finditer()
+# - dict.items()
+# - map() in Python 3
+# - range() in Python 3
+
+
+#How to create an iterable class:
+class DNARecord(object): 
+    
+    def __init__(self, sequence, gene_name, species_name):
+        self.sequence = sequence
+        self.gene_name = gene_name
+        self.species_name = species_name
+    
+    def __iter__(self):
+        return iter(self.sequence)   
+    
+d1 = DNARecord('ATATATT', 'COX1', 'Homo sapiens')
+
+for base in d1:
+    print(base)
+    
+    
+#What if we want to iterate over codons?
+
+class DNARecord(object): 
+    
+    #position is created here as we do not want to have to set it every time we make an object of this class
+    #could include in __init__() - we do not include in the () part of init,
+    
+    
+    
+    
+    position = 0
+    
+    def __init__(self, sequence, gene_name, species_name):
+        self.sequence = sequence
+        self.gene_name = gene_name
+        self.species_name = species_name
+    
+    def __iter__(self):
+        return self   
+    
+    def next(self): 
+        if self.position < (len(self.sequence) - 2): 
+            codon = self.sequence[self.position:self.position+3] 
+            self.position += 3 
+            return codon 
+        else: 
+            self.position = 0
+            raise StopIteration  
+
+
+d1 = DNARecord('ATCGTCGACTGACTACG', 'COX1', 'Homo sapiens')
+
+for codon in d1:
+    print(codon)   
+    
+    
+    
+#A generator (not to be confused with a generator expression above) is a function that calculates one value at a time. 
+#Instead of using return() to return the complete result, we use yield() to return a single value:
+
+def generate_4mers(dna): 
+    for i in range(len(dna) - 3): 
+        yield dna[i:i+4] 
+        
+generate_4mers('acgatcgatgc')
+x = generate_4mers('acgatcgatgc')
+x.next()
+
+#Generators are  often more readable, they are very memory efficient as they only calculate one value at a time, 
+#and they are iterators:
+
+for fourmer in generate_4mers('acgatcgatgc'):
+    print(fourmer)
+    
+#and:
+
+list(generate_4mers('acgatcgatgc'))
+
+#combining them:
+
+class DNARecord(object): 
+    position = 0
+    
+    def __init__(self, sequence, gene_name, species_name):
+        self.sequence = sequence
+        self.gene_name = gene_name
+        self.species_name = species_name
+    
+    def bases(self):
+        return iter(self.sequence)
+    
+    def kmers(self, k):
+        for i in range(len(self.sequence) - k +1): 
+            yield self.sequence[i:i+k] 
+            
+    def codons(self):
+        return self.kmers(3)
+        
+#could set the kmer default to 1, to get bases?
