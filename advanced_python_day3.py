@@ -80,3 +80,20 @@ for i in range(11):
 print(total) 
 
 #In functional code, we decribe the result we want and let the computer figure out how to calculate it
+print(sum(range(11))) 
+
+#another example
+input = ['hello', 'world']
+
+# how to get the answer we want
+result1 = []
+for i in input:
+    result1.append(i[1]) 
+
+# describe the answer we want (don't need brackets for lambda)
+result2 = map(lambda x : x[1], input)
+result1,result2
+
+#Higher order functions: take the name of a function as an input
+#For the general pattern of transforming each element of a list, use map(). 
+#First argument is the name of a transformation function, either built in or defined
