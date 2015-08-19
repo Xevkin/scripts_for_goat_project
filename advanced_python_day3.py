@@ -222,3 +222,4 @@ assert l1 == l3
 [len(dna) for dna in dna_list if get_at(dna) >= 0.5]
 
 #or use an annonymous function
+
