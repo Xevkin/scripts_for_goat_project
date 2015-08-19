@@ -96,4 +96,18 @@ result1,result2
 
 #Higher order functions: take the name of a function as an input
 #For the general pattern of transforming each element of a list, use map(). 
-#First argument is the name of a transformation function, either built in or defined
+#First argument is the name of a transformation function, either built in or defined.
+
+lengths = map(len, dna_list) 
+
+#using lambda:
+
+at_contents = map( 
+    lambda dna : (dna.count('A') + dna.count('T')) / len(dna), 
+    dna_list 
+)
+at_contents
+
+#map works on any iterable type:
+
+map(lambda x: x.lower(), 'ABCDEF')
