@@ -108,6 +108,117 @@ at_contents = map(
 )
 at_contents
 
-#map works on any iterable type:
+#map works on any iterable type (eg File object, would iterate over lines):
 
 map(lambda x: x.lower(), 'ABCDEF')
+
+
+
+#filter() takes a function argument which returns True or False (has to return True or False)
+
+def is_long(dna): 
+    return len(dna) > 5 
+
+def is_at_poor(dna): 
+    at = (dna.count('A') + dna.count('T')) / len(dna) 
+    return at < 0.6 
+
+long_dna = filter(is_long, dna_list) 
+at_poor_dna = filter(is_at_poor, dna_list) 
+print(long_dna)
+print(at_poor_dna)
+
+
+#By default the sorted() function sorts alphabetically
+#For custom sorting, we pass in a key keyword argument which is the name of a transformation function.
+
+sorted(dna_list, key=len) 
+
+sorted(dna_list, key=len, reverse=True) 
+
+#sorted() works by returning a copy of the list - or other iterable
+
+sorted('atcgatcg')
+
+#There is also list.sort() which behaves the same way but works by mutating the original list.
+#key can be arbitrarily complex:
+
+import re 
+def poly_a_length(dna): 
+    poly_a_match = re.search(r'A+$', dna) 
+    if poly_a_match: 
+        return len(poly_a_match.group()) 
+    else: 
+        return 0 
+
+poly_a_length('ACGTGC')
+
+dna_list = ['ATCGA', 'ACGG', 'CGTAAA', 'ATCGAA']
+sorted(dna_list, key=poly_a_length)
+
+#Higher order functions 
+#Rather than writing two functions...
+def get_6mers_at(dna): 
+    result = [] 
+    for i in range(len(dna) - 5): 
+        one_6mer = dna[i:i+6] 
+        at = (one_6mer.count('a') + one_6mer.count('t')) / 6 
+        result.append(at) 
+    return result 
+
+def get_6mers_cg(dna): 
+    result = [] 
+    for i in range(len(dna) - 5): 
+        one_6mer = dna[i:i+6] 
+        cg = one_6mer.count('cg') 
+        result.append(cg) 
+    return result
+
+print(get_6mers_at(dna))
+print(get_6mers_cg(dna))
+
+#....we can figure out what is different between the two functions, take it out and
+#use it as an argument (which will be a function we run on each argument)
+
+def get_at(dna): 
+    return (dna.count('a') + dna.count('t')) / len(dna) 
+
+def get_6mers_f(dna, analyze_6mer): 
+    result = [] 
+    for i in range(len(dna) - 5): 
+        one_6mer = dna[i:i+6] 
+        result.append(analyze_6mer(one_6mer)) 
+    return result 
+
+get_6mers_f(dna, get_at)
+
+#we can do the cg dinucleotide part using a lambda expression:
+get_6mers_f(dna, lambda dna : dna.count('cg'))
+
+
+#Session Six - List Comprehensions
+
+#Python has a special syntax for defining lists called list comprehensions. 
+#Here's the list of lengths of the DNA sequences in three ways:
+
+# with a loop
+
+l1 = []
+for dna in dna_list:
+    l1.append(len(dna))
+    
+# with a map
+l2 = map(len, dna_list)
+
+# as a list comprehension
+l3 = [len(dna) for dna in dna_list]
+
+assert l1 == l2
+assert l1 == l3
+
+
+#comprehensions can have conditions:
+
+[len(dna) for dna in dna_list if get_at(dna) >= 0.5]
+
+#or use an annonymous function
