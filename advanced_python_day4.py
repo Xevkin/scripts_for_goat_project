@@ -280,3 +280,211 @@ import random
 
 #we can find where the object is:
 random.__file__
+
+#.pyc means a compiled Python file, but if we drop the c from the end and open up the .py 
+#we can prove that it's just normal Python code.
+
+#Notice that the name of the module is just the name of the file without the extension.
+
+#How does Python know what folders to look for the file in?
+import sys
+print sys.path
+
+# pip, the Python package manager - remove old modules, updates them, ensures dependencies are met, installs
+#extra command-line tools etc
+
+pip install mymodule pip install --upgrade mymodule pip uninstall mymodule
+
+
+#Creating a new module
+
+from __future__ import division 
+ 
+# calculate the AT content 
+def calculate_at(dna): 
+    length = len(dna) 
+    a_count = dna.count('A') 
+    t_count = dna.count('T') 
+    at_content = (a_count + t_count) / length 
+    return at_content 
+
+#Move it to a new file in the current directory, call it at_calculator.py
+
+import at_calculator 
+
+at_calculator.__file__
+
+#We could copy it to one of the path folders to use it universally (but we will see a better way).
+ 
+# ask the user for a DNA sequence and filename 
+dna = raw_input("Enter a DNA sequence:\n")
+output_filename = raw_input("Enter a filename:\n")
+ 
+# write the AT content to the output file 
+with open(output_filename, "w") as out: 
+    out.write(str(at_calculator.calculate_at(dna))) 
+
+
+
+#Notice how we need to call modulename.functionname() i.e. at_calculator.calculate_at() . Annoying, but good because it 
+#means each module has its own namespace - authors (including you!) don't have to worry about what names might have been 
+#used by other people. #For long names this gets anoying:
+
+import some_incredibly_long_awkward_to_type_module_name
+some_incredibly_long_awkward_to_type_module_name.foo()
+
+#We can get around it by using an alias:
+
+import some_incredibly_long_awkward_to_type_module_name as bob
+bob.foo()
+
+#If we're really sure that names don't clash we can import the function directly:
+
+from at_calculator import calculate_at
+calculate_at("ACTGATCGTCGAT")
+
+#If we know that names do clash, we can import functions with aliases:
+
+from at_calculator import calculate_at as at1
+from another_package import calculate_at as at2
+
+
+#Python's docstring:  single string literal as the first line of a module or function, triple quotes let us 
+#run over multiple lines.
+
+"""Functions for calculating metrics of DNA sequences"""
+
+from __future__ import division 
+
+def calculate_at(dna): 
+    """Return the AT content of the argument. 
+    Only works for uppercase DNA sequences
+    """
+    
+    length = len(dna)
+    a_count = dna.count('A') 
+    t_count = dna.count('T') 
+    at_content = (a_count + t_count) / length 
+    return at_content 
+    
+#Sometimes we want to have a Python file that can act either as a module, or as a program:
+# - if there's currently only a single program that uses the module
+# - if it's handy to have a small demonstration program for the module
+# - to include a program which tests the module
+
+#A Python file can access its own name using the __name__ variable.
+# - If the file is being run as a program, then the __name__ variable is __main__
+# - If the file is being imported, then the __name__ variable is the name of the file minus .py
+
+if __name__ == "__main__":
+    print("I am being run as a script!")   
+    # demo program code goes here
+    
+    
+#for example:    
+
+from __future__ import division 
+
+# calculate the AT content 
+def calculate_at(dna): 
+    length = len(dna) 
+    a_count = dna.count('A') 
+    t_count = dna.count('T') 
+    at_content = (a_count + t_count) / length 
+    return at_content 
+
+if __name__ == "__main__": 
+    dna = raw_input("Enter a DNA sequence:\n").rstrip("\n") 
+    print("AT content is " + str(calculate_at(dna))) 
+    
+
+#Some modules require other code:
+
+def translate_dna(dna): 
+    """Return the translation of a DNA sequence"""
+
+    # define a dict to hold the genetic code 
+    gencode = { 
+        'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M', 
+        'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T', 
+        'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K', 
+        'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R', 
+        'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L', 
+        'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P', 
+        'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q', 
+        'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R', 
+        'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V', 
+        'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A', 
+        'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E', 
+        'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G', 
+        'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S', 
+        'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L', 
+        'TAC':'Y', 'TAT':'Y', 'TAA':'_', 'TAG':'_', 
+        'TGC':'C', 'TGT':'C', 'TGA':'_', 'TGG':'W'} 
+
+    last_codon_start = len(dna) - 2 
+    protein = "" 
+
+    # for each codon in the dna, append an amino acid to the protein
+    for start in range(0,last_codon_start,3): 
+        codon = dna[start:start+3] 
+        amino_acid = gencode.get(codon.upper(), 'X') 
+        protein = protein + amino_acid
+
+    return protein 
+    
+#Inefficient - builds dic each time the funciton is used
+#instead, we can define the variant outside the function within the module (initialize)
+#this will be run when the module is imported
+
+# define a dict to hold the genetic code 
+gencode = { 
+        'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M', 
+        'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T', 
+        'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K', 
+        'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R', 
+        'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L', 
+        'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P', 
+        'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q', 
+        'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R', 
+        'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V', 
+        'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A', 
+        'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E', 
+        'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G', 
+        'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S', 
+        'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L', 
+        'TAC':'Y', 'TAT':'Y', 'TAA':'_', 'TAG':'_', 
+        'TGC':'C', 'TGT':'C', 'TGA':'_', 'TGG':'W'} 
+
+def translate_dna(dna): 
+    last_codon_start = len(dna) - 2 
+    protein = "" 
+
+    # for each codon in the dna, append an amino acid to the protein
+    for start in range(0,last_codon_start,3): 
+        codon = dna[start:start+3] 
+        amino_acid = gencode.get(codon.upper(), 'X') 
+        protein = protein + amino_acid
+
+    return protein 
+    
+#the gencode dict here could be manually accessed using module.dict
+#We can imagine more sophisticated solutions here e.g. build the dict when first needed then reuse.
+
+
+#A package gathers together related useful modules, just like a module gathers together related useful functions/classes. 
+#Also, we need to build packages if we want to distribute code, even if it's just one module. 
+#To make a package we create a folder with the package name, and add a special file called __init__.py inside it:
+
+dnatools/
+    __init__.py
+    dna_translation.py
+    
+import dnatools.dna_translation
+print(dnatools.dna_translation.translate_dna("ACTGTGAC"))
+
+#Distributing a package:
+# - to distribute a program that uses built in modules, just send the .py file
+# - to distribute a program that uses third party modules, send the .py file and tell the end use what modules to install
+# - to distribute a program plus separate module, send a zipped folder
+# - for anything more complicated, use pip
