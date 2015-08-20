@@ -220,38 +220,13 @@ def main(date_of_miseq, meyer, option, RG_file):
 		#call("mkdir "+ mapdmg_out,shell=True)	
 		#call("mapDamage map -i " + sample + ".bam -d " + mapdmg_out +" -r " +reference +" -t sample",shell=True)
 		
-		#sort this bam
-		call("samtools sort " + sample + ".bam " + sample + "_sort",shell=True)
-	
-		#remove duplicates from the sorted bam
-		call("samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam", shell=True)
-	
-		#remove the "sorted with duplicates" bam
-		call("rm " + sample + "_sort.bam",shell=True)
-
-		#make a copy of the samtools flagstat
-		call("samtools flagstat " + sample + "_rmdup.bam > " + sample + "_flagstat.txt",shell=True)
-
-		#remove unaligned reads from this bam
-		call("samtools view -b -F 4 " + sample + "_rmdup.bam > " + sample + "_rmdup_only_aligned.bam",shell=True)
-
-		#produce q25 bams
-		call("samtools view -b -q25 " + sample + "_rmdup_only_aligned.bam >" + sample + "_q25.bam",shell=True)
-
-		#sort this bam
-       		call("samtools sort " + sample + "_q25.bam " + sample + "_q25_sort",shell=True)
-
-       		#remove duplicates from the sorted bam
-       		call("samtools rmdup -s " + sample + "_q25_sort.bam " + sample + "_q25_rmdup.bam", shell=True)
-
-       		#remove the "sorted with duplicates" bam
-       		call("rm " + sample + "_q25_sort.bam",shell=True)
-
-       		#make a copy of the samtools flagstat
-       		call("samtools flagstat " + sample + "_q25_rmdup.bam > " + sample + "_q25_flagstat.txt",shell=True)
-
+		#testing a function here, to process a bam to a q25 version
+		process_bam(sample)
+		
 		#get number of reads aligned without rmdup
 		raw_reads_aligned = subprocess.check_output("samtools flagstat " + sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
+		
+	
 		summary.append(raw_reads_aligned)
 
 		#get %age raw alignment
@@ -324,5 +299,38 @@ def main(date_of_miseq, meyer, option, RG_file):
 	call("tail -n " + str(number_of_samples) "output_summary | sort | cat header.txt - > tmp; mv tmp " + output_summary ";rm header.txt tmp",shell=True)
 
 	call("mv " + output_summary + " " + out_dir,shell=True)
+
+def process_bam(sample_name):
+		
+	#sort this bam
+	call("samtools sort " + sample_name + ".bam " + sample_name + "_sort",shell=True)
+	
+	#remove duplicates from the sorted bam
+	call("samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam", shell=True)
+	
+	#remove the "sorted with duplicates" bam
+	call("rm " + sample_name + "_sort.bam",shell=True)
+
+	#make a copy of the samtools flagstat
+	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_flagstat.txt",shell=True)
+
+	#remove unaligned reads from this bam
+	call("samtools view -b -F 4 " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup_only_aligned.bam",shell=True)
+
+	#produce q25 bams
+	call("samtools view -b -q25 " + sample_name + "_rmdup_only_aligned.bam >" + sample_name + "_q25.bam",shell=True)
+
+	#sort this bam
+       	call("samtools sort " + sample_name + "_q25.bam " + sample_name + "_q25_sort",shell=True)
+
+       	#remove duplicates from the sorted bam
+       	call("samtools rmdup -s " + sample_name + "_q25_sort.bam " + sample_name + "_q25_rmdup.bam", shell=True)
+
+       	#remove the "sorted with duplicates" bam
+       	call("rm " + sample_name + "_q25_sort.bam",shell=True)
+
+      	#make a copy of the samtools flagstat
+      	call("samtools flagstat " + sample_name + "_q25_rmdup.bam > " + sample_name + "_q25_flagstat.txt",shell=True)
+
 
 main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
