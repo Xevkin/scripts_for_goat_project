@@ -268,3 +268,15 @@ for seq in sequences:
         print('skipping invalid sequence '+ seq) 
         
 #Now we will only catch AmbiguousBaseError, any other exception can be dealt with separately.
+
+#can put exception handling in the constructor of classes
+
+
+
+#Session 8 - Packaging and Distribution
+#packages are objects in python
+
+import random
+
+#we can find where the object is:
+random.__file__
