@@ -68,13 +68,13 @@ def main(date_of_miseq, meyer, option, RG_file):
 		print "Sheep alignment selected."
 		reference = "~/goat/miseq/data/reference_genomes/sheep_oviAri3/oviAri3.fa" 
 
-	#if option is mit, then several changes need to occur
+	#define default cut_adapt and fastq screen
 
 	cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
 
 	fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
-
-	#now change variables if the mitochondrial option has been selected
+	
+	#if option is mit, then several changes need to occur
 
 	if (option == "mit"):
 
