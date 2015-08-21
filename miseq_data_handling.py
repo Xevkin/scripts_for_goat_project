@@ -59,31 +59,23 @@ def main(date_of_miseq, meyer, option, RG_file):
 	
 		ｍａｓｔｅｒ＿ｌｉｓｔ　＝　ｇｅｔ＿ｓｕｍｍａｒｙ＿ｉｎｆｏ（ｍａｓｔｅｒ＿ｌｉｓｔ，　ｓａｍｐｌｅ）
 	
+	call("mkdir trimmed_fastq_files_and_logs",shell=True)
+	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
 		
+	ｆｏｒ　ｓａｍｐｌｅ　ｉｎ　ｓａｍｐｌｅ＿ｌｉｓｔ：
+	
 		#clean up files
 		call("gzip "+ sample + "*",shell=True)
 	
 		#going to make an output directory for each sample
 		#then move all produced files to this directory
 		call("mkdir " + out_dir + sample,shell=True)
-		call("mkdir trimmed_fastq_files_and_logs",shell=True)
-		call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
-		call("mv *.bam* *.idx* *flagstat* " + out_dir + sample,shell=True)
+		call("mv *" + sample +＂*.bam*　＂+ sample + "*.idx* "+ sample＋　"*flagstat* " + out_dir + sample,shell=True)
 
 	#remove all .sai files
 	call("rm *sai*",shell=True)
 	call("mv trimmed_fastq_files_and_logs/ " + out_dir,shell=True)
-	
-	print "Here a list of the files which failed:"
 
-	print failures
-
-	with open("failures.txt", "w+") as f:
-		import datetime 
-		a = datetime.datetime.now()
-		f.write(a)
-		map(lambda x: f.write(x), failures) 
-		
 	output_summary = date_of_miseq + "_summary.table"
 	
 	#print summary stats
