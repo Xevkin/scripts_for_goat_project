@@ -26,22 +26,21 @@ import sys
 #we will use this later to check if the input files actually exist
 import os
 
+#failures list will carry any fasta files which are not in the directory when the script loop reaches them
+failures = []
+
 def main(date_of_miseq, meyer, option, RG_file):
 	#take all .fastq.gz files in current directory; print them
 
 	files = []
 
-	for file in os.listdir("."):
-
-        	if file.endswith(".fastq.gz"):
-
-                	files.append(file)
+	files = [file for file in os.listdir(".") if file.endswith(".fastq.gz")] 
+	
 	print "fastq.gz files in current directory:"
-	for file in files:
-		print file
+	
+	print map(lambda x : x ,files)
 
 	#variables will be initialized here so they can be modified by options 
-
 
 	#reference genomes
 	reference = "~/goat/miseq/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta"
@@ -93,34 +92,20 @@ def main(date_of_miseq, meyer, option, RG_file):
 	master_list = []
 	master_list.append(["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"])
 
-	#create list that will carry any lines in the file which fail at any stage
-	failures = []
-
-
 	#cycle through each line in the input file
 	for file in files:
 	
 		current_file = file.strip()
-		#if the line in the file is not a .fastq.gz, report an error and skip to next one
-		#record those which were not successful
 
-		if not current_file.endswith(".fastq.gz"):
-
-			print current_file + " is not a fastq.gz file."
-	
-			failures.append(current_file)
-	
+		#need to check if the current file still exists
+		if not os.path.isfile(file):
+			
+			print "This file is currently not in the directory"
+			
+			failures.append(file)
+			
 			continue
-	
-		#check if file actually exists in this directory
-		#if not print error message and record it
-		if not os.path.isfile(current_file):
 
-			print current_file + " is not in the current directory."
-			failures.append(current_file)
-
-			continue
-	
 		#using call([]) to invoke system
 		#cutadapt with the adaptor already defined
 		#minimum overlap before trimming (-O 1) and minimum sequence length before trimming (-m 30) are also preset
@@ -215,18 +200,12 @@ def main(date_of_miseq, meyer, option, RG_file):
 		#at this stage we also add read groups
 		call("bwa samse -r \'@RG\t" + RG + "\t\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
 			
-		#Run mapDamage on  bam to check degradation patterns 
-		#mapdmg_out = out_dir + "mapDamage/" + sample
-		#call("mkdir "+ mapdmg_out,shell=True)	
-		#call("mapDamage map -i " + sample + ".bam -d " + mapdmg_out +" -r " +reference +" -t sample",shell=True)
-		
 		#testing a function here, to process a bam to a q25 version
 		process_bam(sample)
 		
 		#get number of reads aligned without rmdup
 		raw_reads_aligned = subprocess.check_output("samtools flagstat " + sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
 		
-	
 		summary.append(raw_reads_aligned)
 
 		#get %age raw alignment
@@ -280,10 +259,17 @@ def main(date_of_miseq, meyer, option, RG_file):
 	#remove all .sai files
 	call("rm *sai*",shell=True)
 	call("mv trimmed_fastq_files_and_logs/ " + out_dir,shell=True)
+	
 	print "Here a list of the files which failed:"
 
 	print failures
 
+	with open("failures.txt", "w+") as f:
+		import datetime 
+		a = datetime.datetime.now()
+		f.write(a)
+		map(lambda x: f.write(x), failures) 
+		
 	output_summary = date_of_miseq + "_summary.table"
 	
 	#print summary stats
