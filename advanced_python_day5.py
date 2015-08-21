@@ -190,6 +190,142 @@ for chunk in frequent_chunks:
         
 # loops, best of 3: 520 ms per loop
 
-Why did this not work? Probably because the line
-if chunk in motifs:
-doesn't actually get execute that often:
+#Why did this not work? Probably because the line
+#if chunk in motifs:
+#doesn't actually get execute that often (maybe 600 times).
+
+#cProfile is a built in module for profiling functions. 
+
+import cProfile 
+
+# we have to turn the code into a function so we can pass its name to run()
+def classify_chunks():
+    frequent_chunks = [] 
+    for start in range(len(dna) - 3): 
+        chunk = dna[start:start + 4] 
+        if dna.count(chunk) > 50: 
+            frequent_chunks.append(chunk) 
+
+    for chunk in frequent_chunks: 
+        if chunk in motifs: 
+            print(chunk + " is frequent and interesting") 
+        else: 
+            print(chunk + " is frequent but not interesting")
+
+cProfile.run("classify_chunks()")
+
+#cProfile gives us tabular output:
+
+#ncalls, which tells us how many times the function was called
+#tottime, which tells us the total amount of time that was spent in that function (not including sub functions)
+#percall, which tells us the amount of time that was spent in that function (not including sub functions) each time it was called
+#cumtime, which is like tottime but does include sub functions
+#another percall, which is like the first one except that it does include sub functions
+#filename, which tells us the filename, line number, and name of the function or method
+
+#cProfile only measures function calls, i.e. not stuff like
+dna[start:start + 4] 
+dna.count(chunk) > 50
+chunk in motifs
+
+#To use it well, we need structured code e.g. if we split our code into two functions:
+def get_frequent_chunks(dna): 
+    frequent_chunks = [] 
+    for start in range(len(dna) - 3): 
+        chunk = dna[start:start + 4] 
+        if dna.count(chunk) > 50: 
+            frequent_chunks.append(chunk) 
+    return frequent_chunks 
+ 
+def print_chunks(chunks): 
+    for chunk in chunks: 
+        if chunk in motifs: 
+            print(chunk + " is frequent and interesting") 
+        else: 
+            print(chunk + " is frequent but not interesting") 
+            
+def classify_chunks(): 
+    frequent_chunks = get_frequent_chunks(dna) 
+    print_chunks(frequent_chunks) 
+
+cProfile.run("classify_chunks()") 
+
+#ncalls tottime percall   cumtime   percall filename:lineno(function) 
+# 1    0.005    0.005      0.619     0.619  time_profile.py:14(get_frequent_chunks)
+# 1    0.004    0.004      0.004     0.004  time_profile.py:22(print_chunks)
+
+
+#Profiling with line_profiler
+
+#line_profiler is a third part module that you have to install separately:
+pip install line_profiler
+
+#It measures execution time per line. To use it we add a @profile decorator to the function and run from the command line with:
+kernprof -l -v slowfast.py
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    11                                           @profile
+    12                                           def classify_chunks():
+    13         1            3      3.0      0.0      frequent_chunks = [] 
+    14      9998         8629      0.9      1.4      for start in range(len(dna) - 3): 
+    15      9997        10739      1.1      1.7          chunk = dna[start:start + 4] 
+    16      9997       601591     60.2     96.1          if dna.count(chunk) > 50: 
+    17       318          394      1.2      0.1              frequent_chunks.append(chunk) 
+    18                                           
+    19       319          481      1.5      0.1      for chunk in frequent_chunks: 
+    20       318         1043      3.3      0.2          if chunk in motifs: 
+    21       109         1030      9.4      0.2              print(chunk + " is frequent and interesting") 
+    22                                                   else: 
+    23       209         2073      9.9      0.3              print(chunk + " is frequent but not interesting")
+
+#"if dna.count(chunk) > 50" uses 96% of the time. Let's switch to a dict (rather than using count repeatidly) and keep a tally:
+
+def classify_chunks(): 
+    chunk_count = {}
+    for start in range(len(dna) - 3):
+        chunk = dna[start:start + 4]
+        current_count = chunk_count.get(chunk, 0)
+        new_count = current_count + 1 
+        chunk_count[chunk] = new_count
+
+    for chunk, count in chunk_count.items():
+        if count > 50: 
+            if chunk in motifs:
+                print(chunk + " is frequent and interesting")
+            else:
+                print(chunk + " is frequent but not interesting")
+                
+Total time: 0.056549 s
+File: chunks.py
+Function: classify_chunks at line 11
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    11                                           @profile
+    12                                           def classify_chunks(): 
+    13         1            2      2.0      0.0      chunk_count = {}
+    14      9998         9893      1.0     17.5      for start in range(len(dna) - 3):
+    15      9997        11790      1.2     20.8          chunk = dna[start:start + 4]
+    16      9997        12889      1.3     22.8          current_count = chunk_count.get(chunk, 0)
+    17      9997        10030      1.0     17.7          new_count = current_count + 1 
+    18      9997        10919      1.1     19.3          chunk_count[chunk] = new_count
+    19                                           
+    20       257          341      1.3      0.6      for chunk, count in chunk_count.items():
+    21       256          349      1.4      0.6          if count > 50: 
+    22         9           35      3.9      0.1              if chunk in motifs:
+    23         2          152     76.0      0.3                  print(chunk + " is frequent and interesting")
+    24                                                       else:
+    25         7          149     21.3      0.3                  print(chunk + " is frequent but not interesting")
+    
+    
+#File and network IO is slow, so minimize it
+#Existing modules are likely to be fast, so use them (scipy/numpy/pandas)
+#Avoid calculating the same thing multiple times
+#Functional structures (maps/comprehensions) tend to be faster than loops
+#Pick data structures with the properties you want (list vs. set)
+
+#and some advanced things to know about:
+#write inline code in faster languages
+#use parallel code
+#let a database do the heavy lifting if you can
