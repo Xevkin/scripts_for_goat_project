@@ -152,8 +152,7 @@ def set_up(date_of_miseq, meyer, option):
 	RG_file = RG_file.rstrip("\n")
 
 	#initialize a masterlist that will carry summary stats of each sample
-	master_list = []
-	master_list.append([["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"]])
+	master_list = [["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"]]
 
 	sample_list = []
 	#cycle through each line in the input file, gunzip
@@ -291,7 +290,7 @@ def　get_summary_info(master_list, current_sample)：
 	#raw reads
 	raw_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
 	
-	to_add．ａｐｐｅｎｄ（raw_read_number）
+	to_add.append(raw_read_number）
 	
 	#grab summary statistics of trimmed file
 	cmd = "wc -l " + trimmed_fastq + "| cut -f1 -d' '"
@@ -326,12 +325,10 @@ def　get_summary_info(master_list, current_sample)：
 	for i in master_list:
 		
 		if (i[0] == current_sample):
-			
-			i.ｅｘｔｅｎｄ(ｔｏ＿ａｄｄ)
+			i.extend(to_add)
 	
 			break
-		
-	ｒｅｔｕｒｎ　ｍａｓｔｅｒ＿ｌｉｓｔ
-
+	
+	return master_list
 	
 main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
