@@ -52,41 +52,15 @@ def main(date_of_miseq, meyer, option, RG_file):
 	#we can now move on to the next step: alignment
 	
 	#going to align to CHIR1.0, as that what was used for AdaptMap
-	print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
-	call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)	
 	
-	map(lambda sample :align(RG_file)
-		#Obtain the appropriate read group from the supplied read group file
-		with open(RG_file) as file:
-
-			for line in file:
-
-				split_line = line.split("\t")
-			
-				if (sample == split_line[0]):
-
-					RG = split_line[1].rstrip("\n")
-					print RG
-					#check if RG is an empty string
-					if not RG:
-		
-						print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree" 
-						failures.append(current_file)
+	map(lambda sample :align(sample,ＲＧ＿ｆｉｌｅ， alignment_option, reference), sample_list)
 	
-					else:
+	#testing a function here, to process a bam to a q25 version
+	map(process_bam, sample_list)
 		
-						print "Reads groups being used are:"
-                                		print RG
-
-		#produce bam with all reads
-		#at this stage we also add read groups
-		call("bwa samse -r \'@RG\t" + RG + "\t\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
-			
-		#testing a function here, to process a bam to a q25 version
-		process_bam(sample)
-		
-		#get number of reads aligned without rmdup
-		raw_reads_aligned = subprocess.check_output("samtools flagstat " + sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
+	ｇｅｔ
+	#get number of reads aligned without rmdup
+	raw_reads_aligned = subprocess.check_output("samtools flagstat " + sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
 		
 		summary.append(raw_reads_aligned)
 
@@ -110,12 +84,6 @@ def main(date_of_miseq, meyer, option, RG_file):
 		fixed_percentage = ((float(q25_reads_aligned)) * 100)/ float(trimmed_read_number)
 		summary.append(fixed_percentage)
 		
-		#index the q25 bam
-		call("samtools index "+ sample + "_q25_rmdup.bam",shell=True)
-	
-		#get idx stats
-		call("samtools idxstats "+ sample + "_q25_rmdup.bam > "  + sample + ".idx",shell=True)
-	
 		#clean up files
 		call("gzip "+ sample + "*",shell=True)
 	
@@ -333,8 +301,6 @@ def trim_fastq(current_sample, cut_adapt, master_list, out_dir):
        	
 def run_fastq_screen(current_sample, out_dir, fastq_screen_option):
 	
-	
-	
 	if current_file_absent(current_sample+"_trimmed.fastq" , "trimming fastq"):
 		
 		print "Sample "＋current_sample＋"is not present during fastq screen"
@@ -346,7 +312,41 @@ def run_fastq_screen(current_sample, out_dir, fastq_screen_option):
 	call("mkdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
 	
 	call(fastq_screen + current_sample + " " + current_sample + "_trimmed.fastq --outdir " + out_dir + "fastq_screen/" + sample, shell=True)
-	
+
+
+def align(sample, RG_file, alignment_option, reference):
+    
+    trimmed_fastq = sample + "_trimmed.fastq"
+
+    print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
+    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)
+    
+    with open(RG_file) as file:
+
+	for line in file:
+
+		split_line = line.split("\t")
+			
+			if (sample == split_line[0]):
+
+				RG = split_line[1].rstrip("\n")
+				print RG
+				
+				#check if RG is an empty string
+				if not RG:
+		
+					print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree" 
+			                          #should probably do something here is there are no read groups
+			                break
+			        else:
+		
+					print "Reads groups being used are:"
+                                	print RG
+                                		
+        #produce bam with all reads
+	#at this stage we also add read groups
+	call("bwa samse -r \'@RG\t" + RG + "\t\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
+
 
 def process_bam(sample_name):
 		
@@ -379,6 +379,12 @@ def process_bam(sample_name):
 
       	#make a copy of the samtools flagstat
       	call("samtools flagstat " + sample_name + "_q25_rmdup.bam > " + sample_name + "_q25_flagstat.txt",shell=True)
+      	
+      	#index the q25 bam
+	call("samtools index "+ sample_name + "_q25_rmdup.bam",shell=True)
+	
+	#get idx stats
+	call("samtools idxstats "+ sample_name + "_q25_rmdup.bam > "  + sample_name + ".idx",shell=True)
 
 
 main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
