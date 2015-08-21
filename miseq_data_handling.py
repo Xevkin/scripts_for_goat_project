@@ -26,9 +26,6 @@ import sys
 #we will use this later to check if the input files actually exist
 import os
 
-#failures list will carry any fasta files which are not in the directory when the script loop reaches them
-failures = []
-
 def main(date_of_miseq, meyer, option, RG_file):
 	
 	#run the set up function.#set up will create some output directories
@@ -42,7 +39,7 @@ def main(date_of_miseq, meyer, option, RG_file):
 	
 	for sample in sample_list:
 		
-		master_list  = trim_fastq(sample, cut_adapt, master_list, out_dir)
+		trim_fastq(sample, cut_adapt, out_dir)
 	
 	#run fastq screen on the samples
 
@@ -58,31 +55,10 @@ def main(date_of_miseq, meyer, option, RG_file):
 	#testing a function here, to process a bam to a q25 version
 	map(process_bam, sample_list)
 		
-	ｇｅｔ
-	#get number of reads aligned without rmdup
-	raw_reads_aligned = subprocess.check_output("samtools flagstat " + sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
-		
-		summary.append(raw_reads_aligned)
-
-		#get %age raw alignment
-		raw_alignment_percentage = ((float(raw_reads_aligned)) * 100)/ float(trimmed_read_number)
-		summary.append(raw_alignment_percentage)
-
-		#get reads that aligned following rmdup
-		rmdup_reads_aligned = subprocess.check_output("more " + sample + "_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
-		summary.append(rmdup_reads_aligned)
-
-  		#capture the alignment percentage of the flagstat file, both no q and q30
-		raw_alignment = subprocess.check_output("more " + sample + "_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
-		summary.append(raw_alignment)
-
-		#get q25 reads aligned
-		q25_reads_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
-       		summary.append(q25_reads_aligned)
-
-		#q25_percent_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
-		fixed_percentage = ((float(q25_reads_aligned)) * 100)/ float(trimmed_read_number)
-		summary.append(fixed_percentage)
+	ｆｏｒ　ｓａｍｐｌｅ　ｉｎ　ｓａｍｐｌｅｓ：
+	
+		ｍａｓｔｅｒ＿ｌｉｓｔ　＝　ｇｅｔ＿ｓｕｍｍａｒｙ＿ｉｎｆｏ（ｍａｓｔｅｒ＿ｌｉｓｔ，　ｓａｍｐｌｅ）
+	
 		
 		#clean up files
 		call("gzip "+ sample + "*",shell=True)
@@ -92,18 +68,6 @@ def main(date_of_miseq, meyer, option, RG_file):
 		call("mkdir " + out_dir + sample,shell=True)
 		call("mkdir trimmed_fastq_files_and_logs",shell=True)
 		call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
-	
-		#add sample summary to the masterlist
-		fixed_summary = []
-		for entry in summary:
-	
-			entry = str(entry).rstrip("\n")
-			fixed_summary.append(entry)
-	
-		print fixed_summary
-
-		master_list.append(fixed_summary)
-
 		call("mv *.bam* *.idx* *flagstat* " + out_dir + sample,shell=True)
 
 	#remove all .sai files
@@ -221,75 +185,26 @@ def set_up(date_of_miseq, meyer, option):
 		
 			master_list.append([i])
 
+	#failures list will carry any fasta files which are not in the directory when the script loop reaches them
+	failures = []
+
 	return files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen
 
 
-def current_file_absent(file, current_step):
-	
-	if not os.path.isfile(file):
-			
-			print "This file is currently not in the directory"
-			
-			failures.append(file + " at the " + current_step)
-			
-			return "continue"
-	
-	
-
-def trim_fastq(current_sample, cut_adapt, master_list, out_dir):
+def trim_fastq(current_sample, cut_adapt, out_dir):
 	
 	print "Current samples is: " + sample
 	
 	unzipped_fastq = current_sample＋".fastq"
 	
-	#check if the current file exists, and if it does not, print an error and move onto the next file
-	if current_file_absent(unzipped_fastq , "trimming fastq"):
-		
-		continue
-
 	#Get number of lines (and from that reads - divide by four) from raw fastq
 	trimmed_fastq = current_sample + "_trimmed" + ".fastq" 
 	cmd = "wc -l " + unzipped_fastq + " | cut -f1 -d' '" 
 	
-	#need to get correct list in the masterlist
-	for i in master_list:
-		
-		if (i[0] == current_sample):
-			
-			i.summary.append(subprocess.check_output(cmd,shell=True))
-			
-			break
-	
-	#call(cmd,shell=True)
-	
-	#raw reads
-	raw_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
-		
-	for i in master_list:
-		
-		if (i[0] == current_sample):
-			
-			i.append(raw_read_number)
-	
-			break
 	
 	#cut raw fastq files
 	call(cut_adapt + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
 	
-	#grab summary statistics of trimmed file
-	cmd = "wc -l " + trimmed_fastq + "| cut -f1 -d' '"
-       	trimmed_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
-       	
-       	for i in master_list:
-		
-		if (i[0] == current_sample):
-			
-			i.append(str(trimmed_read_number))
-	
-			break
-       	
-       	#summary.append(subprocess.check_output(cmd,shell=True))
-       	
        	#run fastqc on both the un/trimmed fastq files
 	#first we want to create an output directory if there is none to begin with
 	call("mkdir " +  out_dir + "fastqc/", shell=True)
@@ -300,13 +215,7 @@ def trim_fastq(current_sample, cut_adapt, master_list, out_dir):
        	return master_list
        	
 def run_fastq_screen(current_sample, out_dir, fastq_screen_option):
-	
-	if current_file_absent(current_sample+"_trimmed.fastq" , "trimming fastq"):
-		
-		print "Sample "＋current_sample＋"is not present during fastq screen"
-		
-		continue
-	
+
 	call("mkdir " + out_dir + "fastq_screen/",shell=True)
 	
 	call("mkdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
@@ -315,7 +224,7 @@ def run_fastq_screen(current_sample, out_dir, fastq_screen_option):
 
 
 def align(sample, RG_file, alignment_option, reference):
-    
+
     trimmed_fastq = sample + "_trimmed.fastq"
 
     print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
@@ -386,5 +295,54 @@ def process_bam(sample_name):
 	#get idx stats
 	call("samtools idxstats "+ sample_name + "_q25_rmdup.bam > "  + sample_name + ".idx",shell=True)
 
+def　get_summary_info(master_list, current_sample)：
 
+	to_add　＝［］
+	
+	#raw reads
+	raw_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
+	
+	to_add．ａｐｐｅｎｄ（raw_read_number）
+	
+	#grab summary statistics of trimmed file
+	cmd = "wc -l " + trimmed_fastq + "| cut -f1 -d' '"
+       	trimmed_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
+       	raw_read_number.append(subprocess.check_output(ｓｔｒ（cmd）,shell=True))
+       	
+       	#get number of reads aligned without rmdup
+	raw_reads_aligned = subprocess.check_output("samtools flagstat " + sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
+	to_add.append(raw_reads_aligned)
+
+	#get %age raw alignment
+	raw_alignment_percentage = ((float(raw_reads_aligned)) * 100)/ float(trimmed_read_number)
+	to_add.append(ｓｔｒ（raw_alignment_percentage)）
+
+	#get reads that aligned following rmdup
+	rmdup_reads_aligned = subprocess.check_output("more " + sample + "_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
+	to_add.append(rmdup_reads_aligned)
+
+  	#capture the alignment percentage of the flagstat file, both no q and q30
+	raw_alignment = subprocess.check_output("more " + sample + "_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
+	to_add.append(raw_alignment)
+
+	#get q25 reads aligned
+	q25_reads_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
+       	to_add.append(q25_reads_aligned)
+
+	#q25_percent_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
+	fixed_percentage = ｓｔｒ（((float(q25_reads_aligned)) * 100)/ float(trimmed_read_number)）
+	to_add.append(fixed_percentage)
+
+	
+	for i in master_list:
+		
+		if (i[0] == current_sample):
+			
+			i.ｅｘｔｅｎｄ(ｔｏ＿ａｄｄ)
+	
+			break
+		
+	ｒｅｔｕｒｎ　ｍａｓｔｅｒ＿ｌｉｓｔ
+
+	
 main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
