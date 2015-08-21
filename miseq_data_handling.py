@@ -177,9 +177,6 @@ def set_up(date_of_miseq, meyer, option):
 		
 			master_list.append([i])
 
-	#failures list will carry any fasta files which are not in the directory when the script loop reaches them
-	failures = []
-
 	return files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen
 
 
