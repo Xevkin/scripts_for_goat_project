@@ -4,7 +4,7 @@ Script is run in a directory with bam files to be aligned to the goat genome
 Bams will be trimmed, quality metrics obtained, screened using fastq screen
 
 Also need to supply a date for the Miseq run - will automatically make results file
-python script <date_of_miseq> <meyer> <option> <read group file>
+python script <date_of_miseq> <meyer> <species> <mit> <read group file>
 
 read group file needs to be in the follow format: 
 Sample_name\tRGs_to_add (in following format- ID:X\tSM:X\tPL:X\tLB:X)
@@ -26,12 +26,32 @@ import sys
 #we will use this later to check if the input files actually exist
 import os
 
-def main(date_of_miseq, meyer, option, RG_file):
+#dictionary of species names and genome paths
+nuclear_genomes = {
+
+	"goat" : "~/goat/miseq/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta",
+
+	"sheep" : "~/goat/miseq/data/reference_genomes/sheep_oviAri3/oviAri3.fa",
+
+	"cow" : "~/goat/miseq/data/reference_genomes/cow_bosTau8/bosTau8.fa",
+
+	"dog" : "~/goat/miseq/data/reference_genomes/canFam3.fa"
+}
+
+mitochondrial_genomes = {
+
+	"goat" : "~/goat/miseq/data/mit_genomes_fastq_screen/goat_mit/goat_mit.fasta",
+
+	"sheep" : "~/goat/miseq/data/mit_genomes_fastq_screen/sheep_mit/sheep_mit.fasta"
+
+}
+
+def main(date_of_miseq, meyer, species, mit, RG_file):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
 	
-	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, option) 
+	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, species, mit, RG_file) 
 	
 	#sample is the file root
 	#trim fastq files and produce fastqc files
@@ -49,20 +69,20 @@ def main(date_of_miseq, meyer, option, RG_file):
 	#we can now move on to the next step: alignment
 	
 	#going to align to CHIR1.0, as that what was used for AdaptMap
-	
-	map(lambda sample :align(sample,ＲＧ＿ｆｉｌｅ， alignment_option, reference), sample_list)
+
+	map(lambda sample : align(sample, RG_file, alignment_option, reference), sample_list)
 	
 	#testing a function here, to process a bam to a q25 version
 	map(process_bam, sample_list)
-		
-	ｆｏｒ　ｓａｍｐｌｅ　ｉｎ　ｓａｍｐｌｅｓ：
 	
-		ｍａｓｔｅｒ＿ｌｉｓｔ　＝　ｇｅｔ＿ｓｕｍｍａｒｙ＿ｉｎｆｏ（ｍａｓｔｅｒ＿ｌｉｓｔ，　ｓａｍｐｌｅ）
+	for sample in sample_list:
+
+		master_list = get_summary_info(master_list, sample)
 	
 	call("mkdir trimmed_fastq_files_and_logs",shell=True)
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
 		
-	ｆｏｒ　ｓａｍｐｌｅ　ｉｎ　ｓａｍｐｌｅ＿ｌｉｓｔ：
+	for sample in sample_list:
 	
 		#clean up files
 		call("gzip "+ sample + "*",shell=True)
@@ -70,7 +90,7 @@ def main(date_of_miseq, meyer, option, RG_file):
 		#going to make an output directory for each sample
 		#then move all produced files to this directory
 		call("mkdir " + out_dir + sample,shell=True)
-		call("mv *" + sample +＂*.bam*　＂+ sample + "*.idx* "+ sample＋　"*flagstat* " + out_dir + sample,shell=True)
+		call("mv *" + sample + " *.bam* "+ sample + "*.idx* "+ sample + "*flagstat* " + out_dir + sample,shell=True)
 
 	#remove all .sai files
 	call("rm *sai*",shell=True)
@@ -83,17 +103,19 @@ def main(date_of_miseq, meyer, option, RG_file):
 
 		writer = csv.writer(f, delimiter='\t', lineterminator='\n')
 		writer.writerows(master_list)
-	
-	number_of_samples = int(subprocess.check_output("wc -l " + output_summary,shell=True)) - 1
 
-	call("head -n1 " + output_summary "> header.txt ",shell=True)
+	call("wc -l " + output_summary,shell=True)
 	
-	call("tail -n " + str(number_of_samples) "output_summary | sort | cat header.txt - > tmp; mv tmp " + output_summary ";rm header.txt tmp",shell=True)
+	number_of_samples = (int((subprocess.check_output("wc -l " + output_summary,shell=True).split(" ")[0])) - 1)
+	
+	call("head -n1 " + output_summary + "> header.txt ",shell=True)
+	
+	call("tail -n " + str(number_of_samples) + " " + output_summary + " | sort | cat header.txt - > tmp; mv tmp " + output_summary + ";rm header.txt tmp",shell=True)
 
 	call("mv " + output_summary + " " + out_dir,shell=True)
 
 
-def set_up(date_of_miseq, meyer, option):
+def set_up(date_of_miseq, meyer, species, mit, RG_file):
 	#take all .fastq.gz files in current directory; print them
 	files = []
 
@@ -105,8 +127,33 @@ def set_up(date_of_miseq, meyer, option):
 
 	#variables will be initialized here so they can be modified by options 
 
-	#reference genomes
-	reference = "~/goat/miseq/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta"
+
+	if (mit != "yes"): 
+		
+		#reference genome to be used
+		reference = nuclear_genomes[species] 
+
+		#define default cut_adapt and fastq screen
+
+	        cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
+
+        	fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
+
+	else:
+
+		print "Mitochondrial alignment selected"
+
+		reference = mitochondrial_genomes[species]
+	
+		cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 25 "
+
+                fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf ~/goat/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
+
+
+	print "Species selected is " + species
+
+        print "Path to reference genome is " + reference
+
 
 	#Prepare output directory
 
@@ -120,33 +167,10 @@ def set_up(date_of_miseq, meyer, option):
 	alignment_option = "bwa aln -t 5 -l 1000 "  
 
 	if (meyer_input == "meyer"):
+		
 		print "Meyer option selected."
+		
 		alignment_option = "bwa aln -t 5 -l 1000 -n 0.01 -o 2 " 
-
-	#turn the reference genome path to the sheep if sheep option is selected
-	option = option.rstrip("\n").lower()
-
-	if (option == "sheep"):
-		print "Sheep alignment selected."
-		reference = "~/goat/miseq/data/reference_genomes/sheep_oviAri3/oviAri3.fa" 
-
-	#define default cut_adapt and fastq screen
-
-	cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
-
-	fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
-	
-	#if option is mit, then several changes need to occur
-
-	if (option == "mit"):
-
-		print "Mitochondrial alignment selected."
-
-		cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 25 "
-
-		reference = "~/goat/miseq/data/mit_genomes_fastq_screen/goat_mit/goat_mit.fasta"
-
-		fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf ~/goat/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
 
 	#variable for RG file
 	RG_file = RG_file.rstrip("\n")
@@ -159,8 +183,8 @@ def set_up(date_of_miseq, meyer, option):
 	for file in files:
 
 		#unzip fastq
-		call("gunzip " + current_file, shell=True)
-		current_file = current_file.split(".")[0] + ".fastq"
+		call("gunzip " + file, shell=True)
+		current_file = file.split(".")[0] + ".fastq"
 
 		#rename the file
 		#also save the current sample as a variable to be used later
@@ -181,14 +205,14 @@ def set_up(date_of_miseq, meyer, option):
 
 def trim_fastq(current_sample, cut_adapt, out_dir):
 	
-	print "Current samples is: " + sample
+	print "Current sample is: " + current_sample
 	
-	unzipped_fastq = current_sample＋".fastq"
+	unzipped_fastq = current_sample + ".fastq"
 	
 	#Get number of lines (and from that reads - divide by four) from raw fastq
 	trimmed_fastq = current_sample + "_trimmed" + ".fastq" 
-	cmd = "wc -l " + unzipped_fastq + " | cut -f1 -d' '" 
 	
+	cmd = "wc -l " + unzipped_fastq + " | cut -f1 -d' '" 
 	
 	#cut raw fastq files
 	call(cut_adapt + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
@@ -200,7 +224,6 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 	call("fastqc " + unzipped_fastq + " -o " + out_dir + "fastqc/", shell=True)
 	call("fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
        	
-       	return master_list
        	
 def run_fastq_screen(current_sample, out_dir, fastq_screen_option):
 
@@ -208,7 +231,7 @@ def run_fastq_screen(current_sample, out_dir, fastq_screen_option):
 	
 	call("mkdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
 	
-	call(fastq_screen + current_sample + " " + current_sample + "_trimmed.fastq --outdir " + out_dir + "fastq_screen/" + sample, shell=True)
+	call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.fastq --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
 
 
 def align(sample, RG_file, alignment_option, reference):
@@ -224,21 +247,21 @@ def align(sample, RG_file, alignment_option, reference):
 
 		split_line = line.split("\t")
 			
-			if (sample == split_line[0]):
+		if (sample == split_line[0]):
 
-				RG = split_line[1].rstrip("\n")
-				print RG
+			RG = split_line[1].rstrip("\n")
+			print RG
 				
-				#check if RG is an empty string
-				if not RG:
+			#check if RG is an empty string
+			if not RG:
 		
-					print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree" 
-			                          #should probably do something here is there are no read groups
-			                break
-			        else:
-		
-					print "Reads groups being used are:"
-                                	print RG
+				print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree" 
+				#should probably do something here is there are no read groups
+		                break
+		        else:
+	
+				print "Reads groups being used are:"
+                               	print RG
                                 		
         #produce bam with all reads
 	#at this stage we also add read groups
@@ -283,42 +306,50 @@ def process_bam(sample_name):
 	#get idx stats
 	call("samtools idxstats "+ sample_name + "_q25_rmdup.bam > "  + sample_name + ".idx",shell=True)
 
-def　get_summary_info(master_list, current_sample)：
 
-	to_add　＝［］
+def get_summary_info(master_list, current_sample):
+
+	to_add = []
+
+	unzipped_fastq = current_sample + ".fastq"
 	
+	trimmed_fastq = current_sample + "_trimmed.fastq"
+
+	cmd = "wc -l " + unzipped_fastq + " | cut -f1 -d' '" 
+
 	#raw reads
+	
 	raw_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
 	
-	to_add.append(raw_read_number）
+	to_add.append(raw_read_number)
 	
 	#grab summary statistics of trimmed file
 	cmd = "wc -l " + trimmed_fastq + "| cut -f1 -d' '"
        	trimmed_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
-       	raw_read_number.append(subprocess.check_output(ｓｔｒ（cmd）,shell=True))
+       	to_add.append(subprocess.check_output(str(cmd),shell=True))
        	
        	#get number of reads aligned without rmdup
-	raw_reads_aligned = subprocess.check_output("samtools flagstat " + sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
+	raw_reads_aligned = subprocess.check_output("samtools flagstat " + current_sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
 	to_add.append(raw_reads_aligned)
 
 	#get %age raw alignment
 	raw_alignment_percentage = ((float(raw_reads_aligned)) * 100)/ float(trimmed_read_number)
-	to_add.append(ｓｔｒ（raw_alignment_percentage)）
+	to_add.append(str(raw_alignment_percentage))
 
 	#get reads that aligned following rmdup
-	rmdup_reads_aligned = subprocess.check_output("more " + sample + "_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
+	rmdup_reads_aligned = subprocess.check_output("more " + current_sample + "_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
 	to_add.append(rmdup_reads_aligned)
 
   	#capture the alignment percentage of the flagstat file, both no q and q30
-	raw_alignment = subprocess.check_output("more " + sample + "_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
+	raw_alignment = subprocess.check_output("more " + current_sample + "_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
 	to_add.append(raw_alignment)
 
 	#get q25 reads aligned
-	q25_reads_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
+	q25_reads_aligned = subprocess.check_output("more " + current_sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
        	to_add.append(q25_reads_aligned)
 
 	#q25_percent_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
-	fixed_percentage = ｓｔｒ（((float(q25_reads_aligned)) * 100)/ float(trimmed_read_number)）
+	fixed_percentage = str(((float(q25_reads_aligned)) * 100)/ float(trimmed_read_number))
 	to_add.append(fixed_percentage)
 
 	
@@ -330,5 +361,11 @@ def　get_summary_info(master_list, current_sample)：
 			break
 	
 	return master_list
+
+date_of_miseq  = sys.argv[1]
+meyer = sys.argv[2]
+species = sys.argv[3]
+mit = sys.argv[4]
+RG_file  = sys.argv[5]
 	
-main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+main(date_of_miseq, meyer, species, mit, RG_file)
