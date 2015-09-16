@@ -63,7 +63,7 @@ def main(date_of_miseq, meyer, species, mit, RG_file):
 	
 	#run fastq screen on the samples
 
-	map(lambda sample: run_fastq_screen(sample, out_dir, fastq_screen_option), sample_list)
+	#map(lambda sample: run_fastq_screen(sample, out_dir, fastq_screen_option), sample_list)
 	
 	#at this stage we have our fastq files with adaptors trimmed, fastqc and fastq screen run
 	#we can now move on to the next step: alignment
@@ -90,7 +90,8 @@ def main(date_of_miseq, meyer, species, mit, RG_file):
 		#going to make an output directory for each sample
 		#then move all produced files to this directory
 		call("mkdir " + out_dir + sample,shell=True)
-		call("mv *" + sample + " *.bam* "+ sample + "*.idx* "+ sample + "*flagstat* " + out_dir + sample,shell=True)
+		print "mv *" + sample + "*.bam* "+ sample + "*.idx* "+ sample + "*flagstat* " + out_dir + sample
+		call("mv *" + sample + "*.bam* "+ sample + "*.idx* "+ sample + "*flagstat* " + out_dir + sample,shell=True)
 
 	#remove all .sai files
 	call("rm *sai*",shell=True)
@@ -195,11 +196,11 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file):
 		#current_file = split_file[0] + ".fastq"
 	
 		sample_list.append(split_file[0].rstrip("\n"))
-		
-		for i in sample_list:
-		
-			master_list.append([i])
-
+	
+	for i in sample_list:
+	
+		master_list.append([i])
+	
 	return files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen
 
 
@@ -309,6 +310,8 @@ def process_bam(sample_name):
 
 def get_summary_info(master_list, current_sample):
 
+	print "Initial master list is:"
+	print master_list
 	to_add = []
 
 	unzipped_fastq = current_sample + ".fastq"
@@ -326,40 +329,45 @@ def get_summary_info(master_list, current_sample):
 	#grab summary statistics of trimmed file
 	cmd = "wc -l " + trimmed_fastq + "| cut -f1 -d' '"
        	trimmed_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
-       	to_add.append(subprocess.check_output(str(cmd),shell=True))
+       	to_add.append(subprocess.check_output(str(cmd),shell=True).rstrip("\n"))
        	
        	#get number of reads aligned without rmdup
 	raw_reads_aligned = subprocess.check_output("samtools flagstat " + current_sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
-	to_add.append(raw_reads_aligned)
+	to_add.append(raw_reads_aligned.rstrip("\n"))
 
 	#get %age raw alignment
 	raw_alignment_percentage = ((float(raw_reads_aligned)) * 100)/ float(trimmed_read_number)
-	to_add.append(str(raw_alignment_percentage))
+	to_add.append(str(raw_alignment_percentage).rstrip("\n"))
 
 	#get reads that aligned following rmdup
 	rmdup_reads_aligned = subprocess.check_output("more " + current_sample + "_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
-	to_add.append(rmdup_reads_aligned)
+	to_add.append(rmdup_reads_aligned.rstrip("\n"))
 
   	#capture the alignment percentage of the flagstat file, both no q and q30
 	raw_alignment = subprocess.check_output("more " + current_sample + "_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
-	to_add.append(raw_alignment)
+	to_add.append(raw_alignment.rstrip("\n"))
 
 	#get q25 reads aligned
 	q25_reads_aligned = subprocess.check_output("more " + current_sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
-       	to_add.append(q25_reads_aligned)
+       	to_add.append(q25_reads_aligned.rstrip("\n"))
 
 	#q25_percent_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
 	fixed_percentage = str(((float(q25_reads_aligned)) * 100)/ float(trimmed_read_number))
-	to_add.append(fixed_percentage)
+	to_add.append(fixed_percentage.rstrip("\n"))
 
 	
 	for i in master_list:
-		
+		print "Looping through masterlist"
+		print i		
 		if (i[0] == current_sample):
 			i.extend(to_add)
-	
+			print "Extended line"
+			print i
+			#master_list[master_list.index(i)] = i
+			
 			break
-	
+	print "returning...."
+	print master_list
 	return master_list
 
 date_of_miseq  = sys.argv[1]
