@@ -1,17 +1,16 @@
-#!/usr/bin/python
-"""
+#!/usr/bin/env python
+'''
 Script is run in a directory with bam files to be aligned to the goat genome
 Bams will be trimmed, quality metrics obtained, screened using fastq screen
 
 Also need to supply a date for the Miseq run - will automatically make results file
-python script <date_of_miseq> <meyer> <species> <mit> <read group file>
+python script <date_of_miseq> <meyer> <species> <mit> <fastq_screen> <read group file>
 
 read group file needs to be in the follow format: 
 Sample_name\tRGs_to_add (in following format- ID:X\tSM:X\tPL:X\tLB:X)
 
 
-
-"""
+'''
 
 #import csv module to easily write the list of list used as a .csv file
 import csv
@@ -46,7 +45,7 @@ mitochondrial_genomes = {
 
 }
 
-def main(date_of_miseq, meyer, species, mit, RG_file):
+def main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
@@ -61,9 +60,10 @@ def main(date_of_miseq, meyer, species, mit, RG_file):
 		
 		trim_fastq(sample, cut_adapt, out_dir)
 	
-	#run fastq screen on the samples
+	#run fastq screen on the samples if input variable for fastq_screen is "yes"
+	if (fastq_screen.lower() == "yes"):
 
-	#map(lambda sample: run_fastq_screen(sample, out_dir, fastq_screen_option), sample_list)
+		map(lambda sample: run_fastq_screen(sample, out_dir, fastq_screen_option), sample_list)
 	
 	#at this stage we have our fastq files with adaptors trimmed, fastqc and fastq screen run
 	#we can now move on to the next step: alignment
@@ -177,7 +177,7 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file):
 	RG_file = RG_file.rstrip("\n")
 
 	#initialize a masterlist that will carry summary stats of each sample
-	master_list = [["Sample", "wc-l", "read_count_raw", "wc-l_trimmed", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"]]
+	master_list = [["Sample", "read_count_raw", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"]]
 
 	sample_list = []
 	#cycle through each line in the input file, gunzip
@@ -321,16 +321,17 @@ def get_summary_info(master_list, current_sample):
 	cmd = "wc -l " + unzipped_fastq + " | cut -f1 -d' '" 
 
 	#raw reads
-	
-	raw_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
+	file_length = subprocess.check_output(cmd,shell=True)
+	raw_read_number = int(file_length) / 4
 	
 	to_add.append(raw_read_number)
 	
 	#grab summary statistics of trimmed file
 	cmd = "wc -l " + trimmed_fastq + "| cut -f1 -d' '"
-       	trimmed_read_number = int(subprocess.check_output(cmd,shell=True)) / 4
-       	to_add.append(subprocess.check_output(str(cmd),shell=True).rstrip("\n"))
+       	file_length = subprocess.check_output(cmd,shell=True)
+	trimmed_read_number = int(file_length) / 4
        	
+	to_add.append(str(trimmed_read_number).rstrip("\n"))
        	#get number of reads aligned without rmdup
 	raw_reads_aligned = subprocess.check_output("samtools flagstat " + current_sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
 	to_add.append(raw_reads_aligned.rstrip("\n"))
@@ -357,23 +358,26 @@ def get_summary_info(master_list, current_sample):
 
 	
 	for i in master_list:
-		print "Looping through masterlist"
+		
 		print i		
 		if (i[0] == current_sample):
-			i.extend(to_add)
-			print "Extended line"
-			print i
-			#master_list[master_list.index(i)] = i
-			
+			i.extend(to_add)		
 			break
-	print "returning...."
-	print master_list
+		
 	return master_list
 
-date_of_miseq  = sys.argv[1]
-meyer = sys.argv[2]
-species = sys.argv[3]
-mit = sys.argv[4]
-RG_file  = sys.argv[5]
-	
-main(date_of_miseq, meyer, species, mit, RG_file)
+try:
+	date_of_miseq  = sys.argv[1]
+	meyer = sys.argv[2]
+	species = sys.argv[3]
+	mit = sys.argv[4]
+	fastq_screen = sys.argv[5]
+	RG_file  = sys.argv[6]
+except IndexError:
+	print "Incorrect number of variables have been provided"
+	print "Input variables are date_of_miseq, meyer, species, mit, fastq_screen, RG_file"
+	print "Exiting program..."
+	sys.exit()
+
+
+main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file)
