@@ -160,6 +160,10 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file):
 
 	out_dir = "~/goat/miseq/results/" + date_of_miseq +  "/"
 
+	if (species == "sheep"):
+
+		out_dir = "~/sheep/results/" + date_of_miseq +  "/" 
+
 	call("mkdir " + out_dir, shell=True)
 
 	#allow meyer option to be used
@@ -177,7 +181,7 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file):
 	RG_file = RG_file.rstrip("\n")
 
 	#initialize a masterlist that will carry summary stats of each sample
-	master_list = [["Sample", "read_count_raw", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"]]
+	master_list = [["Sample", "read_count_raw", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_remaining","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"]]
 
 	sample_list = []
 	#cycle through each line in the input file, gunzip
@@ -251,7 +255,6 @@ def align(sample, RG_file, alignment_option, reference):
 		if (sample == split_line[0]):
 
 			RG = split_line[1].rstrip("\n")
-			print RG
 				
 			#check if RG is an empty string
 			if not RG:
@@ -264,10 +267,14 @@ def align(sample, RG_file, alignment_option, reference):
 				print "Reads groups being used are:"
                                	print RG
                                 		
-        #produce bam with all reads
-	#at this stage we also add read groups
-	call("bwa samse -r \'@RG\t" + RG + "\t\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
+        call("bwa samse "  + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
 
+	#add the read groups
+	print "java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar INPUT=" + sample + ".bam OUTPUT=" + sample + "_RG.bam " + RG.rstrip("\n")
+	call("java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar INPUT=" + sample + ".bam OUTPUT=" + sample + "_RG.bam " + RG.rstrip("\n"), shell=True)
+	
+	print "mv " + sample + "_RG.bam " +  sample + ".bam "
+	call("mv " + sample + "_RG.bam " +  sample + ".bam ",shell=True)	
 
 def process_bam(sample_name):
 		
@@ -340,6 +347,9 @@ def get_summary_info(master_list, current_sample):
 	raw_alignment_percentage = ((float(raw_reads_aligned)) * 100)/ float(trimmed_read_number)
 	to_add.append(str(raw_alignment_percentage).rstrip("\n"))
 
+
+	rmdup_reads_remaining = subprocess.check_output("more " + current_sample + "_flagstat.txt | head -n1 | cut -f1 -d' '",shell=True) 
+	to_add.append(rmdup_reads_remaining.rstrip("\n"))
 	#get reads that aligned following rmdup
 	rmdup_reads_aligned = subprocess.check_output("more " + current_sample + "_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
 	to_add.append(rmdup_reads_aligned.rstrip("\n"))
