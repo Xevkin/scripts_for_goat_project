@@ -366,7 +366,7 @@ def get_summary_info(master_list, current_sample):
        	to_add.append(q25_reads_aligned.rstrip("\n"))
 
 	#q25_percent_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
-	fixed_percentage = str(((float(q25_reads_aligned)) * 100)/ float(trimmed_read_number))
+	fixed_percentage = str(((float(q25_reads_aligned)) * 100)/ float(rmdup_reads_remaining))
 	to_add.append(fixed_percentage.rstrip("\n"))
 
 	
