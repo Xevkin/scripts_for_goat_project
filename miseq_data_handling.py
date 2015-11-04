@@ -247,11 +247,11 @@ def align(sample, RG_file, alignment_option, reference):
     call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)
     
     with open(RG_file) as file:
-
+	print sample
 	for line in file:
-
+		
 		split_line = line.split("\t")
-			
+		print split_line	
 		if (sample == split_line[0]):
 
 			RG = split_line[1].rstrip("\n")
@@ -266,12 +266,15 @@ def align(sample, RG_file, alignment_option, reference):
 	
 				print "Reads groups being used are:"
                                	print RG
-                                		
-        call("bwa samse "  + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
+	file.seek(0)
 
+        print sample
+	print RG                        		
+        call("bwa samse "  + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
+	call("cp " + sample + ".bam " +sample+"_cp.bam",shell=True)
 	#add the read groups
-	print "java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar INPUT=" + sample + ".bam OUTPUT=" + sample + "_RG.bam " + RG.rstrip("\n")
-	call("java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar INPUT=" + sample + ".bam OUTPUT=" + sample + "_RG.bam " + RG.rstrip("\n"), shell=True)
+	print "java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar VALIDATION_STRINGENCY=SILENT  INPUT=" + sample + ".bam OUTPUT=" + sample + "_RG.bam " + RG.rstrip("\n")
+	call("java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar VALIDATION_STRINGENCY=SILENT  INPUT=" + sample + ".bam OUTPUT=" + sample + "_RG.bam " + RG.rstrip("\n"), shell=True)
 	
 	print "mv " + sample + "_RG.bam " +  sample + ".bam "
 	call("mv " + sample + "_RG.bam " +  sample + ".bam ",shell=True)	
