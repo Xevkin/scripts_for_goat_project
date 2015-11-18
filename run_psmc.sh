@@ -1,6 +1,9 @@
+#!/bin/sh
+#input must be in the form of an input file, then path to the folder with the bams of interest
+
 REF="/fozzie/bosgenome/bos_genome_16_2_15/bos_genome_16_2_15.fa"
 
-INPUT_FOLD="/fozzie/for_kevin/"
+INPUT_FOLD=$2
 
 #must use the correct/most recent version of samtools - bcftools will complain if otherwise
 SAMTOOLS="/home/kdaly/bin/samtools-1.2/samtools"
