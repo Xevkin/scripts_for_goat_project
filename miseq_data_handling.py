@@ -28,13 +28,13 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"goat" : "~/goat/miseq/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta",
+	"goat" : "/kendrick/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
-	"sheep" : "~/goat/miseq/data/reference_genomes/sheep_oviAri3/oviAri3.fa",
+	"sheep" : "/kendrick/reference_genomes/sheep_oviAri3/oviAri3.fa",
 
-	"cow" : "~/goat/miseq/data/reference_genomes/cow_bosTau8/bosTau8.fa",
+	"cow" : "/kendrick/reference_genomes/cow_bosTau8/bosTau8.fa",
 
-	"dog" : "~/goat/miseq/data/reference_genomes/canFam3.fa"
+	"dog" : "/kendrick/reference_genomes/canFam3.fa"
 }
 
 mitochondrial_genomes = {
