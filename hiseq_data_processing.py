@@ -44,34 +44,135 @@ def main(date_of_hiseq, meyer, species, RG_file, output_dir):
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
 	
-	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, = set_up(date_of_hiseq, meyer, species, RG_file, output_dir) 
+	files, reference, out_dir, cut_adapt, alignment_option, master_list, fastq_list, lane_list, sample_list = set_up(date_of_hiseq, meyer, species, RG_file, output_dir) 
 	
 	#sample is the file root
 	#trim fastq files and produce fastqc files
 	#the masterlist will change each time so it needs be equated to the function
 	
-	for sample in sample_list:
+	for fastq in fastq_list:
 		
-		trim_fastq(sample, cut_adapt, out_dir)
+		trim_fastq(fastq, cut_adapt, out_dir)
 	
 	#at this stage we have our fastq files with adaptors trimmed, fastqc and fastq screen run
 	#we can now move on to the next step: alignment
 	
 	#going to align to CHIR1.0, as that what was used for AdaptMap
+	#this step will align each fastq and produce raw bams with RGs
+	#they should have the same stem of the initial bam
 
-	map(lambda sample : align(sample, RG_file, alignment_option, reference), sample_list)
+	map(lambda fastq : align(fastq, RG_file, alignment_option, reference), fastq_list)
 	
-	#testing a function here, to process a bam to a q25 version
-	map(process_bam, sample_list)
+	#get sample list from the RG file
 	
+	sample_list = []
+
+        with open(RG_file) as r:
+
+                for line in in r:
+
+                        sample = line.split("\t")[3]
+
+                        if not sample in sample_list:
+
+                                sample_list.append([sample])
+
+	
+	#then cycle through the RG file and associate each lane with the correct sample
+        for sample in sample_list:
+
+		lane_list = []
+
+		with open(RG_file) as r:
+
+			for line in r:
+		
+				lane = line.split("\t")[2]
+				
+				if not lane in lane_list:
+
+					lane_list.append(lane)
+
+		sample.append(lane_list)
+
+	#for each sample, go through each lane for that sample and merge each fastq for that sample
 	for sample in sample_list:
+		
+		merged_lane_list = []
+		
+		for lane in sample[1]:
+		
+			files_in_lane = []
+
+			merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
+
+			with open(RG_file) as r:
+
+				for line in r:
+	
+					if lane == line.split("\t")[2]:
+
+						files_in_lane.append(line.split("\t")[0] + "_rmdup.bam"
+
+			for bam in files_in_lane:
+
+				merge_cmd = merge_cmd + "INPUT=" + bam + " "
+
+				sample_name = bam.split("-")[1].split("_")[0]
+ 
+			sample_lane = sample_name + "_"	+ lane + "merged"		 
+
+			merge_cmd = merge_cmd + "OUTPUT=" + sample_lane + ".bam 2>" + sample_lane + ".log"
+
+			#now merge each bam file associated with a given lane
+			call(merge_cmd,shell=True)
+
+			#flagstat the merged bam
+			call("samtools flagstat "+ sample_lane + ".bam >"+ sample_lane + "_flagstat.txt" ,shell=True)
+		
+			#remove duplicates from the merged lane bam
+			cmd = "samtools rmdup -s " + sample_lane + ".bam " + sample_lane + "_rmdup.bam"
+
+			call(cmd,shell=True)
+
+			#flagstat the rmdup_merged file
+			call("samtools flagstat "+ sample_lane + "_rmdup.bam >"+ sample_lane + "_rmdup_flagstat.txt" ,shell=True)
+
+			merged_lane_list.append(sample_lane + "_rmdup.bam"
+		
+		#each lane has been merged
+		#now, merge each lane for a given sample
+
+		merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
+	
+		for bam in merged_lane_list:
+
+			merge_cmd = merge_cmd + "INPUT=" + bam + " "
+		
+		merge_cmd = merge_cmd + "OUTPUT=" + sample[0] + "_merged.bam 2>" + sample[0] + "_merged.log"
+
+		print merge_cmd
+
+		call(merge_cmd,shell=True)
+
+		call("samtools flagstat " + sample[0] + "_merged.bam >" + sample[0]+ "_merged_flagstat.txt",shell=True)
+
+		#now rmdup the sample bam
+		call("samtools rmdup -s " + sample[0] + "_merged.bam " + sample[0] + "_merged_rmdup.bam",shell=True)
+
+		call("samtools flagstat " + sample[0] + "_merged_rmdup.bam >" + sample[0]+ "_merged_rmdup_flagstat.txt",shell=True)
+
+	#testing a function here, to process a bam to a q25 version
+	map(process_bam, fastq_list)
+	
+	for sample in fastq_list:
 
 		master_list = get_summary_info(master_list, sample)
 	
 	call("mkdir trimmed_fastq_files_and_logs",shell=True)
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
 		
-	for sample in sample_list:
+	for sample in fastq_list:
 	
 		#clean up files
 		call("gzip "+ sample + "*",shell=True)
@@ -88,24 +189,26 @@ def main(date_of_hiseq, meyer, species, RG_file, output_dir):
 
 	output_summary = date_of_hiseq + "_summary.table"
 	
+	call("mv *bam " + out_dir,shell=True)
+
 	#print summary stats
-	with open(output_summary, "w") as f:
+	#with open(output_summary, "w") as f:
 
-		writer = csv.writer(f, delimiter='\t', lineterminator='\n')
-		writer.writerows(master_list)
+	#	writer = csv.writer(f, delimiter='\t', lineterminator='\n')
+	#	writer.writerows(master_list)
 
-	call("wc -l " + output_summary,shell=True)
+	#call("wc -l " + output_summary,shell=True)
 	
-	number_of_samples = (int((subprocess.check_output("wc -l " + output_summary,shell=True).split(" ")[0])) - 1)
+	#number_of_samples = (int((subprocess.check_output("wc -l " + output_summary,shell=True).split(" ")[0])) - 1)
 	
-	call("head -n1 " + output_summary + "> header.txt ",shell=True)
+	#call("head -n1 " + output_summary + "> header.txt ",shell=True)
 	
-	call("tail -n " + str(number_of_samples) + " " + output_summary + " | sort | cat header.txt - > tmp; mv tmp " + output_summary + ";rm header.txt tmp",shell=True)
+	#call("tail -n " + str(number_of_samples) + " " + output_summary + " | sort | cat header.txt - > tmp; mv tmp " + output_summary + ";rm header.txt tmp",shell=True)
 
-	call("mv " + output_summary + " " + out_dir,shell=True)
+	#call("mv " + output_summary + " " + out_dir,shell=True)
 
 
-def set_up(date_of_miseq, meyer, species, RG_file, output_dir):
+def set_up(date_of_hiseq, meyer, species, RG_file, output_dir):
 	#take all .fastq.gz files in current directory; print them
 	files = []
 
@@ -153,7 +256,8 @@ def set_up(date_of_miseq, meyer, species, RG_file, output_dir):
 	#initialize a masterlist that will carry summary stats of each sample
 	master_list = [["Sample", "read_count_raw", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_remaining","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"]]
 
-	sample_list = []
+	fastq_list = []
+	
 	#cycle through each line in the input file, gunzip
 	for file in files:
 
@@ -161,13 +265,13 @@ def set_up(date_of_miseq, meyer, species, RG_file, output_dir):
 		call("gunzip " + file, shell=True)
 		current_file = file.split(".")[0] + ".fastq"
 
-			sample_list.append(current_file.rstrip("\n"))
+			fastq_list.append(current_file.rstrip("\n"))
 	
-	for i in sample_list:
+	for i in fastq_list:
 	
 		master_list.append([i])
 	
-	return files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list
+	return files, reference, out_dir, cut_adapt, alignment_option, master_list, fastq_list
 
 
 def trim_fastq(current_sample, cut_adapt, out_dir):
@@ -233,20 +337,20 @@ def process_bam(sample_name):
 	#make a copy of the samtools flagstat
 	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_flagstat.txt",shell=True)
 
-	#remove unaligned reads from this bam
-	call("samtools view -b -F 4 " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup_only_aligned.bam",shell=True)
+	#remove dupicates from this bam
+	#call("samtools view -b -F 4 " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup_only_aligned.bam",shell=True)
 
 	#produce q25 bams
-	call("samtools view -b -q25 " + sample_name + "_rmdup_only_aligned.bam >" + sample_name + "_q25.bam",shell=True)
+	#call("samtools view -b -q25 " + sample_name + "_rmdup_only_aligned.bam >" + sample_name + "_q25.bam",shell=True)
 
     	#make a copy of the samtools flagstat
-      	call("samtools flagstat " + sample_name + "_q25.bam > " + sample_name + "_q25.txt",shell=True)
+      	#call("samtools flagstat " + sample_name + "_q25.bam > " + sample_name + "_q25.txt",shell=True)
       	
       	#index the q25 bam
-	call("samtools index "+ sample_name + "_q25.bam",shell=True)
+	#call("samtools index "+ sample_name + "_q25.bam",shell=True)
 	
 	#get idx stats
-	call("samtools idxstats "+ sample_name + "_q25.bam > "  + sample_name + ".idx",shell=True)
+	#call("samtools idxstats "+ sample_name + "_q25.bam > "  + sample_name + ".idx",shell=True)
 
 
 def get_summary_info(master_list, current_sample):
@@ -319,9 +423,9 @@ try:
 
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_miseq, meyer, species, RG_file"
+	print "Input variables are date_of_hiseq, meyer, species, RG_file"
 	print "Exiting program..."
 	sys.exit()
 
 
-main(date_of_miseq, meyer, species, RG_file, output_dir)
+main(date_of_hiseq, meyer, species, RG_file, output_dir)
