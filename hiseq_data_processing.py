@@ -61,7 +61,7 @@ def main(date_of_hiseq, meyer, species, RG_file, output_dir):
 	#this step will align each fastq and produce raw bams with RGs
 	#they should have the same stem of the initial bam
 
-	##########map(lambda fastq : align(fastq, RG_file, alignment_option, reference), fastq_list)
+	map(lambda fastq : align(fastq, RG_file, alignment_option, reference), fastq_list)
 
 
 	#sort and remove duplicates from each bam	
@@ -71,110 +71,27 @@ def main(date_of_hiseq, meyer, species, RG_file, output_dir):
 
                 master_list = get_summary_info(master_list, sample)
 
+	#now merge the lanes for each sample, and rmdup the merged bams
+	merged_bam_list = merge_lanes_and_sample(RG_file)
 	
-	#get sample list from the RG file
-	
-	sample_list = []
-	
-        with open(RG_file) as r:
+	realigned_bam_list = []
 
-                for line in r:
-			
-                        sample = line.split("\t")[3].rstrip("\n")
-			
-                        if not sample in sample_list:
+	#indel realignment
+	for i in merged_bam_list:
 
-                                sample_list.append([sample])
+		realigned_bam_list.append(indel_realignment(i,reference))
 
-	print sample_list
+	rescaled_bam_list = []
 
-	#then cycle through the RG file and associate each lane with the correct sample
-        for sample in sample_list:
+	for i in realigned_bam_list:
 
-		lane_list = []
+		rescaled_bam_list.append(mapDamage_rescale(i,reference))		
 
-		with open(RG_file) as r:
+	for i in rescaled_bam_list:
 
-			for line in r:
-
-				if sample[0] == line.split("\t")[3].rstrip("\n"):
-				
-					lane = line.split("\t")[2]
-				
-					if not lane in lane_list:
-
-						lane_list.append(lane)
-
-		sample.append(lane_list)
-	print lane_list
-	#for each sample, go through each lane for that sample and merge each fastq for that sample
-	for sample in sample_list:
+		process_rescaled_bams(i)
 		
-		merged_lane_list = []
-		
-		for lane in sample[1]:
-		
-			files_in_lane = []
-
-			merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
-
-			with open(RG_file) as r:
-
-				for line in r:
-	
-					if lane == line.split("\t")[2]:
-
-						files_in_lane.append(line.split("\t")[0] + "_rmdup.bam")
-
-			for bam in files_in_lane:
-
-				merge_cmd = merge_cmd + "INPUT=" + bam + " "
-
-				sample_name = bam.split("-")[1].split("_")[0]
- 
-			sample_lane = sample_name + "_"	+ lane + "_merged"		 
-
-			merge_cmd = merge_cmd + "OUTPUT=" + sample_lane + ".bam 2>" + sample_lane + ".log"
-			print merge_cmd
-			#now merge each bam file associated with a given lane
-			call(merge_cmd,shell=True)
-
-			#flagstat the merged bam
-			call("samtools flagstat "+ sample_lane + ".bam >"+ sample_lane + "_flagstat.txt" ,shell=True)
-		
-			#remove duplicates from the merged lane bam
-			cmd = "samtools rmdup -s " + sample_lane + ".bam " + sample_lane + "_rmdup.bam"
-
-			call(cmd,shell=True)
-
-			#flagstat the rmdup_merged file
-			call("samtools flagstat "+ sample_lane + "_rmdup.bam >"+ sample_lane + "_rmdup_flagstat.txt" ,shell=True)
-
-			merged_lane_list.append(sample_lane + "_rmdup.bam")
-		
-		#each lane has been merged
-		#now, merge each lane for a given sample
-
-		merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
-	
-		for bam in merged_lane_list:
-
-			merge_cmd = merge_cmd + "INPUT=" + bam + " "
-		
-		merge_cmd = merge_cmd + "OUTPUT=" + sample[0] + "_merged.bam 2>" + sample[0] + "_merged.log"
-
-		print merge_cmd
-
-		call(merge_cmd,shell=True)
-
-		call("samtools flagstat " + sample[0] + "_merged.bam >" + sample[0]+ "_merged_flagstat.txt",shell=True)
-
-		#now rmdup the sample bam
-		call("samtools rmdup -s " + sample[0] + "_merged.bam " + sample[0] + "_merged_rmdup.bam",shell=True)
-
-		call("samtools flagstat " + sample[0] + "_merged_rmdup.bam >" + sample[0]+ "_merged_rmdup_flagstat.txt",shell=True)
-
-	
+	#clean up files
 	
 	call("mkdir trimmed_fastq_files_and_logs",shell=True)
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
@@ -192,6 +109,7 @@ def main(date_of_hiseq, meyer, species, RG_file, output_dir):
 
 	#remove all .sai files
 	call("rm *sai*",shell=True)
+	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
 	call("mv trimmed_fastq_files_and_logs/ " + out_dir,shell=True)
 
 	output_summary = date_of_hiseq + "_summary.table"
@@ -418,7 +336,146 @@ def get_summary_info(master_list, current_sample):
 	return master_list
 
 
-def merge_lanes()
+def merge_lanes_and_sample(RG_file):
+
+	#get sample list from the RG file
+	
+	sample_list = []
+	
+        with open(RG_file) as r:
+
+                for line in r:
+			
+                        sample = line.split("\t")[3].rstrip("\n")
+			
+			if [sample] not in sample_list:
+                        
+				sample_list.append([sample])
+
+	print sample_list
+
+	#then cycle through the RG file and associate each lane with the correct sample
+        for sample in sample_list:
+
+		lane_list = []
+
+		with open(RG_file) as r:
+
+			for line in r:
+
+				if sample[0] == line.split("\t")[3].rstrip("\n"):
+				
+					lane = line.split("\t")[2]
+				
+					if not lane in lane_list:
+
+						lane_list.append(lane)
+
+		sample.append(lane_list)
+
+	print lane_list
+
+	#create a list of final merged,rmdup bams that will be returned
+	merged_bam_list = []
+
+	#for each sample, go through each lane for that sample and merge each fastq for that sample
+	for sample in sample_list:
+		
+		merged_lane_list = []
+		
+		for lane in sample[1]:
+		
+			files_in_lane = []
+
+			merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
+
+			with open(RG_file) as r:
+
+				for line in r:
+	
+					if lane == line.split("\t")[2]:
+
+						files_in_lane.append(line.split("\t")[0].split(".")[0] + "_rmdup.bam")
+
+			for bam in files_in_lane:
+
+				merge_cmd = merge_cmd + "INPUT=" + bam + " "
+
+				sample_name = bam.split("-")[1].split("_")[0]
+ 
+			sample_lane = sample_name + "_"	+ lane + "_merged"		 
+
+			merge_cmd = merge_cmd + "OUTPUT=" + sample_lane + ".bam 2>" + sample_lane + ".log"
+
+			print merge_cmd
+
+			#now merge each bam file associated with a given lane
+			call(merge_cmd,shell=True)
+
+			#flagstat the merged bam
+			call("samtools flagstat "+ sample_lane + ".bam >"+ sample_lane + "_flagstat.txt" ,shell=True)
+		
+			#remove duplicates from the merged lane bam
+			cmd = "samtools rmdup -s " + sample_lane + ".bam " + sample_lane + "_rmdup.bam"
+
+			call(cmd,shell=True)
+
+			#flagstat the rmdup_merged file
+			call("samtools flagstat "+ sample_lane + "_rmdup.bam >"+ sample_lane + "_rmdup_flagstat.txt" ,shell=True)
+
+			merged_lane_list.append(sample_lane + "_rmdup.bam")
+		
+		#each lane has been merged
+		#now, merge each lane for a given sample
+
+		merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
+	
+		for bam in merged_lane_list:
+
+			merge_cmd = merge_cmd + "INPUT=" + bam + " "
+		
+		merge_cmd = merge_cmd + "OUTPUT=" + sample[0] + "_merged.bam 2>" + sample[0] + "_merged.log"
+
+		print merge_cmd
+
+		call(merge_cmd,shell=True)
+
+		call("samtools flagstat " + sample[0] + "_merged.bam >" + sample[0]+ "_merged_flagstat.txt",shell=True)
+
+		#now rmdup the sample bam
+		call("samtools rmdup -s " + sample[0] + "_merged.bam " + sample[0] + "_merged_rmdup.bam",shell=True)
+
+		call("samtools flagstat " + sample[0] + "_merged_rmdup.bam >" + sample[0]+ "_merged_rmdup_flagstat.txt",shell=True)
+		
+		merged_bam_list.append(sample[0] + "_merged_rmdup.bam")
+
+	return merged_bam_list
+
+def indel_realignment(rmdup_bam, reference_genome):
+
+	call("java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/ -T RealignerTargetCreator -R " + reference_genome + " -I " + rmdup_bam + " -o forIndelRealigner" + rmdup_bam.split(".")[0] + ".intervals 2> " + rmdup_bam.split(".")[0] + "_intervals.log",shell=True)	
+	
+	call("java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/ -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log",shell=True)
+
+	return rmdup_bam.split(".")[0] + "_realigned.bam"
+
+
+def mapDamage_rescale(bam,reference_genome):
+
+	call("mapDamage -i " + bam + " -r " + reference_genome + "--rescale --verbose",shell=True)
+	
+	call("mv results_" + bam.split(".")[0] + "/*  ./ ; mv " + bam.split(".")[0] + ".rescaled.bam " + bam.split(".")[0] + "_rescaled.bam",shell=True)
+
+	return bam.split(".")[0] + "_rescaled.bam"
+
+
+def process_rescaled_bams(rescaled_bam):
+
+	call("samtools -s rmdup " + rescaled_bam + " " + rescaled_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + rescaled_bam.split(".")[0] + "_rmdup.bam 2> " + rescaled_bam.split(".")[0] + "_rmdup_flagstat.txt",shell=True)	
+
+	call("samtools view -b -F4 " + rescaled_bam.split(".")[0] + "_rmdup.bam > " + rescaled_bam.split(".")[0] + "_rmdup_F4.bam && samtools view -q25 -b " + rescaled_bam.split(".")[0] + "_rmdup_F4.bam > " + rescaled_bam.split(".")[0] + "_rmdup_q25.bam",shell=True)
+
+	call("samtools flagstat " + rescaled_bam.split(".")[0] + "_rmdup_q25.bam > " + rescaled_bam.split(".")[0] + "_rmdup_q25_flagstat.txt",shell=True)
 
 
 try:
