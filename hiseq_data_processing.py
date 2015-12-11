@@ -63,6 +63,8 @@ def main(date_of_hiseq, meyer, species, RG_file, output_dir):
 
 	map(lambda fastq : align(fastq, RG_file, alignment_option, reference), fastq_list)
 
+	#Remove the sai files that we don't care about
+	call("rm *sai",shell=True)
 
 	#sort and remove duplicates from each bam	
 	map(process_bam, fastq_list)
@@ -79,42 +81,43 @@ def main(date_of_hiseq, meyer, species, RG_file, output_dir):
 	#indel realignment
 	for i in merged_bam_list:
 
+		print i
 		realigned_bam_list.append(indel_realignment(i,reference))
 
+	print realigned_bam_list
 	rescaled_bam_list = []
 
 	for i in realigned_bam_list:
 
-		rescaled_bam_list.append(mapDamage_rescale(i,reference))		
-
+		rescaled_bam_list.append(mapDamage_rescale(i,reference,output_dir))		
+	
+	print rescaled_bam_list
 	for i in rescaled_bam_list:
 
-		process_rescaled_bams(i)
+		process_rescaled_bams(i,reference,output_dir)
 		
 	#clean up files
 	
 	call("mkdir trimmed_fastq_files_and_logs",shell=True)
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
-		
+	
+	call("gzip *",shell=True)
+	
 	for sample in fastq_list:
-	
-		#clean up files
-		call("gzip "+ sample + "*",shell=True)
-	
+			
 		#going to make an output directory for each sample
 		#then move all produced files to this directory
 		call("mkdir " + out_dir + sample,shell=True)
 		print "mv *" + sample + "*.bam* "+ sample + "*.idx* "+ sample + "*flagstat* " + out_dir + sample
 		call("mv *" + sample + "*.bam* "+ sample + "*.idx* "+ sample + "*flagstat* " + out_dir + sample,shell=True)
 
-	#remove all .sai files
-	call("rm *sai*",shell=True)
+	
 	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
 	call("mv trimmed_fastq_files_and_logs/ " + out_dir,shell=True)
 
 	output_summary = date_of_hiseq + "_summary.table"
 	
-	call("mv *bam " + out_dir,shell=True)
+	call("mv *bam* *flagstat* *log" + out_dir,shell=True)
 
 	#print summary stats
 	#with open(output_summary, "w") as f:
@@ -167,7 +170,7 @@ def set_up(date_of_hiseq, meyer, species, RG_file, output_dir):
 	#allow meyer option to be used
 	meyer_input = meyer.rstrip("\n").lower()
 
-	alignment_option = "bwa aln -t 5 -l 1000 "  
+	alignment_option = "bwa aln -t 5 -l 1024 "  
 
 	if (meyer_input == "meyer"):
 		
@@ -367,13 +370,13 @@ def merge_lanes_and_sample(RG_file):
 				
 					lane = line.split("\t")[2]
 				
-					if not lane in lane_list:
+					if lane not in lane_list:
 
 						lane_list.append(lane)
 
 		sample.append(lane_list)
+		print sample
 
-	print lane_list
 
 	#create a list of final merged,rmdup bams that will be returned
 	merged_bam_list = []
@@ -452,32 +455,51 @@ def merge_lanes_and_sample(RG_file):
 	return merged_bam_list
 
 def indel_realignment(rmdup_bam, reference_genome):
-
-	call("java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/ -T RealignerTargetCreator -R " + reference_genome + " -I " + rmdup_bam + " -o forIndelRealigner" + rmdup_bam.split(".")[0] + ".intervals 2> " + rmdup_bam.split(".")[0] + "_intervals.log",shell=True)	
 	
-	call("java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/ -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log",shell=True)
+	print "starting realignment for sample "+rmdup_bam
+	
+	call("samtools index " + rmdup_bam,shell=True)
+	cmd = "java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T RealignerTargetCreator -R " + reference_genome + " -I " + rmdup_bam + " -o forIndelRealigner" + rmdup_bam.split(".")[0] + ".intervals 2> " + rmdup_bam.split(".")[0] + "_intervals.log"
+
+	call(cmd, shell=True)
+	
+	call("java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log",shell=True)
 
 	return rmdup_bam.split(".")[0] + "_realigned.bam"
 
 
-def mapDamage_rescale(bam,reference_genome):
+def mapDamage_rescale(bam,reference_genome, out_dir):
 
-	call("mapDamage -i " + bam + " -r " + reference_genome + "--rescale --verbose",shell=True)
+	call("mapDamage -i " + bam + " -r " + reference_genome + " --rescale --verbose",shell=True)
 	
-	call("mv results_" + bam.split(".")[0] + "/*  ./ ; mv " + bam.split(".")[0] + ".rescaled.bam " + bam.split(".")[0] + "_rescaled.bam",shell=True)
+	call("mv results_" + bam.split(".")[0] + "/" +bam.split(".")[0] + ".rescaled.bam ./ ; mv " + bam.split(".")[0] + ".rescaled.bam " + bam.split(".")[0] + "_rescaled.bam",shell=True)
 
-	return bam.split(".")[0] + "_rescaled.bam"
+	call("mkdir "+out_dir+bam.split(".") + "; mv " + bam.split(".")[0] + "_rescaled.bam " + out_dir+bam.split(".")+"/",shell=True)
 
 
-def process_rescaled_bams(rescaled_bam):
+	print bam.split(".")[0] + "_rescaled.bam"
 
-	call("samtools -s rmdup " + rescaled_bam + " " + rescaled_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + rescaled_bam.split(".")[0] + "_rmdup.bam 2> " + rescaled_bam.split(".")[0] + "_rmdup_flagstat.txt",shell=True)	
+	return (bam.split(".")[0] + "_rescaled.bam")
+
+
+def process_rescaled_bams(rescaled_bam, reference_genome,output_dir):
+	
+	print rescaled_bam
+	print rescaled_bam.split(".")[0]
+	print "samtools rmdup -s " + rescaled_bam + " " + rescaled_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + rescaled_bam.split(".")[0] + "_rmdup.bam 2> " + rescaled_bam.split(".")[0] + "_rmdup_flagstat.txt"
+	call("samtools rmdup -s " + rescaled_bam + " " + rescaled_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + rescaled_bam.split(".")[0] + "_rmdup.bam 2> " + rescaled_bam.split(".")[0] + "_rmdup_flagstat.txt",shell=True)	
 
 	call("samtools view -b -F4 " + rescaled_bam.split(".")[0] + "_rmdup.bam > " + rescaled_bam.split(".")[0] + "_rmdup_F4.bam && samtools view -q25 -b " + rescaled_bam.split(".")[0] + "_rmdup_F4.bam > " + rescaled_bam.split(".")[0] + "_rmdup_q25.bam",shell=True)
 
 	call("samtools flagstat " + rescaled_bam.split(".")[0] + "_rmdup_q25.bam > " + rescaled_bam.split(".")[0] + "_rmdup_q25_flagstat.txt",shell=True)
 
+	call("samtools index " + rescaled_bam.split(".")[0] + "_rmdup_q25.bam",shell=True)
 
+	cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_genome + " -o DoC_" + rescaled_bam.split(".")[0] + " -I " + rescaled_bam.split(".")[0] + "_rmdup_q25.bam --omitDepthOutputAtEachBase"
+
+	call(cmd,shell=True)
+
+	call("mv DoC* " + output_dir,shell=True)
 try:
 	date_of_hiseq  = sys.argv[1]
 	meyer = sys.argv[2]
@@ -491,5 +513,9 @@ except IndexError:
 	print "Exiting program..."
 	sys.exit()
 
+
+if not output_dir[-1] == "/":
+
+	output_dir = output_dir + "/"
 
 main(date_of_hiseq, meyer, species, RG_file, output_dir)
