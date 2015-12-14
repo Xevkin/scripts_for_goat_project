@@ -83,20 +83,17 @@ def main(date_of_hiseq, meyer, species, trim, RG_file, output_dir):
 	#indel realignment
 	for i in merged_bam_list:
 
-		print i
+		print "Indel realignment on sample " + i
+
 		realigned_bam_list.append(indel_realignment(i,reference))
 
-	print realigned_bam_list
-	rescaled_bam_list = []
+	#now run the script to process the realigned bams
+	#this function will invoke a function that rescales the bams
 
 	for i in realigned_bam_list:
 
-		rescaled_bam_list.append(mapDamage_rescale(i,reference,output_dir))		
+		process_realigned_bams(i,reference,output_dir)
 	
-	print rescaled_bam_list
-	for i in rescaled_bam_list:
-
-		process_rescaled_bams(i,reference,output_dir)
 		
 	#clean up files
 	
@@ -498,23 +495,27 @@ def mapDamage_rescale(bam,reference_genome, out_dir):
 	return (bam.split(".")[0] + "_rescaled.bam")
 
 
-def process_rescaled_bams(rescaled_bam, reference_genome,output_dir):
+def process_realigned_bams(realigned_bam, reference_genome,output_dir):
 	
-	print rescaled_bam
-	print rescaled_bam.split(".")[0]
-	print "samtools rmdup -s " + rescaled_bam + " " + rescaled_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + rescaled_bam.split(".")[0] + "_rmdup.bam 2> " + rescaled_bam.split(".")[0] + "_rmdup_flagstat.txt"
-	call("samtools rmdup -s " + rescaled_bam + " " + rescaled_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + rescaled_bam.split(".")[0] + "_rmdup.bam 2> " + rescaled_bam.split(".")[0] + "_rmdup_flagstat.txt",shell=True)	
+	print realigned_bam
+	print realigned_bam.split(".")[0]
+	print "samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam 2> " + realigned_bam.split(".")[0] + "_rmdup_flagstat.txt"
+	call("samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam 2> " + realigned_bam.split(".")[0] + "_rmdup_flagstat.txt",shell=True)	
 
-	call("samtools view -b -F4 " + rescaled_bam.split(".")[0] + "_rmdup.bam > " + rescaled_bam.split(".")[0] + "_rmdup_F4.bam && samtools view -q25 -b " + rescaled_bam.split(".")[0] + "_rmdup_F4.bam > " + rescaled_bam.split(".")[0] + "_rmdup_q25.bam",shell=True)
+	call("samtools view -b -F4 " + realigned_bam.split(".")[0] + "_rmdup.bam > " + realigned_bam.split(".")[0] + "_rmdup_F4.bam && samtools view -q25 -b " + realigned_bam.split(".")[0] + "_rmdup_F4.bam > " + realigned_bam.split(".")[0] + "_rmdup_q25.bam",shell=True)
 
-	call("samtools flagstat " + rescaled_bam.split(".")[0] + "_rmdup_q25.bam > " + rescaled_bam.split(".")[0] + "_rmdup_q25_flagstat.txt",shell=True)
+	call("samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup_q25.bam > " + realigned_bam.split(".")[0] + "_rmdup_q25_flagstat.txt",shell=True)
 
-	call("samtools index " + rescaled_bam.split(".")[0] + "_rmdup_q25.bam",shell=True)
+	call("samtools index " + realigned_bam.split(".")[0] + "_rmdup_q25.bam",shell=True)
 
-	cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_genome + " -o DoC_" + rescaled_bam.split(".")[0] + " -I " + rescaled_bam.split(".")[0] + "_rmdup_q25.bam --omitDepthOutputAtEachBase"
+	cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_rmdup_q25.bam --omitDepthOutputAtEachBase"
 
 	call(cmd,shell=True)
-
+	
+	q25_bam=realigned_bam.split(".")[0] + "_rmdup_q25.bam"
+	
+	mapDamage_rescale(q25_bam,reference_genome,output_dir)
+	
 	call("mv DoC* " + output_dir,shell=True)
 try:
 	date_of_hiseq  = sys.argv[1]
