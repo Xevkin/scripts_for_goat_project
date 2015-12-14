@@ -4,7 +4,7 @@ Script is run in a directory with bam files to be aligned to either goat, wild g
 Reads will be trimmed, aligned, read groups added, duplicates removed, then 
 
 Also need to supply a date for the Hiseq run - will automatically make results file
-python script <date_of_hiseq> <meyer> <species> <fastq_screen> <read group file> <directory in which to place output dir/>
+python script <date_of_hiseq> <meyer> <species> <trim> <read group file> <directory in which to place output dir/>
 
 read group file needs to be in the follow format (\t are actual tab characters)
 FASTQ_FILE.GZ\t@RG\tID:X\tSM:X\tPL:X\tLB:X\tLANE\tSAMPLE_NAME
@@ -39,7 +39,7 @@ nuclear_genomes = {
 }
 
 
-def main(date_of_hiseq, meyer, species, RG_file, output_dir):
+def main(date_of_hiseq, meyer, species, trim, RG_file, output_dir):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
@@ -47,21 +47,23 @@ def main(date_of_hiseq, meyer, species, RG_file, output_dir):
 	files, reference, out_dir, cut_adapt, alignment_option, master_list, fastq_list = set_up(date_of_hiseq, meyer, species, RG_file, output_dir) 
 	
 	#sample is the file root
-	#trim fastq files and produce fastqc files
+	#trim fastq files and produce fastqc files - if we want to
 	#the masterlist will change each time so it needs be equated to the function
 	
-	for fastq in fastq_list:
+	if (trim == "yes"):
+ 
+		for fastq in fastq_list:
 		
-		trim_fastq(fastq, cut_adapt, out_dir)
+			trim_fastq(fastq, cut_adapt, out_dir)
 	
-	#at this stage we have our fastq files with adaptors trimmed, fastqc and fastq screen run
-	#we can now move on to the next step: alignment
+	#at this stage we have our fastq files with adaptors trimmed
+	#We can now move on to the next step: alignment
 	
 	#going to align to CHIR1.0, as that what was used for AdaptMap
 	#this step will align each fastq and produce raw bams with RGs
 	#they should have the same stem of the initial bam
 
-	map(lambda fastq : align(fastq, RG_file, alignment_option, reference), fastq_list)
+	map(lambda fastq : align(fastq, RG_file, alignment_option, reference, trim), fastq_list)
 
 	#Remove the sai files that we don't care about
 	call("rm *sai",shell=True)
@@ -215,9 +217,13 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 	call(cut_adapt + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
 	
 
-def align(sample, RG_file, alignment_option, reference):
+def align(sample, RG_file, alignment_option, reference, trim):
 
     trimmed_fastq = sample + "_trimmed.fastq"
+
+    if (trim != "yes"):
+
+    	trimmed_fastq = sample + ".fastq"
 
     print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
     call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)
@@ -504,12 +510,13 @@ try:
 	date_of_hiseq  = sys.argv[1]
 	meyer = sys.argv[2]
 	species = sys.argv[3]
-	RG_file  = sys.argv[4]
-	output_dir = sys.argv[5]
+	trim = sys.argv[4]
+	RG_file  = sys.argv[5]
+	output_dir = sys.argv[6]
 
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_hiseq, meyer, species, RG_file, and the directory to put output directories/files"
+	print "Input variables are date_of_hiseq, meyer, species, trim, RG_file, and the directory to put output directories/files"
 	print "Exiting program..."
 	sys.exit()
 
@@ -518,4 +525,4 @@ if not output_dir[-1] == "/":
 
 	output_dir = output_dir + "/"
 
-main(date_of_hiseq, meyer, species, RG_file, output_dir)
+main(date_of_hiseq, meyer, species, trim, RG_file, output_dir)
