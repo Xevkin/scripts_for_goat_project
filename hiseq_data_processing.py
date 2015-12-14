@@ -44,7 +44,7 @@ def main(date_of_hiseq, meyer, species, trim, RG_file, output_dir):
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
 	
-	files, reference, out_dir, cut_adapt, alignment_option, master_list, fastq_list = set_up(date_of_hiseq, meyer, species, RG_file, output_dir) 
+	files, reference, out_dir, cut_adapt, alignment_option, master_list, fastq_list = set_up(date_of_hiseq, meyer, species, RG_file, output_dir, trim) 
 	
 	#sample is the file root
 	#trim fastq files and produce fastqc files - if we want to
@@ -138,7 +138,7 @@ def main(date_of_hiseq, meyer, species, trim, RG_file, output_dir):
 	#call("mv " + output_summary + " " + out_dir,shell=True)
 
 
-def set_up(date_of_hiseq, meyer, species, RG_file, output_dir):
+def set_up(date_of_hiseq, meyer, species, RG_file, output_dir, trim):
 	#take all .fastq.gz files in current directory; print them
 	files = []
 
@@ -147,6 +147,16 @@ def set_up(date_of_hiseq, meyer, species, RG_file, output_dir):
 	print "fastq.gz files in current directory:"
 	
 	print map(lambda x : x ,files)
+
+
+	#however, if trim option is not yes, then we use fastq files
+	if (trim != "yes"):
+
+		files = [file for file in os.listdir(".") if file.endswith("_trimmed.fastq")]
+
+        	print "trimmed fastq files in current directory:"
+
+	        print map(lambda x : x ,files)
 
 	#variables will be initialized here so they can be modified by options 
 
