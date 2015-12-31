@@ -50,7 +50,7 @@ def main(date_of_hiseq, meyer, species, trim, align, process, RG_file, output_di
 	#trim fastq files and produce fastqc files - if we want to
 	#the masterlist will change each time so it needs be equated to the function
 	
-	if (trim == "yes"):
+	if (trim == "yes" or trim == "trim"):
  
 		for fastq in fastq_list:
 		
@@ -64,15 +64,15 @@ def main(date_of_hiseq, meyer, species, trim, align, process, RG_file, output_di
 	#they should have the same stem of the initial bam
 
 
-	if (align == "yes"):
+	if (align == "yes" or align == "align"):
  
-		map(lambda fastq : align(fastq, RG_file, alignment_option, reference, trim), fastq_list)
+		map(lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
 
 	#Remove the sai files that we don't care about
 	call("rm *sai",shell=True)
 
 	#sort and remove duplicates from each bam	
-	if (process == "yes"):
+	if (process == "yes" or process == "process"):
 
 		map(process_bam, fastq_list)
 
@@ -201,7 +201,7 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 	call(cut_adapt + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
 	
 
-def align(sample, RG_file, alignment_option, reference, trim):
+def align_bam(sample, RG_file, alignment_option, reference, trim):
 
     trimmed_fastq = sample + "_trimmed.fastq"
 
@@ -247,6 +247,9 @@ def process_bam(sample_name):
 
 	sample_name = "_".join(sample_name.split("_")[:-1])		
 
+	#flagstat the bam
+	call("samtools flagstat " + sample_name + ".bam > " + sample_name + "_flagstat.txt",shell=True)
+
 	#sort this bam
 	print "samtools sort " + sample_name + ".bam " + sample_name + "_sort"
 	call("samtools sort " + sample_name + ".bam " + sample_name + "_sort",shell=True)
@@ -258,8 +261,8 @@ def process_bam(sample_name):
 	#remove the "sorted with duplicates" bam
 	call("rm " + sample_name + "_sort.bam",shell=True)
 
-	#make a copy of the samtools flagstat
-	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_flagstat.txt",shell=True)
+	#flagstat the rmdup bam
+	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup_flagstat.txt",shell=True)
 
 	#remove dupicates from this bam
 	#call("samtools view -b -F 4 " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup_only_aligned.bam",shell=True)
@@ -464,7 +467,7 @@ try:
 
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_hiseq, meyer, species, trim, process, RG_file, and the directory to put output directories/files"
+	print "Input variables are date_of_hiseq, meyer, species, trim, align, process, RG_file, and the directory to put output directories/files"
 	print "Exiting program..."
 	sys.exit()
 
