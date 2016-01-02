@@ -11,7 +11,7 @@ FASTQ_FILE.GZ\t@RG\tID:X\tSM:X\tPL:X\tLB:X\tLANE\tSAMPLE_NAME
 ID should be in the format <sample_name>-<macrogen_index_number>-<lane_number>-<hiseq_number>
 LB should refer to PCR: <sample>-<lab index>-<macrogen-index>-<PCR_number>
 
-
+fastq files should be in the format <sample>-<PCR number and letter, if any>_<underscores and numbers>
 
 '''
 
@@ -354,7 +354,7 @@ def merge_lanes_and_sample(RG_file):
  
 				else:
 			
-					sample_name = bam.split("-").split("_")[0]
+					sample_name = bam.split("-")[0]
 
 
 			sample_lane = sample_name + "_"	+ lane + "_merged"		 
