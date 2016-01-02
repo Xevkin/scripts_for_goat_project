@@ -1,9 +1,11 @@
 #!/bin/sh
-#input must be in the form of an input file, then path to the folder with the bams of interest
+#input must be in the form of an input file, then path to the folder with the bams of interest, the reference genome, and the gen time
 
-REF="/fozzie/bosgenome/bos_genome_16_2_15/bos_genome_16_2_15.fa"
 
+
+INPUT_FILE=$1
 INPUT_FOLD=$2
+REF=$3
 
 #must use the correct/most recent version of samtools - bcftools will complain if otherwise
 SAMTOOLS="/home/kdaly/bin/samtools-1.2/samtools"
@@ -12,13 +14,14 @@ PSMC="/home/kdaly/bin/psmc/"
 
 #using the time interval settings, generation time and mutation rate as suggested by Bosse et al, 2015 
 PSMC_SETTINGS="-N25 -t15 -r5 -p '4+50*1+4+6'"
-GEN_TIME="5"
+GEN_TIME=$4
 MUTATION_RATE="1e-8"
 
 #input file should have one line per sample, space seperated
 #first col is sample name without bam handle
-#second col is 
-#eg KD100_rescaled_rmdup 40 0.1
+#second col is minimum depth (one third of mean coverage)
+#third col is max depth (double mean coverage)
+#eg KD100_rescaled_rmdup 8 40 0.1
 
 while read sample min_depth max_depth FNR
 do
@@ -49,6 +52,6 @@ do
 	sh tmp.sh
 	mv ms-cmd.sh $SAMPLE_NAME"-ms-cmd.sh"
 	rm tmp.sh
-done<$1
+done<$INPUT_FILE
 
 
