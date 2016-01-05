@@ -346,16 +346,21 @@ def merge_lanes_and_sample(RG_file):
 
 			for bam in files_in_lane:
 
-				merge_cmd = merge_cmd + "INPUT=" + bam + " "
+				if os.path.isfile(bam):
 				
-				if not "-" in bam:
+					merge_cmd = merge_cmd + "INPUT=" + bam + " "
 				
-					sample_name = bam.split("_")[0]
+					if not "-" in bam:
+				
+						sample_name = bam.split("_")[0]
  
-				else:
+					else:
 			
-					sample_name = bam.split("-")[0]
+						sample_name = bam.split("-")[0]
 
+				else:
+		
+					print bam  + " is not in the current directory"
 
 			sample_lane = sample_name + "_"	+ lane + "_merged"		 
 
