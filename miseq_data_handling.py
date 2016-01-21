@@ -4,7 +4,7 @@ Script is run in a directory with bam files to be aligned to the goat genome
 Bams will be trimmed, quality metrics obtained, screened using fastq screen
 
 Also need to supply a date for the Miseq run - will automatically make results file
-python script <date_of_miseq> <meyer> <species> <mit> <fastq_screen> <read group file>
+python script <date_of_miseq> <meyer> <species> <mit> <fastq_screen> <read group file> <directory in which to place output dir/>
 
 read group file needs to be in the follow format: 
 Sample_name\tRGs_to_add (in following format- ID:X\tSM:X\tPL:X\tLB:X)
@@ -34,7 +34,9 @@ nuclear_genomes = {
 
 	"cow" : "/kendrick/reference_genomes/cow_bosTau8/bosTau8.fa",
 
-	"dog" : "/kendrick/reference_genomes/canFam3.fa"
+	"dog" : "/kendrick/reference_genomes/canFam3.fa",
+
+	"horse" : "/kendrick/reference_genomes/horse_equCab2/horse.fa"
 }
 
 mitochondrial_genomes = {
@@ -45,12 +47,12 @@ mitochondrial_genomes = {
 
 }
 
-def main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file):
+def main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file, output_dir):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
 	
-	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, species, mit, RG_file) 
+	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir) 
 	
 	#sample is the file root
 	#trim fastq files and produce fastqc files
@@ -116,7 +118,7 @@ def main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file):
 	call("mv " + output_summary + " " + out_dir,shell=True)
 
 
-def set_up(date_of_miseq, meyer, species, mit, RG_file):
+def set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir):
 	#take all .fastq.gz files in current directory; print them
 	files = []
 
@@ -158,7 +160,7 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file):
 
 	#Prepare output directory
 
-	out_dir = "~/goat/miseq/results/" + date_of_miseq +  "/"
+	out_dir = output_dir + date_of_miseq +  "/"
 
 	if (species == "sheep"):
 
@@ -386,11 +388,12 @@ try:
 	mit = sys.argv[4]
 	fastq_screen = sys.argv[5]
 	RG_file  = sys.argv[6]
+	output_dir = sys.argv[7]
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_miseq, meyer, species, mit, fastq_screen, RG_file"
+	print "Input variables are date_of_miseq, meyer, species, mit, fastq_screen, RG_file, and output directory"
 	print "Exiting program..."
 	sys.exit()
 
 
-main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file)
+main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file, output_dir)
