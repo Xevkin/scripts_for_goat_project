@@ -1,5 +1,6 @@
 #!/bin/sh
-#input must be in the form of an input file, then path to the folder with the bams of interest, the reference genome, and the gen time
+#input must be in the form of an input file, then path to the folder with 
+#the bams of interest, the reference genome, the gen time, and the mutation rate
 
 
 
@@ -15,7 +16,7 @@ PSMC="/home/kdaly/bin/psmc/"
 #using the time interval settings, generation time and mutation rate as suggested by Bosse et al, 2015 
 PSMC_SETTINGS="-N25 -t15 -r5 -p '4+50*1+4+6'"
 GEN_TIME=$4
-MUTATION_RATE="1e-8"
+MUTATION_RATE=$5
 
 #input file should have one line per sample, space seperated
 #first col is sample name without bam handle
@@ -27,12 +28,20 @@ while read sample min_depth max_depth FNR
 do
 	#run samtools pileup, then bcftools to create correct .vcf for psmc
 	$SAMTOOLS mpileup -C50 -uf $REF $INPUT_FOLD$sample".bam" | bcftools call -c -O v -o $sample".vcf" -
-	
+
+	ls $sample".vcf"
 	#run vcfutils.pl, a script that converts vcf file to  .fq format
 	#this is whole diploid concensus sequence for the individual
 	#we filter variants passed on coverage - minimum of one third mean depth, max of twice mean depth
 
-	vcfutils.pl vcf2fq -d $min_depth -D $max_depth $sample".vcf" | gzip > $sample".fq.gz"
+	vcfutils.pl vcf2fq -d $min_depth -D $max_depth $sample".vcf" > $sample".fq"
+
+	#now lets seperate out the autosomes and the x chromosome
+	filter_autosomes_from_fq.awk $sample".fq" > $sample"_autosomes.fq" 
+
+	gzip $sample"_autosomes.fq"
+
+	filter_X-some_from_fq.awk $sample".fq" > $sample"_X.fq"; gzip $sample"_X.fq"
 	
 	#Now we create the bin file  that is the input to psmc
 	#this is a .psmcfa file, which actually looks like a fasta file. Each character represents a bin of size 100bp
@@ -40,7 +49,7 @@ do
 
 	SAMPLE_NAME=`echo $sample | cut -f1 -d'_'`
 
-	$PSMC"utils/fq2psmcfa" -q20 $sample".fq.gz" > $SAMPLE_NAME".psmcfa"
+	$PSMC"utils/fq2psmcfa" -q20 $sample"_autosomes.fq.gz" > $SAMPLE_NAME".psmcfa"
 	
 	#We now run psmc based on the settings above
 	#note this does not bootstrap - do seperately

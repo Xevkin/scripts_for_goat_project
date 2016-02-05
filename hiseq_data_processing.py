@@ -31,11 +31,13 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"goat" : "/kendrick/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta",
+	"goat1" : "/kendrick/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
 	"sheep" : "/kendrick/reference_genomes/sheep_oviAri3/oviAri3.fa",
 
-	"bezoar" : "/kendrick/reference_genomes/bezoar_CapAeg_1_0/CapAeg_renamed.fa"
+	"bezoar" : "/kendrick/reference_genomes/bezoar_CapAeg_1_0/CapAeg_renamed.fa",
+
+	"goat1_with_mit" : "/kendrick/reference_genomes/goat_CHIR1_0/goat_CHIR1_with_mit.fa"
 }
 
 
@@ -77,6 +79,8 @@ def main(date_of_hiseq, meyer, species, trim, align, process, RG_file, output_di
 		map(process_bam, fastq_list)
 
         #now merge the lanes for each sample
+	#NOTE: if all the options up to process are "no", then this is where the script will start
+	#expects rmdup bams for each index in each lane, ungziped
 	merged_bam_list = merge_lanes_and_sample(RG_file)
 	
 	realigned_bam_list = []
@@ -248,6 +252,7 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 	
 def process_bam(sample_name):
 
+	print sample_name
 	sample_name = "_".join(sample_name.split("_")[:-1])		
 
 	#flagstat the bam
@@ -338,12 +343,16 @@ def merge_lanes_and_sample(RG_file):
 						print line				
 						files_in_lane.append(line.split("\t")[0].split(".")[0] + "_rmdup.bam")
 
+			bams_to_gzip = []
+
 			for bam in files_in_lane:
 
 				if os.path.isfile(bam):
 				
 					merge_cmd = merge_cmd + "INPUT=" + bam + " "
 				
+					bams_to_gzip.append(bam)
+					
 					if not "-" in bam:
 				
 						sample_name = bam.split("_")[0]
@@ -370,7 +379,9 @@ def merge_lanes_and_sample(RG_file):
 			call("samtools flagstat "+ sample_lane + ".bam >"+ sample_lane + "_flagstat.txt" ,shell=True)
 
 			#gzip the rmdup bams
-			call("gzip *rmdup.bam",shell=True)
+			for bam in bams_to_gzip:
+
+				  call("gzip " + bam.rstrip("\n"),shell=True)
 		
 			#remove duplicates from the merged lane bam
 			cmd = "samtools rmdup -s " + sample_lane + ".bam " + sample_lane + "_rmdup.bam 2> " + sample_lane + "_rmdup.log"  
@@ -378,7 +389,7 @@ def merge_lanes_and_sample(RG_file):
 			call(cmd,shell=True)
 
 			#gzip the original merged bam
-			call("gzip " + sample_lane + "_rmdup.bam",shell=True)
+			call("gzip " + sample_lane + ".bam",shell=True)
 		
 			#flagstat the rmdup_merged file
 			call("samtools flagstat "+ sample_lane + "_rmdup.bam >"+ sample_lane + "_rmdup_flagstat.txt" ,shell=True)
@@ -399,6 +410,9 @@ def merge_lanes_and_sample(RG_file):
 		print merge_cmd
 
 		call(merge_cmd,shell=True)
+
+		#now, gzip all _rmdup.bams - moved here as it is now "safe" to gzip 
+		call("gzip *rmdup.bam",shell=True)
 
 		#flagstat the merged bam
 		call("samtools flagstat " + sample[0] + "_merged.bam >" + sample[0]+ "_merged_flagstat.txt",shell=True)
