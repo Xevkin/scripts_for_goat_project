@@ -252,9 +252,9 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 	
 def process_bam(sample_name):
 
-	print sample_name
 	sample_name = "_".join(sample_name.split("_")[:-1])		
-
+	print "Processing step for: " + sample_name
+	
 	#flagstat the bam
 	call("samtools flagstat " + sample_name + ".bam > " + sample_name + "_flagstat.txt",shell=True)
 
@@ -297,7 +297,14 @@ def merge_lanes_and_sample(RG_file):
 				sample_list.append([sample])
 
 	print sample_list
+	with open("alignment.log","w+") as log:
 
+		log.write("Samples in RG file that files will be merged to create")
+		
+		for sample in sample_list:
+				
+			log.write(sample[0])
+	
 	#then cycle through the RG file and associate each lane with the correct sample
         for sample in sample_list:
 
@@ -317,12 +324,19 @@ def merge_lanes_and_sample(RG_file):
 
 		sample.append(lane_list)
 		print sample
+		with open("alignment.log","w+") as log:
+
+			log.write("Bam files associated with sample " + sample[0])
+			
+			for lane in sample[1]:
+
+				log.write(lane)
 
 
 	#create a list of final merged,rmdup bams that will be returned
 	merged_bam_list = []
 	
-	#for each sample, go through each lane for that sample and merge each fastq for that sample
+	#for each sample, go through each lane for that sample and merge each bam for that sample
 	for sample in sample_list:
 				
 		merged_lane_list = []
@@ -370,6 +384,10 @@ def merge_lanes_and_sample(RG_file):
 			merge_cmd = merge_cmd + "OUTPUT=" + sample_lane + ".bam 2>" + sample_lane + ".log"
 
 			print merge_cmd
+			with open("alignment.log","w+") as log:
+			
+				log.write("Merge command....")
+				log.write(merge_cmd)
 
 		
 			#now merge each bam file associated with a given lane
