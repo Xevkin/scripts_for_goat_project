@@ -106,23 +106,12 @@ def main(date_of_hiseq, meyer, species, trim, align, process, RG_file, output_di
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
 	
 	call("gzip *",shell=True)
-	
-	for sample in fastq_list:
-			
-		#going to make an output directory for each sample
-		#then move all produced files to this directory
-		call("mkdir " + out_dir + sample,shell=True)
-		print "mv *" + sample + "*.bam* "+ sample + "*.idx* "+ sample + "*flagstat* " + out_dir + sample
-		call("mv *" + sample + "*.bam* "+ sample + "*.idx* "+ sample + "*flagstat* " + out_dir + sample,shell=True)
 
-	
 	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
-	call("mv trimmed_fastq_files_and_logs/ " + out_dir,shell=True)
-
+	
 	output_summary = date_of_hiseq + "_summary.table"
 	
-	call("mv *bam* *flagstat* *log" + out_dir,shell=True)
-
+	
 def set_up(date_of_hiseq, meyer, species, RG_file, output_dir, trim):
 	#take all .fastq.gz files in current directory; print them
 	files = []
