@@ -256,7 +256,7 @@ def process_bam(sample_name):
 	print "Processing step for: " + sample_name
 	
 	#flagstat the bam
-	call("samtools flagstat " + sample_name + ".bam > " + sample_name + "_flagstat.txt",shell=True)
+	call("samtools flagstat " + sample_name + ".bam > " + sample_name + ".flagstat",shell=True)
 
 	#sort this bam
 	print "samtools sort " + sample_name + ".bam " + sample_name + "_sort"
@@ -266,6 +266,7 @@ def process_bam(sample_name):
 	call("gzip " + sample_name + ".bam",shell=True)
 	
 	print "samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam"
+
 	#remove duplicates from the sorted bam
 	call("samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam", shell=True)
 	
@@ -273,13 +274,9 @@ def process_bam(sample_name):
 	call("rm " + sample_name + "_sort.bam",shell=True)
 
 	#flagstat the rmdup bam
-	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup_flagstat.txt",shell=True)
+	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup.flagstat",shell=True)
 
-	#get idx stats
-	#call("samtools idxstats "+ sample_name + "_q25.bam > "  + sample_name + ".idx",shell=True)
-
-
-
+	
 def merge_lanes_and_sample(RG_file):
 
 	#get sample list from the RG file
@@ -297,15 +294,7 @@ def merge_lanes_and_sample(RG_file):
 				sample_list.append([sample])
 
 	print sample_list
-	with open("alignment.log","w+") as log:
-
-		log.write("Samples in RG file that files will be merged to create")
-		
-		for sample in sample_list:
-				
-			log.write(sample[0])
-	
-	#then cycle through the RG file and associate each lane with the correct sample
+	#cycle through the RG file and associate each lane with the correct sample
         for sample in sample_list:
 
 		lane_list = []
@@ -324,15 +313,7 @@ def merge_lanes_and_sample(RG_file):
 
 		sample.append(lane_list)
 		print sample
-		with open("alignment.log","w+") as log:
-
-			log.write("Bam files associated with sample " + sample[0])
-			
-			for lane in sample[1]:
-
-				log.write(lane)
-
-
+		
 	#create a list of final merged,rmdup bams that will be returned
 	merged_bam_list = []
 	
@@ -350,23 +331,20 @@ def merge_lanes_and_sample(RG_file):
 			with open(RG_file) as r:
 
 				for line in r:
-
+	
 					if (lane == line.split("\t")[2] ) and (sample[0] == line.split("\t")[3].rstrip("\n")):
 						print lane
 						print sample[0]	
 						print line				
 						files_in_lane.append(line.split("\t")[0].split(".")[0] + "_rmdup.bam")
 
-			bams_to_gzip = []
-
+						
 			for bam in files_in_lane:
-
-				if os.path.isfile(bam):
-				
-					merge_cmd = merge_cmd + "INPUT=" + bam + " "
-				
-					bams_to_gzip.append(bam)
 					
+				if os.path.isfile(bam):
+					
+					merge_cmd = merge_cmd + "INPUT=" + bam + " "
+											
 					if not "-" in bam:
 				
 						sample_name = bam.split("_")[0]
@@ -384,23 +362,14 @@ def merge_lanes_and_sample(RG_file):
 			merge_cmd = merge_cmd + "OUTPUT=" + sample_lane + ".bam 2>" + sample_lane + ".log"
 
 			print merge_cmd
-			with open("alignment.log","w+") as log:
-			
-				log.write("Merge command....")
-				log.write(merge_cmd)
-
 		
 			#now merge each bam file associated with a given lane
 			call(merge_cmd,shell=True)
 
 			#flagstat the merged bam
-			call("samtools flagstat "+ sample_lane + ".bam >"+ sample_lane + "_flagstat.txt" ,shell=True)
+			call("samtools flagstat "+ sample_lane + ".bam >"+ sample_lane + ".flagstat" ,shell=True)
 
-			#gzip the rmdup bams
-			for bam in bams_to_gzip:
-
-				  call("gzip " + bam.rstrip("\n"),shell=True)
-		
+	
 			#remove duplicates from the merged lane bam
 			cmd = "samtools rmdup -s " + sample_lane + ".bam " + sample_lane + "_rmdup.bam 2> " + sample_lane + "_rmdup.log"  
 
@@ -410,7 +379,7 @@ def merge_lanes_and_sample(RG_file):
 			call("gzip " + sample_lane + ".bam",shell=True)
 		
 			#flagstat the rmdup_merged file
-			call("samtools flagstat "+ sample_lane + "_rmdup.bam >"+ sample_lane + "_rmdup_flagstat.txt" ,shell=True)
+			call("samtools flagstat "+ sample_lane + "_rmdup.bam >"+ sample_lane + "_rmdup.flagstat" ,shell=True)
 
 			merged_lane_list.append(sample_lane + "_rmdup.bam")
 		
@@ -429,15 +398,9 @@ def merge_lanes_and_sample(RG_file):
 
 		call(merge_cmd,shell=True)
 
-		#now, gzip all _rmdup.bams - moved here as it is now "safe" to gzip 
-		call("gzip *rmdup.bam",shell=True)
-
 		#flagstat the merged bam
-		call("samtools flagstat " + sample[0] + "_merged.bam >" + sample[0]+ "_merged_flagstat.txt",shell=True)
+		call("samtools flagstat " + sample[0] + "_merged.bam >" + sample[0]+ "_merged.flagstat",shell=True)
 	
-		#gzip the lane rmdup_bams
-		call("gzip *rmdup.bam",shell=True)
-
 		merged_bam_list.append(sample[0] + "_merged.bam")
 
 	#note: output is not rmdup. rmdup occurs after indel realignment
@@ -480,27 +443,30 @@ def process_realigned_bams(realigned_bam, reference_genome,output_dir):
 	print realigned_bam.split(".")[0]
 	
 	#at this point we rmdup for merged files - this may be too late in the process, do right after merging?
-	print "samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam 2> " + realigned_bam.split(".")[0] + "_rmdup_flagstat.txt"
-	call("samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam 2> " + realigned_bam.split(".")[0] + "_rmdup_flagstat.txt",shell=True)	
+	print "samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam 2> " + realigned_bam.split(".")[0] + "_rmdup.flagstat"
+	call("samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam 2> " + realigned_bam.split(".")[0] + "_rmdup.flagstat",shell=True)	
 
-	call("samtools view -b -F4 " + realigned_bam.split(".")[0] + "_rmdup.bam > " + realigned_bam.split(".")[0] + "_rmdup_F4.bam && samtools view -q25 -b " + realigned_bam.split(".")[0] + "_rmdup_F4.bam > " + realigned_bam.split(".")[0] + "_rmdup_q25.bam",shell=True)
+	call("samtools view -b -F4 " + realigned_bam.split(".")[0] + "_rmdup.bam > " + realigned_bam.split(".")[0] + "_rmdup_F4.bam && samtools view -q25 -b " + realigned_bam.split(".")[0] + "_rmdup_F4.bam > " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam",shell=True)
 
 	#gzip the rmdup bam
 	call("gzip " + realigned_bam.split(".")[0] + "_rmdup.bam",shell=True)
 	
-	call("samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup_q25.bam > " + realigned_bam.split(".")[0] + "_rmdup_q25_flagstat.txt",shell=True)
+	call("samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam > " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.flagstat",shell=True)
 
-	call("samtools index " + realigned_bam.split(".")[0] + "_rmdup_q25.bam",shell=True)
+	call("samtools index " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam",shell=True)
 
-	cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_rmdup_q25.bam --omitDepthOutputAtEachBase"
+	call("samtools idxstats " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam > " + realigned_bam.split(".")[0].split("_")[0] + ".idx",shell=True)
+
+	cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam --omitDepthOutputAtEachBase"
 
 	call(cmd,shell=True)
 	
-	q25_bam=realigned_bam.split(".")[0] + "_rmdup_q25.bam"
+	q25_bam=realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam"
 	
 	mapDamage_rescale(q25_bam,reference_genome,output_dir)
 	
 	call("mv DoC* " + output_dir,shell=True)
+
 try:
 	date_of_hiseq  = sys.argv[1]
 	meyer = sys.argv[2]
