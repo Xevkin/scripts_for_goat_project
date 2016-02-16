@@ -34,16 +34,16 @@ nuclear_genomes = {
 
 	"cow" : "/kendrick/reference_genomes/cow_bosTau8/bosTau8.fa",
 
-	"dog" : "/kendrick/reference_genomes/canFam3.fa",
+	"dog" : "/kendrick/reference_genomes/dog_canFam3/canFam3.fa",
 
 	"horse" : "/kendrick/reference_genomes/horse_equCab2/horse.fa"
 }
 
 mitochondrial_genomes = {
 
-	"goat" : "~/goat/miseq/data/mit_genomes_fastq_screen/goat_mit/goat_mit.fasta",
+	"goat" : "/kendrick/miseq/data/mit_genomes_fastq_screen/goat_mit/goat_mit.fasta",
 
-	"sheep" : "~/goat/miseq/data/mit_genomes_fastq_screen/sheep_mit/sheep_mit.fasta"
+	"sheep" : "/kendrick/miseq/data/mit_genomes_fastq_screen/sheep_mit/sheep_mit.fasta"
 
 }
 
@@ -140,7 +140,7 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir):
 
 	        cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
 
-        	fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
+        	fastq_screen = "/kendrick/miseq/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
 
 	else:
 
@@ -150,7 +150,7 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir):
 	
 		cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 25 "
 
-                fastq_screen = "~/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf ~/goat/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
+                fastq_screen = "/kendrick/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf /kendrick/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
 
 
 	print "Species selected is " + species
@@ -164,7 +164,7 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir):
 
 	if (species == "sheep"):
 
-		out_dir = "~/sheep/results/" + date_of_miseq +  "/" 
+		out_dir = "/kendrick/miseq/sheep/results/" + date_of_miseq +  "/" 
 
 	call("mkdir " + out_dir, shell=True)
 
@@ -249,27 +249,24 @@ def align(sample, RG_file, alignment_option, reference):
     call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)
     
     with open(RG_file) as file:
-	print sample
+	
 	for line in file:
-		
 		split_line = line.split("\t")
-		print split_line	
-		if (sample == split_line[0]):
+		print "Iterating over RG files lines..."
+		print "Here is the RG line after spliting on \t"
+		print split_line
+		print "Here is [0] of the split RG line:"	
+		print split_line[0]
+		print "Here is the current sample variable:"
+		print sample
+		if (sample == split_line[0].split(".")[0]):
 
 			RG = split_line[1].rstrip("\n")
+			break
 				
-			#check if RG is an empty string
-			if not RG:
-		
-				print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree" 
-				#should probably do something here is there are no read groups
-		                break
-		        else:
-	
-				print "Reads groups being used are:"
-                               	print RG
 	file.seek(0)
 
+	print "Read groups being used for this sample are:"
         print sample
 	print RG                        		
         call("bwa samse "  + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
