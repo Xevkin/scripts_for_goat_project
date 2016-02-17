@@ -43,6 +43,9 @@ do
 
 	filter_X-some_from_fq.awk $sample".fq" > $sample"_X.fq"; gzip $sample"_X.fq"
 	
+	#remove the original fq file
+	rm $sample".fq"
+
 	#Now we create the bin file  that is the input to psmc
 	#this is a .psmcfa file, which actually looks like a fasta file. Each character represents a bin of size 100bp
         #N indicates too many N's in the bin; T indicates a homozygous bin; K is a heterozygous bin

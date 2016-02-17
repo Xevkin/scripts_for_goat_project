@@ -4,7 +4,7 @@ Script is run in a directory with bam files to be aligned to either goat, wild g
 Reads will be trimmed, aligned, read groups added, duplicates removed, then 
 
 Also need to supply a date for the Hiseq run - will automatically make results file
-python script <date_of_hiseq> <meyer> <species> <trim> <align> <read group file> <directory in which to place output dir/>
+python script <date_of_hiseq> <meyer> <species> <trim> <align> <process> <read group file> <directory in which to place output dir/>
 
 read group file needs to be in the follow format (\t are actual tab characters)
 FASTQ_FILE.GZ\t@RG\tID:X\tSM:X\tPL:X\tLB:X\tLANE\tSAMPLE_NAME
@@ -241,7 +241,16 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 	
 def process_bam(sample_name):
 
-	sample_name = "_".join(sample_name.split("_")[:-1])		
+	#the input list will be different depending on whether the fastq files have been trimmed prior to the script being run
+	#ie if the script was interupted and had to be restarted
+	#including a fix for that
+
+	if sample_name.endswith("_trimmed"):	
+	
+		sample_name = "_".join(sample_name.split("_")[:-1])		
+	
+	
+	
 	print "Processing step for: " + sample_name
 	
 	#flagstat the bam
@@ -406,7 +415,6 @@ def indel_realignment(rmdup_bam, reference_genome):
 	
 	call("java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log",shell=True)
 
-
 	return rmdup_bam.split(".")[0] + "_realigned.bam"
 
 
@@ -430,7 +438,12 @@ def process_realigned_bams(realigned_bam, reference_genome,output_dir):
 	
 	print realigned_bam
 	print realigned_bam.split(".")[0]
+
+	#rescale at this point
+	mapDamage_rescale(realigned_bam,reference_genome,output_dir)
 	
+	realigned_bam = realigned_bam.split(".")[0] + "_rescaled.bam"
+
 	#at this point we rmdup for merged files - this may be too late in the process, do right after merging?
 	print "samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam 2> " + realigned_bam.split(".")[0] + "_rmdup.flagstat"
 	call("samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam 2> " + realigned_bam.split(".")[0] + "_rmdup.flagstat",shell=True)	
@@ -449,10 +462,6 @@ def process_realigned_bams(realigned_bam, reference_genome,output_dir):
 	cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam --omitDepthOutputAtEachBase"
 
 	call(cmd,shell=True)
-	
-	q25_bam=realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam"
-	
-	mapDamage_rescale(q25_bam,reference_genome,output_dir)
 	
 	call("mv DoC* " + output_dir,shell=True)
 
