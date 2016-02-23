@@ -409,11 +409,11 @@ def indel_realignment(rmdup_bam, reference_genome):
 	print "starting realignment for sample "+rmdup_bam
 	
 	call("samtools index " + rmdup_bam,shell=True)
-	cmd = "java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T RealignerTargetCreator -R " + reference_genome + " -I " + rmdup_bam + " -o forIndelRealigner" + rmdup_bam.split(".")[0] + ".intervals 2> " + rmdup_bam.split(".")[0] + "_intervals.log"
+	cmd = "java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T RealignerTargetCreator -R " + reference_genome + " -I " + rmdup_bam + " -o forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals 2> " + rmdup_bam.split(".")[0] + "_intervals.log"
 
 	call(cmd, shell=True)
 	
-	call("java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log",shell=True)
+	call("java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log",shell=True)
 
 	return rmdup_bam.split(".")[0] + "_realigned.bam"
 
@@ -425,7 +425,8 @@ def mapDamage_rescale(bam,reference_genome, out_dir):
 	#gzip the input bam
 	call("gzip " + bam,shell=True)
 
-	call("mv results_" + bam.split(".")[0] + "/" +bam.split(".")[0] + ".rescaled.bam ./ ; mv " + bam.split(".")[0] + ".rescaled.bam " + bam.split(".")[0] + "_rescaled.bam",shell=True)
+	print "mv results_" + bam.split(".")[0] + "/" +bam.split(".")[0] + ".rescaled.bam ./" + bam.split(".")[0] + "_rescaled.bam"
+	call("mv results_" + bam.split(".")[0] + "/" +bam.split(".")[0] + ".rescaled.bam ./" + bam.split(".")[0] + "_rescaled.bam",shell=True)
 
 	call("mkdir " + out_dir + bam.split(".")[0] + "; mv " + bam.split(".")[0] + "_rescaled.bam " + out_dir+bam.split(".")[0]+"/",shell=True)
 

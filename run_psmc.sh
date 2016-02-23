@@ -7,6 +7,8 @@
 INPUT_FILE=$1
 INPUT_FOLD=$2
 REF=$3
+GEN_TIME=$4
+MUTATION_RATE=$5
 
 #must use the correct/most recent version of samtools - bcftools will complain if otherwise
 SAMTOOLS="/home/kdaly/bin/samtools-1.2/samtools"
@@ -15,8 +17,6 @@ PSMC="/home/kdaly/bin/psmc/"
 
 #using the time interval settings, generation time and mutation rate as suggested by Bosse et al, 2015 
 PSMC_SETTINGS="-N25 -t15 -r5 -p '4+50*1+4+6'"
-GEN_TIME=$4
-MUTATION_RATE=$5
 
 #input file should have one line per sample, space seperated
 #first col is sample name without bam handle
@@ -60,7 +60,7 @@ do
 	echo $PSMC"psmc" $PSMC_SETTINGS -o $SAMPLE_NAME".psmc" $SAMPLE_NAME".psmcfa" > tmp.sh; sh tmp.sh
 	#echo $PSMC"psmc" -N25 -t15 -r5 -p \"4+50*1+4+6\" -o $SAMPLE_NAME".psmc" $SAMPLE_NAME".psmcfa" > tmp.sh; sh tmp.sh
 	$PSMC"utils/psmc2history.pl" $SAMPLE_NAME".psmc" | $PSMC"utils/history2ms.pl" > ms-cmd.sh
-	echo $PSMC"utils/psmc_plot.pl" -u $MUTATION_RATE -g $GEN_TIME -M '"'$SAMPLE_NAME"="$FNR'"' $SAMPLE_NAME"-"$FNR $SAMPLE_NAME".psmc" >tmp.sh
+	echo $PSMC"utils/psmc_plot.pl" -p -u $MUTATION_RATE -g $GEN_TIME -M '"'$SAMPLE_NAME"="$FNR'"' $SAMPLE_NAME"-"$FNR $SAMPLE_NAME".psmc" >tmp.sh
 	sh tmp.sh
 	mv ms-cmd.sh $SAMPLE_NAME"-ms-cmd.sh"
 	rm tmp.sh
