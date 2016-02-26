@@ -53,6 +53,9 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, RG_file, outpu
 	
 	files, reference, mit_reference, out_dir, cut_adapt, alignment_option, fastq_list = set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim) 
 	
+	#make a folder for flagstat files	
+	call("mkdir flagstat_files",shell=True)
+
 	#sample is the file root
 	#trim fastq files and produce fastqc files - if we want to
 	#the masterlist will change each time so it needs be equated to the function
@@ -75,9 +78,13 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, RG_file, outpu
 
 		if (mit_reference != "no" ):
 
-		map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mit_reference, trim), fastq_list)
+			map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mit_reference, trim), fastq_list)
 
-	map (lambda fastq : process_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
+			merge_and_process_mit(RG_file)
+
+			call("mv *flagstat* flagstat_files; mkdir mit_bam_files; bgzip *mit*bam; mv *_mit* mit_bam_files",shell=True)
+
+		map (lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
 
 	#Remove the sai files that we don't care about
 	call("rm *sai",shell=True)
@@ -110,15 +117,22 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, RG_file, outpu
 	
 		
 	#clean up files
-	
+	call("gunzip *flagstat.gz",shell=True)
+	call("mv *flagstat",shell=True)
+
+	call("mkdir log_files; mv *log log_files", shell=True)
+
+	call("mkdir angsd_consensus_sequences; mv *angsd* angsd_consensus_sequences",shell=True)
 	call("mkdir trimmed_fastq_files_and_logs",shell=True)
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
-	
-	call("gzip *",shell=True)
 
+	call("mkdir idx_files; mv *idx *idx.gz idx_files; mkdir auxillary_files; mv *interval* RG.tsv* auxillary_files",shell=True)	
+	call("bgzip *bam",shell=True)
+
+	call("mkdir final_bams; mv *q25.bam* *F4*bam* finals_bams/; mkdir intermediate_bams; mv *bam* intermediate_bams",shell=True)
 	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
 	
-	output_summary = date_of_hiseq + "_summary.table"
+	
 	
 	
 def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
@@ -220,6 +234,8 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 
 def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
+    sample = fastq.split(".")[0]
+    
     trimmed_fastq = sample + "_trimmed.fastq"
 
     if (trim != "yes"):
@@ -257,27 +273,43 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
         print sample
 
         print RG
-        print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample + "_F4.bam"
-        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample + "_F4.bam",shell=True)
+        print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample + "_mit_F4.bam"
+        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample +"_mit_F4.bam && samtools flagstat " + sample +"_mit_F4.bam > " +sample + "_mit_F4.flagstat" ,shell=True)
 
+	print "samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort"
+	call("samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort",shell=True)
+
+	print "samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam"
+	call("samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam",shell=True)
+	
+	call("rm " + sample + "_mit_F4_sort.bam",shell=True)
+	
+	call("samtools flagstat " + sample + "_mit_F4_rmdup.bam > " + sample + "_mit_F4_rmdup.flagstat",shell=True)	
+
+
+def merge_and_process_mit(RG_file):
 
 	merged_mit_bam_list = merge_lanes_and_sample(RG_file,"yes")
 
-	for bam in merged_mit_bam_list:
+        for bam in merged_mit_bam_list:
 
-		bam_root = bam.split(".")[0]
+                bam_root = bam.split(".")[0]
 
-		call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
+                call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
-		call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True) 		
+                call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
 
-		call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
+                call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
 
-		call("samtools view -b -q25 "+ bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q25.bam",shell=True)
+                call("samtools view -b -q25 "+ bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q25.bam",shell=True)
 
-		call("samtools index " + bam_root + "_rmdup_q25.bam",shell=True)
+                call("samtools index " + bam_root + "_rmdup_q25.bam",shell=True)
+		
+		call("samtools idxstats " +  bam_root + "_rmdup_q25.bam >" + bam_root + "_rmdup_q25.idx",shell=True)
 
-		call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 4 -minQ 25",shell=True)
+                call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 4 -minQ 25",shell=True)
+
+
 
 def align_bam(sample, RG_file, alignment_option, reference, trim):
 
@@ -318,29 +350,29 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
         print sample
 
 	print RG                        		
-	print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + "_mit_F4.bam"
-        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + "_mit_F4.bam",shell=True)
+	print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam"
+        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
 	
        #flagstat the bam
-        call("samtools flagstat " + sample_name + "_mit_F4.bam > " + sample_name + "_mit_F4.flagstat",shell=True)
+        call("samtools flagstat " + sample + ".bam > " + sample + ".flagstat",shell=True)
 
         #sort this bam
-        print "samtools sort " + sample_name + "_mit_F4.bam " + sample_name + "_mit_F4_sort"
-        call("samtools sort " + sample_name + "_mit_F4.bam " + sample_name + "_mit_F4_sort",shell=True)
+        print "samtools sort " + sample + ".bam " + sample + "_sort"
+        call("samtools sort " + sample + ".bam " + sample + "_sort",shell=True)
 
         #gzip the original bam
-        call("gzip " + sample_name + "_mit_F4.bam",shell=True)
+        call("gzip " + sample + ".bam",shell=True)
 
 	#remove duplicates from the sorted bam
-        print "samtools rmdup -s " + sample_name + "_mit_F4_sort.bam " + sample_name + "_mit_F4_rmdup.bam"
+        print "samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam"
 
-        call("samtools rmdup -s " + sample_name + "_mit_F4_sort.bam " + sample_name + "_mit_F4_rmdup.bam", shell=True)
+        call("samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam", shell=True)
 
         #remove the "sorted with duplicates" bam
-        call("rm " + sample_name + "_sort.bam",shell=True)
+        call("rm " + sample + "_sort.bam",shell=True)
 
         #flagstat the rmdup bam
-        call("samtools flagstat " + sample_name + "_mit_F4_rmdup.bam > " + sample_name + "_mit_F4_rmdup.flagstat",shell=True)
+        call("samtools flagstat " + sample + "_rmdup.bam > " + sample + "_rmdup.flagstat",shell=True)
 
 
 def process_bam(sample_name):
@@ -540,8 +572,6 @@ def mapDamage_rescale(bam,reference_genome, out_dir):
 	print "mv results_" + bam.split(".")[0] + "/" +bam.split(".")[0] + ".rescaled.bam ./" + bam.split(".")[0] + "_rescaled.bam"
 	call("mv results_" + bam.split(".")[0] + "/" +bam.split(".")[0] + ".rescaled.bam ./" + bam.split(".")[0] + "_rescaled.bam",shell=True)
 
-	call("mkdir " + out_dir + bam.split(".")[0] + "; mv " + bam.split(".")[0] + "_rescaled.bam " + out_dir+bam.split(".")[0]+"/",shell=True)
-
 	print bam.split(".")[0] + "_rescaled.bam"
 
 	return (bam.split(".")[0] + "_rescaled.bam")
@@ -591,7 +621,7 @@ try:
 
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_hiseq, meyer, species, trim, align, process, RG_file, and the directory to put output directories/files"
+	print "Input variables are date_of_hiseq, meyer, species, mit, trim, align, process, RG_file, and the directory to put output directories/files"
 	print "Exiting program..."
 	sys.exit()
 
