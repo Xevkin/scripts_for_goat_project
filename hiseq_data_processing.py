@@ -4,7 +4,7 @@ Script is run in a directory with bam files to be aligned to either goat, wild g
 Reads will be trimmed, aligned, read groups added, duplicates removed, then 
 
 Also need to supply a date for the Hiseq run - will automatically make results file
-python script <date_of_hiseq> <meyer> <species> <mit> <trim> <align> <process> <read group file> <directory in which to place output dir/>
+python script <date_of_hiseq> <meyer> <species> <mit> <trim> <align> <process_individual_bams> <merge+process> <read group file> <directory in which to place output dir/>
 
 read group file needs to be in the follow format (\t are actual tab characters)
 FASTQ_FILE.GZ\t@RG\tID:X\tSM:X\tPL:X\tLB:X\tLANE\tSAMPLE_NAME
@@ -46,7 +46,7 @@ mitochondrial_genomes = {
 
 }
 
-def main(date_of_hiseq, meyer, species, mit,trim, align, process, RG_file, output_dir):
+def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, RG_file, output_dir):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
@@ -82,7 +82,7 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, RG_file, outpu
 
 			merge_and_process_mit(RG_file)
 
-			call("mv *flagstat* flagstat_files; mkdir mit_bam_files; bgzip *mit*bam; mv *_mit* mit_bam_files",shell=True)
+			call("mv *flagstat* flagstat_files; mkdir mit_bam_files; bgzip *mit*bam; mv *_mit* mit_bam_files; mkdir angsd_consensus; mv angsd*fa* angsd*log* angsd_consensus ",shell=True)
 
 		map (lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
 
@@ -93,7 +93,13 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, RG_file, outpu
 	if (process == "yes" or process == "process"):
 
 		map(process_bam, fastq_list)
+	
+	
+	#add an option here to kill the script if you do not want merging to occur
+	if (merge == "no"):
 
+		sys.exit("Script is terminated as no merging was desired")	
+ 
         #now merge the lanes for each sample
 	#NOTE: if all the options up to process are "no", then this is where the script will start
 	#expects rmdup bams for each index in each lane, ungziped
@@ -191,13 +197,13 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	#allow meyer option to be used
 	meyer_input = meyer.rstrip("\n").lower()
 
-	alignment_option = "bwa aln -t 5 -l 1024 "  
+	alignment_option = "bwa aln -t 12 -l 1024 "  
 
 	if (meyer_input == "meyer"):
 		
 		print "Meyer option selected."
 		
-		alignment_option = "bwa aln -t 5 -l 1000 -n 0.01 -o 2 " 
+		alignment_option = "bwa aln -t 8 -l 1000 -n 0.01 -o 2 " 
 
 	#variable for RG file
 	RG_file = RG_file.rstrip("\n")
@@ -244,8 +250,8 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
         sample = "_".join(sample.split("_")[:-1])
 
-    print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
-    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)
+    print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + "_mit.sai 2> " + trimmed_fastq + "_mit_alignment.log")
+    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + "_mit.sai 2>"+ trimmed_fastq + "_mit_alignment.log",shell=True)
 
     with open(RG_file) as file:
         print sample
@@ -273,14 +279,16 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
         print sample
 
         print RG
-        print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample + "_mit_F4.bam"
-        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample +"_mit_F4.bam && samtools flagstat " + sample +"_mit_F4.bam > " +sample + "_mit_F4.flagstat" ,shell=True)
+        print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample + "_mit_F4.bam + 2> " + trimmed_fastq + "_mit_alignment.log"
+        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample +"_mit_F4.bam && samtools flagstat " + sample +"_mit_F4.bam > " +sample + "_mit_F4.flagstat 2> " + trimmed_fastq + "_mit_alignment.log",shell=True)
 
-	print "samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort"
-	call("samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort",shell=True)
+	call ("rm "+ sample + "_mit.sai ",shell=True)
 
-	print "samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam"
-	call("samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam",shell=True)
+	print "samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort 2>" + trimmed_fastq + "_mit_alignment.log"
+	call("samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort 2> " + trimmed_fastq + "_mit_alignment.log",shell=True)
+
+	print "samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam 2>" + trimmed_fastq + "_mit_alignment.log"
+	call("samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam 2> " + trimmed_fastq + "_mit_alignment.log",shell=True)
 	
 	call("rm " + sample + "_mit_F4_sort.bam",shell=True)
 	
@@ -310,7 +318,6 @@ def merge_and_process_mit(RG_file):
                 call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 4 -minQ 25",shell=True)
 
 
-
 def align_bam(sample, RG_file, alignment_option, reference, trim):
 
     trimmed_fastq = sample + "_trimmed.fastq"
@@ -322,7 +329,7 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 	sample = "_".join(sample.split("_")[:-1]) 
 
     print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
-    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)
+    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai 2>" + trimmed_fastq + "_alignment.log",shell=True)
     
     with open(RG_file) as file:
 	print sample
@@ -350,8 +357,8 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
         print sample
 
 	print RG                        		
-	print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam"
-        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
+	print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam 2>" + trimmed_fastq + "_alignment.log"
+        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam 2> "+ trimmed_fastq + "_alignment.log",shell=True)
 	
        #flagstat the bam
         call("samtools flagstat " + sample + ".bam > " + sample + ".flagstat",shell=True)
@@ -366,7 +373,7 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 	#remove duplicates from the sorted bam
         print "samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam"
 
-        call("samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam", shell=True)
+        call("samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam 2> " + trimmed_fastq + "_alignment.log", shell=True)
 
         #remove the "sorted with duplicates" bam
         call("rm " + sample + "_sort.bam",shell=True)
@@ -398,10 +405,10 @@ def process_bam(sample_name):
 	#gzip the original bam
 	call("gzip " + sample_name + ".bam",shell=True)
 	
-	print "samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam"
+	print "samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam 2>" + sample_name + "_alignment.log"
 
 	#remove duplicates from the sorted bam
-	call("samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam", shell=True)
+	call("samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam 2> "  + sample_name + "_alignment.log", shell=True)
 	
 	#remove the "sorted with duplicates" bam
 	call("rm " + sample_name + "_sort.bam",shell=True)
@@ -534,16 +541,22 @@ def merge_lanes_and_sample(RG_file, mit="no"):
 
 			merge_cmd = merge_cmd + "INPUT=" + bam + " "
 		
-		merge_cmd = merge_cmd + "OUTPUT=" + sample[0] + "_merged.bam 2>" + sample[0] + "_merged.log"
+		sample_name =  sample[0]
+
+		if (mit == "yes"):
+
+			sample_name = sample_name + "_mit"
+	
+		merge_cmd = merge_cmd + "OUTPUT=" + sample_name + "_merged.bam 2>" + sample_name + "_merged.log"
 
 		print merge_cmd
 
 		call(merge_cmd,shell=True)
 
 		#flagstat the merged bam
-		call("samtools flagstat " + sample[0] + "_merged.bam >" + sample[0]+ "_merged.flagstat",shell=True)
+		call("samtools flagstat " + sample_name + "_merged.bam >" + sample_name+ "_merged.flagstat",shell=True)
 	
-		merged_bam_list.append(sample[0] + "_merged.bam")
+		merged_bam_list.append(sample_name + "_merged.bam")
 
 	#note: output is not rmdup. rmdup occurs after indel realignment
 	return merged_bam_list
@@ -616,12 +629,13 @@ try:
 	trim = sys.argv[5]
 	align = sys.argv[6]
 	process = sys.argv[7]
-	RG_file  = sys.argv[8]
-	output_dir = sys.argv[9]
+	merge = sys.argv[8]
+	RG_file  = sys.argv[9]
+	output_dir = sys.argv[10]
 
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_hiseq, meyer, species, mit, trim, align, process, RG_file, and the directory to put output directories/files"
+	print "Input variables are date_of_hiseq, meyer, species, mit, trim, align, process, merge, RG_file, and the directory to put output directories/files"
 	print "Exiting program..."
 	sys.exit()
 
@@ -630,4 +644,4 @@ if not output_dir[-1] == "/":
 
 	output_dir = output_dir + "/"
 
-main(date_of_hiseq, meyer, species, mit, trim, align, process, RG_file, output_dir)
+main(date_of_hiseq, meyer, species, mit, trim, align, process, merge, RG_file, output_dir)
