@@ -360,7 +360,7 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 	print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam 2>" + trimmed_fastq + "_alignment.log"
         call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam 2> "+ trimmed_fastq + "_alignment.log",shell=True)
 	
-       #flagstat the bam
+        #flagstat the bam
         call("samtools flagstat " + sample + ".bam > " + sample + ".flagstat",shell=True)
 
         #sort this bam
@@ -528,7 +528,7 @@ def merge_lanes_and_sample(RG_file, mit="no"):
 			call("gzip " + sample_lane + ".bam",shell=True)
 		
 			#flagstat the rmdup_merged file
-			call("samtools flagstat "+ sample_lane + "_rmdup.bam >"+ sample_lane + "_rmdup.flagstat" ,shell=True)
+			call("samtools flagstat "+ sample_lane + "_rmdup.bam > "+ sample_lane + "_rmdup.flagstat" ,shell=True)
 
 			merged_lane_list.append(sample_lane + "_rmdup.bam")
 		
@@ -554,7 +554,7 @@ def merge_lanes_and_sample(RG_file, mit="no"):
 		call(merge_cmd,shell=True)
 
 		#flagstat the merged bam
-		call("samtools flagstat " + sample_name + "_merged.bam >" + sample_name+ "_merged.flagstat",shell=True)
+		call("samtools flagstat " + sample_name + "_merged.bam > " + sample_name+ "_merged.flagstat",shell=True)
 	
 		merged_bam_list.append(sample_name + "_merged.bam")
 
@@ -601,8 +601,8 @@ def process_realigned_bams(realigned_bam, reference_genome,output_dir):
 	realigned_bam = realigned_bam.split(".")[0] + "_rescaled.bam"
 
 	#at this point we rmdup for merged files - this may be too late in the process, do right after merging?
-	print "samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam 2> " + realigned_bam.split(".")[0] + "_rmdup.flagstat"
-	call("samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam 2> " + realigned_bam.split(".")[0] + "_rmdup.flagstat",shell=True)	
+	print "samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam > " + realigned_bam.split(".")[0] + "_rmdup.flagstat"
+	call("samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam > " + realigned_bam.split(".")[0] + "_rmdup.flagstat",shell=True)	
 
 	call("samtools view -b -F4 " + realigned_bam.split(".")[0] + "_rmdup.bam > " + realigned_bam.split(".")[0] + "_rmdup_F4.bam && samtools view -q25 -b " + realigned_bam.split(".")[0] + "_rmdup_F4.bam > " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam",shell=True)
 
