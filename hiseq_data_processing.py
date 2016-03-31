@@ -74,15 +74,15 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, RG_file
 	#they should have the same stem of the initial bam
 
 
+	if (mit_reference != "no" ):
+
+		map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mit_reference, trim), fastq_list)
+
+		merge_and_process_mit(RG_file)
+
+		call("mv *flagstat* flagstat_files; mkdir mit_bam_files; bgzip *mit*bam; mv *_mit* mit_bam_files; mkdir angsd_consensus; mv angsd*fa* angsd*log* angsd_consensus ",shell=True)
+
 	if (align == "yes" or align == "align"):
-
-		if (mit_reference != "no" ):
-
-			map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mit_reference, trim), fastq_list)
-
-			merge_and_process_mit(RG_file)
-
-			call("mv *flagstat* flagstat_files; mkdir mit_bam_files; bgzip *mit*bam; mv *_mit* mit_bam_files; mkdir angsd_consensus; mv angsd*fa* angsd*log* angsd_consensus ",shell=True)
 
 		map (lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
 
