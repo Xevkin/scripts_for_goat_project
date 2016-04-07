@@ -80,7 +80,7 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, RG_file
 
 		merge_and_process_mit(RG_file)
 
-		call("mv *flagstat* flagstat_files; mkdir mit_bam_files; bgzip *mit*bam; mv *_mit* mit_bam_files; mkdir angsd_consensus; mv angsd*fa* angsd*log* angsd_consensus ",shell=True)
+		call("mkdir mit_logs; mv *mit*.log mit_logs; mv *flagstat* flagstat_files; mkdir mit_bam_files; mkdir angsd_consensus; mv angsd*fa* angsd*log* angsd_consensus; bgzip *mit*bam; mv *_mit* mit_bam_files ",shell=True)
 
 	if (align == "yes" or align == "align"):
 
@@ -250,13 +250,16 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
         sample = "_".join(sample.split("_")[:-1])
 
-    print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + "_mit.sai 2> " + trimmed_fastq + "_mit_alignment.log")
-    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + "_mit.sai 2>"+ trimmed_fastq + "_mit_alignment.log",shell=True)
+    print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + "_mit.sai 2>> " + sample + "_mit_alignment.log")
+    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + "_mit.sai 2>>"+ sample + "_mit_alignment.log",shell=True)
 
     with open(RG_file) as file:
-        print sample
-        for line in file:
 
+        print "Looking for RG. Current sample is " + sample
+
+        for line in file:
+		
+		print line
                 split_line = line.split("\t")
                 print split_line
                 if (sample == split_line[0].split(".")[0]):
@@ -280,15 +283,16 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
         print RG
         print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample + "_mit_F4.bam + 2> " + trimmed_fastq + "_mit_alignment.log"
-        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample +"_mit_F4.bam && samtools flagstat " + sample +"_mit_F4.bam > " +sample + "_mit_F4.flagstat 2> " + trimmed_fastq + "_mit_alignment.log",shell=True)
+        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample +"_mit_F4.bam, shell=True)
+	call("samtools flagstat " + sample +"_mit_F4.bam > " +sample + "_mit_F4.flagstat 2>> " + sample + "_mit_alignment.log",shell=True)
 
 	call ("rm "+ sample + "_mit.sai ",shell=True)
 
-	print "samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort 2>" + trimmed_fastq + "_mit_alignment.log"
-	call("samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort 2> " + trimmed_fastq + "_mit_alignment.log",shell=True)
+	print "samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort 2>>" + sample + "_mit_alignment.log"
+	call("samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort 2>> " + sample + "_mit_alignment.log",shell=True)
 
-	print "samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam 2>" + trimmed_fastq + "_mit_alignment.log"
-	call("samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam 2> " + trimmed_fastq + "_mit_alignment.log",shell=True)
+	print "samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam 2>>" + sample + "_mit_alignment.log"
+	call("samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam 2>> " + sample + "_mit_alignment.log",shell=True)
 	
 	call("rm " + sample + "_mit_F4_sort.bam",shell=True)
 	
