@@ -124,7 +124,7 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, RG_file
 		
 	#clean up files
 	call("gunzip *flagstat.gz",shell=True)
-	call("mv *flagstat",shell=True)
+	call("mkdir flagstat_files; mv *flagstat flagstat_files",shell=True)
 
 	call("mkdir log_files; mv *log log_files", shell=True)
 
@@ -132,13 +132,16 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, RG_file
 	call("mkdir trimmed_fastq_files_and_logs",shell=True)
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
 
-	call("mkdir idx_files; mv *idx *idx.gz idx_files; mkdir auxillary_files; mv *interval* RG.tsv* auxillary_files",shell=True)	
+	call("mkdir idx_files; mv *idx *idx.gz idx_files; mkdir auxillary_files; mv *interval* RG.tsv* *md5sum* auxillary_files",shell=True)	
 	call("bgzip *bam",shell=True)
 
-	call("mkdir final_bams; mv *q25.bam* *F4*bam* finals_bams/; mkdir intermediate_bams; mv *bam* intermediate_bams",shell=True)
+	call("mkdir final_bams; mv *F4* finals_bams/; mkdir intermediate_bams; mv *bam* intermediate_bams",shell=True)
 	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
 	
-	
+	call("mkdir mapDamage; mv results_* mapDamage/",shell=True)
+	call("mkdir DoC; mv DoC_* DoC",shell=True)
+
+	call("mv flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files fastqc auxillary_files final_bams intermediate_bams mapDamage DoC fastq_files " + out_dir,shell=True)
 	
 	
 def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
@@ -623,7 +626,6 @@ def process_realigned_bams(realigned_bam, reference_genome,output_dir):
 
 	call(cmd,shell=True)
 	
-	call("mv DoC* " + output_dir,shell=True)
 
 try:
 	date_of_hiseq  = sys.argv[1]
