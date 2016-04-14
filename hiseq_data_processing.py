@@ -42,8 +42,10 @@ nuclear_genomes = {
 
 mitochondrial_genomes = { 
 
-	"goat" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/goat/goat_mit_revised.fa"
+	"goat" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/goat/goat_mit_revised_circularized.fa",
 
+	"west_tur" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/tur/west_caucus_tur_circularized.fa"
+	
 }
 
 def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, RG_file, output_dir):
@@ -80,7 +82,10 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, RG_file
 
 		merge_and_process_mit(RG_file)
 
-		call("mkdir mit_logs; mv *mit*.log mit_logs; mv *flagstat* flagstat_files; mkdir mit_bam_files; mkdir angsd_consensus; mv angsd*fa* angsd*log* angsd_consensus; bgzip *mit*bam; mv *_mit* mit_bam_files ",shell=True)
+		#make output directories and dump files 
+		call("mkdir mit_logs; mv *mit*.log mit_logs; mv *flagstat* flagstat_files; mkdir mit_idx_files; mv *mit*idx mit_idx_files", shell=True)
+		call(" bgzip *mit*bam; mkdir final_mit_bams; mv *mit*q25*bam* final_mit_bams; mkdir intermediate_mit_bam_files",shell=True)
+		call(" mkdir angsd_consensus; mv *angsd* angsd_consensus; mv *_mit* intermediate_mit_bam_files ",shell=True)
 
 	if (align == "yes" or align == "align"):
 
@@ -286,7 +291,7 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
         print RG
         print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample + "_mit_F4.bam + 2> " + trimmed_fastq + "_mit_alignment.log"
-        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample +"_mit_F4.bam, shell=True)
+        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample +"_mit_F4.bam", shell=True)
 	call("samtools flagstat " + sample +"_mit_F4.bam > " +sample + "_mit_F4.flagstat 2>> " + sample + "_mit_alignment.log",shell=True)
 
 	call ("rm "+ sample + "_mit.sai ",shell=True)
@@ -322,7 +327,7 @@ def merge_and_process_mit(RG_file):
 		
 		call("samtools idxstats " +  bam_root + "_rmdup_q25.bam >" + bam_root + "_rmdup_q25.idx",shell=True)
 
-                call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 4 -minQ 25",shell=True)
+                call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 2 -minQ 25",shell=True)
 
 
 def align_bam(sample, RG_file, alignment_option, reference, trim):
