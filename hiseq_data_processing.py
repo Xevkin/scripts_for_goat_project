@@ -84,8 +84,8 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, RG_file
 
 		#make output directories and dump files 
 		call("mkdir mit_logs; mv *mit*.log mit_logs; mv *flagstat* flagstat_files; mkdir mit_idx_files; mv *mit*idx mit_idx_files", shell=True)
-		call(" bgzip *mit*bam; mkdir final_mit_bams; mv *mit*q25*bam* final_mit_bams; mkdir intermediate_mit_bam_files",shell=True)
-		call(" mkdir angsd_consensus; mv *angsd* angsd_consensus; mv *_mit* intermediate_mit_bam_files ",shell=True)
+		call("bgzip *mit*bam; mkdir final_mit_bams; mv *mit*q25*bam* *mit_merged_rmdup* final_mit_bams; mkdir intermediate_mit_bam_files",shell=True)
+		call(" mkdir angsd_consensus; mv *angsd* angsd_consensus; mv *_mit* intermediate_mit_bam_files ; mv intermediate_mit_bam_files/final_mit_bams ./",shell=True)
 
 	if (align == "yes" or align == "align"):
 
@@ -306,7 +306,6 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	
 	call("samtools flagstat " + sample + "_mit_F4_rmdup.bam > " + sample + "_mit_F4_rmdup.flagstat",shell=True)	
 
-
 def merge_and_process_mit(RG_file):
 
 	merged_mit_bam_list = merge_lanes_and_sample(RG_file,"yes")
@@ -329,6 +328,7 @@ def merge_and_process_mit(RG_file):
 
                 call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 2 -minQ 25",shell=True)
 
+		call("gunzip " + bam_root + "_angsd_consensus.fa.gz; decircularize.py "  + bam_root + "_angsd_consensus.fa > " + bam_root + "_angsd_consensus_decirc.fa",shell=True)
 
 def align_bam(sample, RG_file, alignment_option, reference, trim):
 
