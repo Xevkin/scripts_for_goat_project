@@ -150,7 +150,7 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir):
 	
 		cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 25 "
 
-                fastq_screen = "/kendrick/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf /kendrick/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
+                fastq_screen = "/kendrick/miseq/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf /kendrick/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
 
 
 	print "Species selected is " + species
@@ -171,13 +171,13 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir):
 	#allow meyer option to be used
 	meyer_input = meyer.rstrip("\n").lower()
 
-	alignment_option = "bwa aln -t 5 -l 1000 "  
+	alignment_option = "bwa aln -t 8 -l 1000 "  
 
 	if (meyer_input == "meyer"):
 		
 		print "Meyer option selected."
 		
-		alignment_option = "bwa aln -t 5 -l 1000 -n 0.01 -o 2 " 
+		alignment_option = "bwa aln -t 8 -l 1000 -n 0.01 -o 2 " 
 
 	#variable for RG file
 	RG_file = RG_file.rstrip("\n")
