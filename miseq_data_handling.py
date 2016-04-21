@@ -4,10 +4,7 @@ Script is run in a directory with bam files to be aligned to the goat genome
 Bams will be trimmed, quality metrics obtained, screened using fastq screen
 
 Also need to supply a date for the Miseq run - will automatically make results file
-python script <date_of_miseq> <meyer> <species> <mit> <fastq_screen> <read group file> <directory in which to place output dir/>
-
-read group file needs to be in the follow format: 
-Sample_name\tRGs_to_add (in following format- ID:X\tSM:X\tPL:X\tLB:X)
+python script <date_of_miseq> <meyer> <species> <mit> <trim> <fastqc> <fastq_screen>  <directory in which to place output dir/>
 
 
 '''
@@ -47,20 +44,25 @@ mitochondrial_genomes = {
 
 }
 
-def main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file, output_dir):
+def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fastqc):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
 	
-	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir) 
+	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, species, mit,  output_dir) 
 	
 	#sample is the file root
 	#trim fastq files and produce fastqc files
 	#the masterlist will change each time so it needs be equated to the function
 	
-	for sample in sample_list:
+	if (trim = "yes"):
 		
-		trim_fastq(sample, cut_adapt, out_dir)
+		#make an output directory for fastqc	
+		call("mkdir " +  out_dir + "fastqc/", shell=True)
+
+		for sample in sample_list:
+		
+			trim_fastq(sample, cut_adapt, out_dir, fastqc)
 	
 	#run fastq screen on the samples if input variable for fastq_screen is "yes"
 	if (fastq_screen.lower() == "yes"):
@@ -72,7 +74,7 @@ def main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file, output_dir):
 	
 	#going to align to CHIR1.0, as that what was used for AdaptMap
 
-	map(lambda sample : align(sample, RG_file, alignment_option, reference), sample_list)
+	map(lambda sample : align(sample,  alignment_option, reference), sample_list)
 	
 	#testing a function here, to process a bam to a q25 version
 	map(process_bam, sample_list)
@@ -118,7 +120,7 @@ def main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file, output_dir):
 	call("mv " + output_summary + " " + out_dir,shell=True)
 
 
-def set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir):
+def set_up(date_of_miseq, meyer, species, mit,  output_dir):
 	#take all .fastq.gz files in current directory; print them
 	files = []
 
@@ -179,9 +181,6 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir):
 		
 		alignment_option = "bwa aln -t 8 -l 1000 -n 0.01 -o 2 " 
 
-	#variable for RG file
-	RG_file = RG_file.rstrip("\n")
-
 	#initialize a masterlist that will carry summary stats of each sample
 	master_list = [["Sample", "read_count_raw", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_remaining","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"]]
 
@@ -210,7 +209,7 @@ def set_up(date_of_miseq, meyer, species, mit, RG_file, output_dir):
 	return files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen
 
 
-def trim_fastq(current_sample, cut_adapt, out_dir):
+def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc):
 	
 	print "Current sample is: " + current_sample
 	
@@ -226,10 +225,10 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 	
        	#run fastqc on both the un/trimmed fastq files
 	#first we want to create an output directory if there is none to begin with
-	call("mkdir " +  out_dir + "fastqc/", shell=True)
-		
-	call("fastqc " + unzipped_fastq + " -o " + out_dir + "fastqc/", shell=True)
-	call("fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
+	if (fastqc = "yes"):
+			
+		call("fastqc " + unzipped_fastq + " -o " + out_dir + "fastqc/", shell=True)
+		call("fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
        	
        	
 def run_fastq_screen(current_sample, out_dir, fastq_screen_option):
@@ -241,42 +240,15 @@ def run_fastq_screen(current_sample, out_dir, fastq_screen_option):
 	call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.fastq --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
 
 
-def align(sample, RG_file, alignment_option, reference):
+def align(sample, alignment_option, reference):
 
     trimmed_fastq = sample + "_trimmed.fastq"
 
     print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
     call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)
     
-    with open(RG_file) as file:
-	
-	for line in file:
-		split_line = line.split("\t")
-		print "Iterating over RG files lines..."
-		print "Here is the RG line after spliting on \t"
-		print split_line
-		print "Here is [0] of the split RG line:"	
-		print split_line[0]
-		print "Here is the current sample variable:"
-		print sample
-		if (sample == split_line[0].split(".")[0]):
-
-			RG = split_line[1].rstrip("\n")
-			break
-				
-	file.seek(0)
-
-	print "Read groups being used for this sample are:"
-        print sample
-	print RG                        		
-        call("bwa samse "  + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
-	call("cp " + sample + ".bam " +sample+"_cp.bam",shell=True)
-	#add the read groups
-	print "java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar VALIDATION_STRINGENCY=SILENT  INPUT=" + sample + ".bam OUTPUT=" + sample + "_RG.bam " + RG.rstrip("\n")
-	call("java -jar /research/picard-tools-1.119/AddOrReplaceReadGroups.jar VALIDATION_STRINGENCY=SILENT  INPUT=" + sample + ".bam OUTPUT=" + sample + "_RG.bam " + RG.rstrip("\n"), shell=True)
-	
-	print "mv " + sample + "_RG.bam " +  sample + ".bam "
-	call("mv " + sample + "_RG.bam " +  sample + ".bam ",shell=True)	
+    print sample                        		
+    call("bwa samse "  + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
 
 def process_bam(sample_name):
 		
@@ -383,14 +355,16 @@ try:
 	meyer = sys.argv[2]
 	species = sys.argv[3]
 	mit = sys.argv[4]
-	fastq_screen = sys.argv[5]
-	RG_file  = sys.argv[6]
-	output_dir = sys.argv[7]
+	trim = sys.argv[5]
+	fastqc = sys.argv[6]
+	fastq_screen = sys.argv[7]
+	output_dir = sys.argv[8]
+
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_miseq, meyer, species, mit, fastq_screen, RG_file, and output directory"
+	print "Input variables are date_of_miseq, meyer, species, mit, trim, fastqc, fastq_screen, and output directory"
 	print "Exiting program..."
 	sys.exit()
 
 
-main(date_of_miseq, meyer, species, mit, fastq_screen, RG_file, output_dir)
+main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fastqc)
