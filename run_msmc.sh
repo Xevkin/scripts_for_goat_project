@@ -25,7 +25,9 @@ for i in $(eval echo "{1..$CHROM_NO}")
 	~/bin/samtools-1.2/samtools mpileup -q 20 -Q 20 -C 50 -u -f $REFERENCE $ROOT"_chr"$i".bam" | bcftools call -c -V indels | \
 	/home/kdaly/bin/msmc/msmc-tools/bamCaller.py $MEAN_COVERAGE  $ROOT"_chr"$i"_mask.bed.gz" | gzip -c > $ROOT"_chr"$i"_mask.vcf.gz"
 
-	/home/kdaly/bin/msmc/msmc-tools/generate_multihetsep.py "--mask="$ROOT"_chr"$i"_mask.bed.gz" "--mask="$MASK_DIR"chr"$i".bed" $ROOT"_chr"$i"_mask.vcf.gz"  > $ROOT"_chr"$i".msmc"
+	/home/kdaly/bin/msmc/msmc-tools/generate_multihetsep.py "--mask="$ROOT"_chr"$i"_mask.bed.gz" --mask="$MASK_DIR"bostaurus_chrchr"$i".mask.bed.gz "$ROOT"_chr"$i"_mask.vcf.gz  > "$ROOT"_chr"$i".msmc
+
+	/home/kdaly/bin/msmc/msmc_linux_64bit -o  $ROOT"_chr"$i"_msmc-output" $ROOT"_chr"$i".msmc"
 
 done
 
