@@ -11,5 +11,3 @@ java -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar \
 -I $2 \
 -o "DoC_"$out
 
-mkdir "DoC_"$out
-mv "DoC_"$out".*" "DoC_"$out

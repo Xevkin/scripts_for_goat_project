@@ -4,7 +4,7 @@ Script is run in a directory with bam files to be aligned to either goat, wild g
 Reads will be trimmed, aligned, read groups added, duplicates removed, then 
 
 Also need to supply a date for the Hiseq run - will automatically make results file
-python script <date_of_hiseq> <meyer> <species> <mit> <trim> <align> <process_individual_bams> <merge+process> <read group file> <directory in which to place output dir/>
+python script <date_of_hiseq> <meyer> <species> <mit> <trim> <align> <process_individual_bams> <merge+process> <rescale> <read group file> <directory in which to place output dir/>
 
 read group file needs to be in the follow format (\t are actual tab characters)
 FASTQ_FILE.GZ\t@RG\tID:X\tSM:X\tPL:X\tLB:X\tLANE\tSAMPLE_NAME
@@ -44,11 +44,12 @@ mitochondrial_genomes = {
 
 	"goat" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/goat/goat_mit_revised_circularized.fa",
 
-	"west_tur" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/tur/west_caucus_tur_circularized.fa"
-	
+	"west_tur" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/tur/west_caucus_tur_circularized.fa",
+
+	"sheep" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/sheep/sheep_mit.fasta"	
 }
 
-def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, RG_file, output_dir):
+def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale, RG_file, output_dir):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
@@ -124,7 +125,7 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, RG_file
 	#duplicates will also be removed at this point
 	for i in realigned_bam_list:
 
-		process_realigned_bams(i,reference,output_dir)
+		process_realigned_bams(i,reference,rescale,output_dir)
 	
 		
 	#clean up files
@@ -602,32 +603,31 @@ def mapDamage_rescale(bam,reference_genome, out_dir):
 	return (bam.split(".")[0] + "_rescaled.bam")
 
 
-def process_realigned_bams(realigned_bam, reference_genome,output_dir):
+def process_realigned_bams(realigned_bam, reference_genome, rescale, output_dir):
 	
+	print "Realigned bam files is: "
 	print realigned_bam
-	print realigned_bam.split(".")[0]
 
-	#rescale at this point
-	mapDamage_rescale(realigned_bam,reference_genome,output_dir)
+	if (rescale == "yes"):
+
+		#rescale at this point
+		mapDamage_rescale(realigned_bam,reference_genome,output_dir)
 	
-	realigned_bam = realigned_bam.split(".")[0] + "_rescaled.bam"
+		realigned_bam = realigned_bam.split(".")[0] + "_rescaled.bam"
 
-	#at this point we rmdup for merged files - this may be too late in the process, do right after merging?
-	print "samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam > " + realigned_bam.split(".")[0] + "_rmdup.flagstat"
-	call("samtools rmdup -s " + realigned_bam + " " + realigned_bam.split(".")[0] + "_rmdup.bam && samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup.bam > " + realigned_bam.split(".")[0] + "_rmdup.flagstat",shell=True)	
 
-	call("samtools view -b -F4 " + realigned_bam.split(".")[0] + "_rmdup.bam > " + realigned_bam.split(".")[0] + "_rmdup_F4.bam && samtools view -q25 -b " + realigned_bam.split(".")[0] + "_rmdup_F4.bam > " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam",shell=True)
+	call("samtools view -b -F4 " + realigned_bam.split(".")[0] + ".bam > " + realigned_bam.split(".")[0] + "_F4.bam && samtools view -q25 -b " + realigned_bam.split(".")[0] + "_F4.bam > " + realigned_bam.split(".")[0] + "_F4_q25.bam",shell=True)
 
 	#gzip the rmdup bam
-	call("gzip " + realigned_bam.split(".")[0] + "_rmdup.bam",shell=True)
+	call("gzip " + realigned_bam ,shell=True)
 	
-	call("samtools flagstat " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam > " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.flagstat",shell=True)
+	call("samtools flagstat " + realigned_bam.split(".")[0] + "_F4_q25.bam > " + realigned_bam.split(".")[0] + "_F4_q25.flagstat",shell=True)
 
-	call("samtools index " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam",shell=True)
+	call("samtools index " + realigned_bam.split(".")[0] + "_F4_q25.bam",shell=True)
 
-	call("samtools idxstats " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam > " + realigned_bam.split(".")[0].split("_")[0] + ".idx",shell=True)
+	call("samtools idxstats " + realigned_bam.split(".")[0] + "_F4_q25.bam > " + realigned_bam.split(".")[0].split("_")[0] + ".idx",shell=True)
 
-	cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_rmdup_F4_q25.bam --omitDepthOutputAtEachBase"
+	cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_F4_q25.bam --omitDepthOutputAtEachBase"
 
 	call(cmd,shell=True)
 	
@@ -641,12 +641,13 @@ try:
 	align = sys.argv[6]
 	process = sys.argv[7]
 	merge = sys.argv[8]
-	RG_file  = sys.argv[9]
-	output_dir = sys.argv[10]
+	rescale = sys.argv[9]
+	RG_file  = sys.argv[10]
+	output_dir = sys.argv[11]
 
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_hiseq, meyer, species, mit, trim, align, process, merge, RG_file, and the directory to put output directories/files"
+	print "Input variables are date_of_hiseq, meyer, species, mit, trim, align, process, merge, rescale, RG_file, and the directory to put output directories/files"
 	print "Exiting program..."
 	sys.exit()
 
@@ -655,4 +656,4 @@ if not output_dir[-1] == "/":
 
 	output_dir = output_dir + "/"
 
-main(date_of_hiseq, meyer, species, mit, trim, align, process, merge, RG_file, output_dir)
+main(date_of_hiseq, meyer, species, mit, trim, align, process, merge, rescale, RG_file, output_dir)

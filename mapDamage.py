@@ -7,7 +7,7 @@ import sys
 import os.path
 
 #reference genomes
-goat_ref = "~/goat/data/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta"
+goat_ref = "/kendrick/reference_genomes/goat_CHIR1_0$ goat_CHIR1_0.fasta"
 
 #sys.argv[1] refers to the list input
 #create list that will carry any lines in the file which fail at any stage
@@ -20,8 +20,7 @@ for lines in f:
 	
 	stem = current_file.split(".")[0]
 	print stem
-	call("gunzip " + current_file,shell=True)
-
-	call("mapDamage --merge-reference-sequences -i " + stem + ".bam -d ~/goat/results/2015_02_06/mapDamage/" + stem + " -r " + goat_ref + " -t " + stem,shell=True)
+	
+	call("mapDamage --merge-reference-sequences -i " + current_file + ".bam -d ./" + stem + " -r " + goat_ref + " -t " + stem,shell=True)
 
 	call("gzip " + stem + ".fa",shell=True)	

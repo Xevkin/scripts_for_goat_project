@@ -1,10 +1,10 @@
-#!/bin/sh
+#!/usr/bin/env python
 
 #remove 15 bps from both ends
 
 import sys
 
-dump = ''
+dump = ""
 
 with open(sys.argv[1]) as file:
 
@@ -12,15 +12,14 @@ with open(sys.argv[1]) as file:
 
 		if line.startswith(">"):
 
-			print line.strip("\n")
+			print ">" + sys.argv[1].rstrip("\n").split("_")[0]
 
 		else:
 			
 			dump = dump + line.rstrip("\n")
 
 	dump = dump[15:-15]
-	
-	
+		
 	while (len(dump) > 70):
 
 		print dump[0:70]

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env python
 
 #adds 15 bps from the start to the end and vice versa
 

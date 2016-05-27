@@ -49,13 +49,13 @@ def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fa
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
 	
-	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, species, mit,  output_dir) 
+	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, species, mit, output_dir, trim) 
 	
 	#sample is the file root
 	#trim fastq files and produce fastqc files
 	#the masterlist will change each time so it needs be equated to the function
 	
-	if (trim = "yes"):
+	if (trim == "yes"):
 		
 		#make an output directory for fastqc	
 		call("mkdir " +  out_dir + "fastqc/", shell=True)
@@ -120,15 +120,25 @@ def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fa
 	call("mv " + output_summary + " " + out_dir,shell=True)
 
 
-def set_up(date_of_miseq, meyer, species, mit,  output_dir):
-	#take all .fastq.gz files in current directory; print them
+def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
+	
 	files = []
+	#if not trim, take all "trimmed.fastq" files:
+	if (trim == "no"):
 
-	files = [file for file in os.listdir(".") if file.endswith(".fastq.gz")] 
+		files = [file for file in os.listdir(".") if file.endswith("trimmed.fastq")]
+		#print the trimmed fastq files in current directory
+		print "Trimmed fastq files in the curent directory:"
+		print map(lambda x : x ,files)
+
+	else:
+		#take all .fastq.gz files in current directory; print them
 	
-	print "fastq.gz files in current directory:"
+		files = [file for file in os.listdir(".") if file.endswith(".fastq.gz")] 
 	
-	print map(lambda x : x ,files)
+		print "fastq.gz files in current directory:"
+	
+		print map(lambda x : x ,files)
 
 	#variables will be initialized here so they can be modified by options 
 
@@ -188,19 +198,28 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir):
 	#cycle through each line in the input file, gunzip
 	for file in files:
 
-		#unzip fastq
-		call("gunzip " + file, shell=True)
-		current_file = file.split(".")[0] + ".fastq"
+		#handle trimmed.fastq files differently
 
-		#rename the file
-		#also save the current sample as a variable to be used later
-		split_file = current_file.split(".")[0].split("_")
+		if (trim == "no"):
+
+			current_file = "_".join(file.split("_")[0:-1])
+			sample_list.append(current_file.rstrip("\n"))
+
+		else:
+
+			#unzip fastq
+			call("gunzip " + file, shell=True)
+			current_file = file.split(".")[0] + ".fastq"
+
+			#rename the file
+			#also save the current sample as a variable to be used later
+			split_file = current_file.split(".")[0].split("_")
 		
-		call("mv " + current_file + " " + split_file[0] + ".fastq",shell=True)
+			call("mv " + current_file + " " + split_file[0] + ".fastq",shell=True)
 	
-		#current_file = split_file[0] + ".fastq"
+			#current_file = split_file[0] + ".fastq"
 	
-		sample_list.append(split_file[0].rstrip("\n"))
+			sample_list.append(split_file[0].rstrip("\n"))
 	
 	for i in sample_list:
 	
@@ -225,7 +244,7 @@ def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc):
 	
        	#run fastqc on both the un/trimmed fastq files
 	#first we want to create an output directory if there is none to begin with
-	if (fastqc = "yes"):
+	if (fastqc == "yes"):
 			
 		call("fastqc " + unzipped_fastq + " -o " + out_dir + "fastqc/", shell=True)
 		call("fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
