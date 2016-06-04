@@ -46,7 +46,7 @@ mitochondrial_genomes = {
 
 	"west_tur" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/tur/west_caucus_tur_circularized.fa",
 
-	"sheep" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/sheep/sheep_mit.fasta"	
+	"sheep" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/sheep/sheep_mit_circularized.fa"	
 }
 
 def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale, RG_file, output_dir):
@@ -79,6 +79,7 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
 
 	if (mit_reference != "no" ):
 
+		print "Doing mit alignment"
 		map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mit_reference, trim), fastq_list)
 
 		merge_and_process_mit(RG_file)
