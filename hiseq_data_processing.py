@@ -231,7 +231,7 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 
 def trim_fastq(current_sample, cut_adapt, out_dir):
 	
-	print "Current sample is: " + current_sample
+	print "Trimming: current sample is: " + current_sample
 	
 	zipped_fastq = current_sample + ".fastq.gz"
 	
