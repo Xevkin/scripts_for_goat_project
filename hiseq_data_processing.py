@@ -233,7 +233,7 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 	
 	print "Current sample is: " + current_sample
 	
-	zipped_fastq = current_sample + ".fastq"
+	zipped_fastq = current_sample + ".fastq.gz"
 	
 	#Get number of lines (and from that reads - divide by four) from raw fastq
 	trimmed_fastq = current_sample + "_trimmed" + ".fastq" 
