@@ -241,9 +241,6 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 	#cut raw fastq files
 	call(cut_adapt + zipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
 	
-	#gzip the raw fastq file
-	call("gzip "+current_sample + ".fastq" ,shell=True)
-
 
 def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
