@@ -7,7 +7,7 @@ BAM=$1
 MEAN_COVERAGE=$2
 REFERENCE=$3
 CHROM_NO=$4
-
+FINAL_INPUT_LIST=""
 MASK_DIR="/kendrick/msmc/mask/"
 ROOT=`echo $1 | cut -f1 -d'.'`
 
@@ -27,7 +27,9 @@ for i in $(eval echo "{1..$CHROM_NO}")
 
 	/home/kdaly/bin/msmc/msmc-tools/generate_multihetsep.py "--mask="$ROOT"_chr"$i"_mask.bed.gz" --mask="$MASK_DIR"bostaurus_chrchr"$i".mask.bed.gz "$ROOT"_chr"$i"_mask.vcf.gz  > "$ROOT"_chr"$i".msmc
 
-	/home/kdaly/bin/msmc/msmc_linux_64bit -o  $ROOT"_chr"$i"_msmc-output" $ROOT"_chr"$i".msmc"
+	FINAL_INPUT_LIST+="$ROOT"_chr"$i".msmc" " 
+
+/home/kdaly/bin/msmc/msmc_linux_64bit -o  $ROOT"_chr"$i"_msmc-output" $FINAL_INPUT_LIST
 
 done
 

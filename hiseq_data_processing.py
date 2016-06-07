@@ -172,7 +172,6 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	        print map(lambda x : x ,files)
 
 
-
 	#variables will be initialized here so they can be modified by options 
 
 
@@ -220,11 +219,9 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 
 	fastq_list = []
 	
-	#cycle through each line in the input file, gunzip
+	#create a list of all fastq files
 	for file in files:
 
-		#unzip fastq
-		call("gunzip " + file, shell=True)
 		current_file = file.split(".")[0] 
 
 		fastq_list.append(current_file.rstrip("\n"))
@@ -236,13 +233,13 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 	
 	print "Current sample is: " + current_sample
 	
-	unzipped_fastq = current_sample + ".fastq"
+	zipped_fastq = current_sample + ".fastq"
 	
 	#Get number of lines (and from that reads - divide by four) from raw fastq
 	trimmed_fastq = current_sample + "_trimmed" + ".fastq" 
 	
 	#cut raw fastq files
-	call(cut_adapt + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
+	call(cut_adapt + zipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
 	
 	#gzip the raw fastq file
 	call("gzip "+current_sample + ".fastq" ,shell=True)
@@ -272,6 +269,7 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 		print line
                 split_line = line.split("\t")
                 print split_line
+
                 if (sample == split_line[0].split(".")[0]):
 
                         RG = split_line[1].rstrip("\n")
@@ -294,6 +292,7 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
         print RG
         print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample + "_mit_F4.bam + 2> " + trimmed_fastq + "_mit_alignment.log"
         call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample +"_mit_F4.bam", shell=True)
+
 	call("samtools flagstat " + sample +"_mit_F4.bam > " +sample + "_mit_F4.flagstat 2>> " + sample + "_mit_alignment.log",shell=True)
 
 	call ("rm "+ sample + "_mit.sai ",shell=True)
@@ -346,11 +345,15 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
     call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai 2>" + trimmed_fastq + "_alignment.log",shell=True)
     
     with open(RG_file) as file:
+
 	print sample
+
 	for line in file:
 		
 		split_line = line.split("\t")
+
 		print split_line	
+
 		if (sample == split_line[0].split(".")[0]):
 
 			RG = split_line[1].rstrip("\n")
@@ -372,6 +375,7 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 
 	print RG                        		
 	print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam 2>" + trimmed_fastq + "_alignment.log"
+
         call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam 2> "+ trimmed_fastq + "_alignment.log",shell=True)
 	
         #flagstat the bam
@@ -405,8 +409,7 @@ def process_bam(sample_name):
 	if sample_name.endswith("_trimmed"):	
 	
 		sample_name = "_".join(sample_name.split("_")[:-1])		
-		
-	
+			
 	print "Processing step for: " + sample_name
 	
 	#flagstat the bam
@@ -651,7 +654,6 @@ except IndexError:
 	print "Input variables are date_of_hiseq, meyer, species, mit, trim, align, process, merge, rescale, RG_file, and the directory to put output directories/files"
 	print "Exiting program..."
 	sys.exit()
-
 
 if not output_dir[-1] == "/":
 
