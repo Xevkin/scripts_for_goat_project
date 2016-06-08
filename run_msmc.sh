@@ -29,7 +29,7 @@ for i in $(eval echo "{1..$CHROM_NO}")
 
 	FINAL_INPUT_LIST+="$ROOT"_chr"$i".msmc" " 
 
-/home/kdaly/bin/msmc/msmc_linux_64bit -o  $ROOT"_chr"$i"_msmc-output" $FINAL_INPUT_LIST
+/home/kdaly/bin/msmc/msmc_linux_64bit -o  "$ROOT"_autosomes $FINAL_INPUT_LIST
 
 done
 
