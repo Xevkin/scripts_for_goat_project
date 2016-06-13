@@ -142,13 +142,15 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
 	call("mkdir idx_files; mv *idx *idx.gz idx_files; mkdir auxillary_files; mv *interval* RG.tsv* *md5sum* auxillary_files",shell=True)	
 	call("bgzip *bam",shell=True)
 
-	call("mkdir final_bams; mv *F4* finals_bams/; mkdir intermediate_bams; mv *bam* intermediate_bams",shell=True)
+	call("mkdir final_bams; mv *F4* finals_bams/; mkdir intermediate_bams; mv *bam* *bai intermediate_bams",shell=True)
 	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
 	
 	call("mkdir mapDamage; mv results_* mapDamage/",shell=True)
 	call("mkdir DoC; mv DoC_* DoC",shell=True)
+	
+	call("mkdir fastqc; mv *fastqc* fastqc", shell=True)
 
-	call("mv flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files fastqc auxillary_files final_bams intermediate_bams mapDamage DoC fastq_files " + out_dir,shell=True)
+	call("mv mit_idx_files mit_logs flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files fastqc auxillary_files final_bams intermediate_bams mapDamage DoC fastq_files " + out_dir,shell=True)
 	
 	
 def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
