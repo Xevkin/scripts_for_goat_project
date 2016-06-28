@@ -132,25 +132,23 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
 	#clean up files
 	call("gunzip *flagstat.gz",shell=True)
 	call("mkdir flagstat_files; mv *flagstat flagstat_files",shell=True)
-
+	call("mkdir DoC; mv DoC_* DoC",shell=True)
 	call("mkdir log_files; mv *log log_files", shell=True)
-
 	call("mkdir angsd_consensus_sequences; mv *angsd* angsd_consensus_sequences",shell=True)
 	call("mkdir trimmed_fastq_files_and_logs",shell=True)
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
 
-	call("mkdir idx_files; mv *idx *idx.gz idx_files; mkdir auxillary_files; mv *interval* RG.tsv* *md5sum* auxillary_files",shell=True)	
+	call("mkdir idx_files; mv *idx *idx.gz idx_files; mkdir auxillary_files; mv *txt *interval* RG.tsv* *md5sum* auxillary_files",shell=True)	
 	call("bgzip *bam",shell=True)
 
-	call("mkdir final_bams; mv *F4* finals_bams/; mkdir intermediate_bams; mv *bam* *bai intermediate_bams",shell=True)
+	call("mkdir final_bams; mv *F4* finals_bams/; mv final_mit_bams final_bams " + outdir + "; mkdir intermediate_bams; mv *bam* *bai intermediate_bams",shell=True)
 	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
 	
 	call("mkdir mapDamage; mv results_* mapDamage/",shell=True)
-	call("mkdir DoC; mv DoC_* DoC",shell=True)
 	
 	call("mkdir fastqc; mv *fastqc* fastqc", shell=True)
 
-	call("mv mit_idx_files mit_logs flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files fastqc auxillary_files final_bams intermediate_bams mapDamage DoC fastq_files " + out_dir,shell=True)
+	call("mv mit_idx_files mit_logs flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files fastqc auxillary_files intermediate_bams mapDamage DoC fastq_files " + out_dir,shell=True)
 	
 	
 def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
@@ -525,7 +523,7 @@ def merge_lanes_and_sample(RG_file, mit="no"):
 
 			sample_lane = sample_name + "_"	+ lane + "_merged"		 
 
-			merge_cmd = merge_cmd + "OUTPUT=" + sample_lane + ".bam 2>" + sample_lane + ".log"
+			merge_cmd = merge_cmd + "OUTPUT=" + sample[0]+ "_" + sample_lane + ".bam 2>" + sample[0] + "_" + sample_lane + ".log"
 
 			print merge_cmd
 		
@@ -533,20 +531,20 @@ def merge_lanes_and_sample(RG_file, mit="no"):
 			call(merge_cmd,shell=True)
 
 			#flagstat the merged bam
-			call("samtools flagstat "+ sample_lane + ".bam >"+ sample_lane + ".flagstat" ,shell=True)
+			call("samtools flagstat "+ sample[0]+ "_" + sample_lane + ".bam >"+ sample[0]+ "_" + sample_lane + ".flagstat" ,shell=True)
 	
 			#remove duplicates from the merged lane bam
-			cmd = "samtools rmdup -s " + sample_lane + ".bam " + sample_lane + "_rmdup.bam 2> " + sample_lane + "_rmdup.log"  
+			cmd = "samtools rmdup -s " + sample[0]+ "_" + sample_lane + ".bam " + sample[0]+ "_" + sample_lane + "_rmdup.bam 2> " + sample[0]+ "_" + sample_lane + "_rmdup.log"  
 
 			call(cmd,shell=True)
 
 			#gzip the original merged bam
-			call("gzip " + sample_lane + ".bam",shell=True)
+			call("gzip " + sample[0]+ "_" + sample_lane + ".bam",shell=True)
 		
 			#flagstat the rmdup_merged file
-			call("samtools flagstat "+ sample_lane + "_rmdup.bam > "+ sample_lane + "_rmdup.flagstat" ,shell=True)
+			call("samtools flagstat "+ sample[0]+ "_" + sample_lane + "_rmdup.bam > "+ sample[0]+ "_" + sample_lane + "_rmdup.flagstat" ,shell=True)
 
-			merged_lane_list.append(sample_lane + "_rmdup.bam")
+			merged_lane_list.append(sample[0]+ "_" + sample_lane + "_rmdup.bam")
 		
 		#each lane has been merged
 		#now, merge each lane for a given sample
