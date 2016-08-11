@@ -337,21 +337,21 @@ def merge_and_process_mit(RG_file,dict_of_reference_genomes):
 
 	for bam in merged_mit_bam_list:
 
-	    	bam_root = bam.split(".")[0]
+    	bam_root = bam.split(".")[0]
 
-        	call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
+        call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
-        	call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
+        call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
 
-	        call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
+        call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
            
-        	call("samtools view -b -q25 "+ bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q25.bam",shell=True)
+        call("samtools view -b -q25 "+ bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q25.bam",shell=True)
 
-        	call("samtools index " + bam_root + "_rmdup_q25.bam",shell=True)
+        call("samtools index " + bam_root + "_rmdup_q25.bam",shell=True)
 		
 		call("samtools idxstats " +  bam_root + "_rmdup_q25.bam >" + bam_root + "_rmdup_q25.idx",shell=True)
 
-        	call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 2 -minQ 25",shell=True)
+        call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 2 -minQ 25",shell=True)
 
 		call("gunzip " + bam_root + "_angsd_consensus.fa.gz; decircularize.py "  + bam_root + "_angsd_consensus.fa > " + bam_root + "_angsd_consensus_decirc.fa",shell=True)
 
@@ -468,136 +468,135 @@ def merge_lanes_and_sample(RG_file, mit="no",dict_of_refs="no"):
 	
 			sample_list = []
 	
-       			with open(RG_file) as r:
+       		with open(RG_file) as r:
 
-	            		for line in r:
+	            for line in r:
 			
-        	        		sample = line.split("\t")[3].rstrip("\n")
+        	        sample = line.split("\t")[3].rstrip("\n")
 			
 					if [sample] not in sample_list:
                        
 						sample_list.append([sample])
 
 			print sample_list
-			
 			#cycle through the RG file and associate each lane with the correct sample
-        		for sample in sample_list:
+        	for sample in sample_list:
 
-				lane_list = []
+			lane_list = []
+
+			with open(RG_file) as r:
+
+				for line in r:
+
+					if sample[0] == line.split("\t")[3].rstrip("\n"):
+				
+						lane = line.split("\t")[2]
+				
+					if lane not in lane_list:
+
+						lane_list.append(lane)
+
+			sample.append(lane_list)
+			print sample
+		
+		#create a list of final merged,rmdup bams that will be returned
+		merged_bam_list = []
+	
+		#for each sample, go through each lane for that sample and merge each bam for that sample
+		for sample in sample_list:
+				
+			merged_lane_list = []
+		
+			for lane in sample[1]:
+		
+				files_in_lane = []
+
+				merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
 
 				with open(RG_file) as r:
 
 					for line in r:
-
-						if sample[0] == line.split("\t")[3].rstrip("\n"):
-				
-							lane = line.split("\t")[2]
-				
-						if lane not in lane_list:
-
-							lane_list.append(lane)
-
-				sample.append(lane_list)
-			print sample
-		
-			#create a list of final merged,rmdup bams that will be returned
-			merged_bam_list = []
 	
-			#for each sample, go through each lane for that sample and merge each bam for that sample
-			for sample in sample_list:
-				
-				merged_lane_list = []
-		
-				for lane in sample[1]:
-		
-					files_in_lane = []
-
-					merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
-
-					with open(RG_file) as r:
-
-						for line in r:
-	
-							if (lane == line.split("\t")[2] ) and (sample[0] == line.split("\t")[3].rstrip("\n")):
+						if (lane == line.split("\t")[2] ) and (sample[0] == line.split("\t")[3].rstrip("\n")):
 											
-								if (mit == "yes"):
+							if (mit == "yes"):
 								
-									files_in_lane.append(line.split("\t")[0].split(".")[0] + "_" + reference + "_F4_rmdup.bam")
+								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_" + reference + "_F4_rmdup.bam")
 
-								else:
-						
-									files_in_lane.append(line.split("\t")[0].split(".")[0] + "_rmdup.bam")
-
-						
-					for bam in files_in_lane:
-					
-						if os.path.isfile(bam):
-					
-							merge_cmd = merge_cmd + "INPUT=" + bam + " "
-											
-							if not "-" in bam:
-				
-								sample_name = bam.split("_")[0:2]
- 
- 							#this could be problematic
 							else:
-			
-								sample_name = bam.split("_")[0:2]
+						
+								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_rmdup.bam")
 
+						
+				for bam in files_in_lane:
+					
+					if os.path.isfile(bam):
+					
+						merge_cmd = merge_cmd + "INPUT=" + bam + " "
+											
+						if not "-" in bam:
+				
+							sample_name = bam.split("_")[0:2]
+ 
+ 						#this could be problematic
 						else:
+			
+							sample_name = bam.split("_")[0:2]
+
+					else:
 		
-							print bam  + " is not in the current directory"
+						print bam  + " is not in the current directory"
 
-					sample_lane = sample_name + "_"	+ lane + "_merged"		 
+				sample_lane = sample_name + "_"	+ lane + "_merged"		 
 
-					merge_cmd = merge_cmd + "OUTPUT=" + sample[0]+ "_" + sample_lane + ".bam 2>" + sample[0] + "_" + sample_lane + ".log"
+				merge_cmd = merge_cmd + "OUTPUT=" + sample[0]+ "_" + sample_lane + ".bam 2>" + sample[0] + "_" + sample_lane + ".log"
 
-					print merge_cmd
+				print merge_cmd
 		
-				#now merge each bam file associated with a given lane
-				call(merge_cmd,shell=True)
-
-				#flagstat the merged bam
-				call("samtools flagstat "+ sample[0]+ "_" + sample_lane + ".bam >"+ sample[0]+ "_" + sample_lane + ".flagstat" ,shell=True)
-	
-				#remove duplicates from the merged lane bam
-				cmd = "samtools rmdup -s " + sample[0]+ "_" + sample_lane + ".bam " + sample[0]+ "_" + sample_lane + "_rmdup.bam 2> " + sample[0]+ "_" + sample_lane + "_rmdup.log"  
-
-				call(cmd,shell=True)
-
-				#gzip the original merged bam
-				call("gzip " + sample[0]+ "_" + sample_lane + ".bam",shell=True)
-		
-				#flagstat the rmdup_merged file
-				call("samtools flagstat "+ sample[0]+ "_" + sample_lane + "_rmdup.bam > "+ sample[0]+ "_" + sample_lane + "_rmdup.flagstat" ,shell=True)
-
-				merged_lane_list.append(sample[0]+ "_" + sample_lane + "_rmdup.bam")
-		
-			#each lane has been merged
-			#now, merge each lane for a given sample
-
-			merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
-	
-			for bam in merged_lane_list:
-
-				merge_cmd = merge_cmd + "INPUT=" + bam + " "
-		
-			sample_name =  sample[0]
-
-			if (mit == "yes"):
-
-				sample_name = sample_name + "_mit"
-	
-			merge_cmd = merge_cmd + "OUTPUT=" + sample_name + "_merged.bam 2>" + sample_name + "_merged.log"
-
-			print merge_cmd
-
+			#now merge each bam file associated with a given lane
 			call(merge_cmd,shell=True)
 
 			#flagstat the merged bam
-			call("samtools flagstat " + sample_name + "_merged.bam > " + sample_name+ "_merged.flagstat",shell=True)
+			call("samtools flagstat "+ sample[0]+ "_" + sample_lane + ".bam >"+ sample[0]+ "_" + sample_lane + ".flagstat" ,shell=True)
 	
-			merged_bam_list.append(sample_name + "_merged.bam")
+			#remove duplicates from the merged lane bam
+			cmd = "samtools rmdup -s " + sample[0]+ "_" + sample_lane + ".bam " + sample[0]+ "_" + sample_lane + "_rmdup.bam 2> " + sample[0]+ "_" + sample_lane + "_rmdup.log"  
+
+			call(cmd,shell=True)
+
+			#gzip the original merged bam
+			call("gzip " + sample[0]+ "_" + sample_lane + ".bam",shell=True)
+		
+			#flagstat the rmdup_merged file
+			call("samtools flagstat "+ sample[0]+ "_" + sample_lane + "_rmdup.bam > "+ sample[0]+ "_" + sample_lane + "_rmdup.flagstat" ,shell=True)
+
+			merged_lane_list.append(sample[0]+ "_" + sample_lane + "_rmdup.bam")
+		
+		#each lane has been merged
+		#now, merge each lane for a given sample
+
+		merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
+	
+		for bam in merged_lane_list:
+
+			merge_cmd = merge_cmd + "INPUT=" + bam + " "
+		
+		sample_name =  sample[0]
+
+		if (mit == "yes"):
+
+			sample_name = sample_name + "_mit"
+	
+		merge_cmd = merge_cmd + "OUTPUT=" + sample_name + "_merged.bam 2>" + sample_name + "_merged.log"
+
+		print merge_cmd
+
+		call(merge_cmd,shell=True)
+
+		#flagstat the merged bam
+		call("samtools flagstat " + sample_name + "_merged.bam > " + sample_name+ "_merged.flagstat",shell=True)
+	
+		merged_bam_list.append(sample_name + "_merged.bam")
 
 	#note: output is not rmdup. rmdup occurs after indel realignment
 	return merged_bam_list
