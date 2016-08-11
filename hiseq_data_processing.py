@@ -4,8 +4,9 @@ Script is run in a directory with bam files to be aligned to either goat, wild g
 Reads will be trimmed, aligned, read groups added, duplicates removed, then 
 
 Also need to supply a date for the Hiseq run - will automatically make results file
-python script <date_of_hiseq> <meyer> <species> <mit> <trim> <align> <process_individual_bams> <merge+process> <rescale> <read group file> <directory in which to place output dir/>
+python script <date_of_hiseq> <meyer> <species> <mit_file> <trim> <align> <process_individual_bams> <merge+process> <rescale> <read group file> <directory in which to place output dir/>
 
+mit_file should be tab deliminated, col1 with name of reference, col2 with path
 read group file needs to be in the follow format (\t are actual tab characters)
 FASTQ_FILE.GZ\t@RG\tID:X\tSM:X\tPL:X\tLB:X\tLANE\tSAMPLE_NAME
 ID should be in the format <sample_name>-<macrogen_index_number>-<lane_number>-<hiseq_number>
@@ -40,21 +41,13 @@ nuclear_genomes = {
 	"goat1_with_mit" : "/kendrick/reference_genomes/goat_CHIR1_0/goat_CHIR1_with_mit.fa"
 }
 
-mitochondrial_genomes = { 
-
-	"goat" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/goat/goat_mit_revised_circularized.fa",
-
-	"west_tur" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/tur/west_caucus_tur_circularized.fa",
-
-	"sheep" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/sheep/sheep_mit_circularized.fa"	
-}
 
 def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale, RG_file, output_dir):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
 	
-	files, reference, mit_reference, out_dir, cut_adapt, alignment_option, fastq_list = set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim) 
+	files, reference, mit_references, out_dir, cut_adapt, alignment_option, fastq_list = set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim) 
 	
 	#make a folder for flagstat files	
 	call("mkdir flagstat_files",shell=True)
@@ -77,12 +70,16 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
 	#they should have the same stem of the initial bam
 
 
-	if (mit_reference != "no" ):
+	if (mit_references != "no" ):
 
-		print "Doing mit alignment"
-		map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mit_reference, trim), fastq_list)
+		#align to every mitochondrial reference provided
+		for mitochondrial_reference in mit_references:
 
-		merge_and_process_mit(RG_file)
+			print "Doing mit alignment to " + mitochondrial_reference[0]
+
+			map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mitochondrial_reference, trim), fastq_list)
+
+			merge_and_process_mit(RG_file, mitochondrial_reference)
 
 		#make output directories and dump files 
 		call("mkdir mit_logs; mv *mit*.log mit_logs; mv *flagstat* flagstat_files; mkdir mit_idx_files; mv *mit*idx mit_idx_files", shell=True)
@@ -185,9 +182,19 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	#if mit isn't no, pick a mitochondrial reference to use
 	if not (mit == "no"):
 
-		mit_reference = mitochondrial_genomes[mit]
+		mit_references = []
 
-		print "Path to mitochondrial reference is " + mit_reference
+		with open(mit) as file:
+
+			for line in file:
+
+				reference_name = line.rstrip("\n").split("\t")[0]
+
+				reference_path = line.rstrip("\n").split("\t")[1]
+
+				mit_references.append([reference_name, reference_path])
+
+				print "Path to " +  reference_name +" reference is " + reference_path
 	
 	else:
 
@@ -226,7 +233,7 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 
 		fastq_list.append(current_file.rstrip("\n"))
 	
-	return files, reference, mit_reference, out_dir, cut_adapt, alignment_option, fastq_list
+	return files, reference, mit_references, out_dir, cut_adapt, alignment_option, fastq_list
 
 
 def trim_fastq(current_sample, cut_adapt, out_dir):
@@ -244,7 +251,13 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 
 def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
-    sample = fastq.split(".")[0]
+	reference_sequence = reference[0]
+
+    reference_path = reference[1]
+
+    sample =  fastq.split(".")[0]
+
+    sample_and_ref = fastq.split(".")[0] + "_" + reference_sequence
     
     trimmed_fastq = sample + "_trimmed.fastq"
 
@@ -254,8 +267,7 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
         sample = "_".join(sample.split("_")[:-1])
 
-    print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + "_mit.sai 2>> " + sample + "_mit_alignment.log")
-    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + "_mit.sai 2>>"+ sample + "_mit_alignment.log",shell=True)
+    call(alignment_option + reference_path + " " + trimmed_fastq + " > " + sample_and_ref + "_mit.sai 2>>"+ sample_and_ref + "_mit_alignment.log",shell=True)
 
     with open(RG_file) as file:
 
@@ -284,27 +296,31 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
         file.seek(0)
 
         #Print the current sample and RG
-        print sample
+        print sample + " aligning to " + reference_path
 
         print RG
-        print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample + "_mit_F4.bam + 2> " + trimmed_fastq + "_mit_alignment.log"
-        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample +"_mit_F4.bam", shell=True)
+        print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference_path + " " + sample_and_ref + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_ref + "_mit_F4.bam + 2> " + trimmed_fastq + "_mit_alignment.log"
+        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference_path + " " + sample_and_ref + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_ref +"_mit_F4.bam", shell=True)
 
-	call("samtools flagstat " + sample +"_mit_F4.bam > " +sample + "_mit_F4.flagstat 2>> " + sample + "_mit_alignment.log",shell=True)
+	call("samtools flagstat " + sample_and_ref +"_mit_F4.bam > " +sample_and_ref + "_mit_F4.flagstat 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
-	call ("rm "+ sample + "_mit.sai ",shell=True)
+	call ("rm "+ sample_and_ref + "_mit.sai ",shell=True)
 
-	print "samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort 2>>" + sample + "_mit_alignment.log"
-	call("samtools sort "  + sample +"_mit_F4.bam " + sample + "_mit_F4_sort 2>> " + sample + "_mit_alignment.log",shell=True)
+	print "samtools sort "  + sample_and_ref +"_mit_F4.bam " + sample_and_ref + "_mit_F4_sort 2>>" + sample_and_ref + "_mit_alignment.log"
+	call("samtools sort "  + sample_and_ref +"_mit_F4.bam " + sample_and_ref + "_mit_F4_sort 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
-	print "samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam 2>>" + sample + "_mit_alignment.log"
-	call("samtools rmdup -s "  + sample +"_mit_F4_sort.bam " + sample + "_mit_F4_rmdup.bam 2>> " + sample + "_mit_alignment.log",shell=True)
+	print "samtools rmdup -s "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
+	call("samtools rmdup -s "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 	
-	call("rm " + sample + "_mit_F4_sort.bam",shell=True)
+	call("rm " + sample_and_ref + "_mit_F4_sort.bam",shell=True)
 	
-	call("samtools flagstat " + sample + "_mit_F4_rmdup.bam > " + sample + "_mit_F4_rmdup.flagstat",shell=True)	
+	call("samtools flagstat " + sample_and_ref + "_mit_F4_rmdup.bam > " + sample_and_ref + "_mit_F4_rmdup.flagstat",shell=True)	
 
-def merge_and_process_mit(RG_file):
+def merge_and_process_mit(RG_file, reference):
+
+	reference_sequence = reference[0]
+
+    reference_path = reference[1]
 
 	merged_mit_bam_list = merge_lanes_and_sample(RG_file,"yes")
 
