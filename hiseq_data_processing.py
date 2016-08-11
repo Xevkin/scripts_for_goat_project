@@ -335,23 +335,23 @@ def merge_and_process_mit(RG_file,dict_of_reference_genomes):
 
 	merged_mit_bam_list = merge_lanes_and_sample(RG_file,"yes",dict_of_reference_genomes)
 
-        for bam in merged_mit_bam_list:
+	for bam in merged_mit_bam_list:
 
-                bam_root = bam.split(".")[0]
+    	bam_root = bam.split(".")[0]
 
-                call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
+        call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
-                call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
+        call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
 
-                call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
+        call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
+           
+        call("samtools view -b -q25 "+ bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q25.bam",shell=True)
 
-                call("samtools view -b -q25 "+ bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q25.bam",shell=True)
-
-                call("samtools index " + bam_root + "_rmdup_q25.bam",shell=True)
+        call("samtools index " + bam_root + "_rmdup_q25.bam",shell=True)
 		
 		call("samtools idxstats " +  bam_root + "_rmdup_q25.bam >" + bam_root + "_rmdup_q25.idx",shell=True)
 
-                call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 2 -minQ 25",shell=True)
+        call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 2 -minQ 25",shell=True)
 
 		call("gunzip " + bam_root + "_angsd_consensus.fa.gz; decircularize.py "  + bam_root + "_angsd_consensus.fa > " + bam_root + "_angsd_consensus_decirc.fa",shell=True)
 
@@ -412,7 +412,7 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
         #gzip the original bam
         call("gzip " + sample + ".bam",shell=True)
 
-	#remove duplicates from the sorted bam
+		#remove duplicates from the sorted bam
         print "samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam"
 
         call("samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam 2> " + trimmed_fastq + "_alignment.log", shell=True)
@@ -463,22 +463,23 @@ def merge_lanes_and_sample(RG_file, mit="no",dict_of_refs="no"):
 	#get sample list from the RG file
 	if (dict_of_refs != "no"):
 
+		#do once for every goat haplogroup	
 		for reference,path in dict_of_refs.items():
 	
 			sample_list = []
 	
        		with open(RG_file) as r:
 
-	                for line in r:
+	            for line in r:
 			
-        	                sample = line.split("\t")[3].rstrip("\n")
+        	        sample = line.split("\t")[3].rstrip("\n")
 			
-				if [sample] not in sample_list:
+					if [sample] not in sample_list:
                        
-					sample_list.append([sample])
+						sample_list.append([sample])
 
-		print sample_list
-		#cycle through the RG file and associate each lane with the correct sample
+			print sample_list
+			#cycle through the RG file and associate each lane with the correct sample
         	for sample in sample_list:
 
 			lane_list = []
@@ -520,7 +521,7 @@ def merge_lanes_and_sample(RG_file, mit="no",dict_of_refs="no"):
 											
 							if (mit == "yes"):
 								
-								files_in_lane.append(line.split("\t")[0].split("_")[0] + "_" + reference + "_" + line.split("\t")[0].split("_")[1:].split(".")[0] + "_mit_F4_rmdup.bam")
+								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_" + reference + "_F4_rmdup.bam")
 
 							else:
 						
