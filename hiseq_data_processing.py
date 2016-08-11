@@ -46,15 +46,15 @@ goat_mitochondrial_genomes = {
 
 	"B-goat-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/goat/goat_mit_revised_circularized.fa",
 
-	"A-goat-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/A_goat_ref/goat_A_reference_circularized.fa",
+	"A-goat-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/A_goat_ref/goat_A_reference_circularized.fa"
 
-	"C-goat-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/C_goat_ref/goat_C_reference_circularized.fa",
+	"C-goat-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/C_goat_ref/goat_C_reference_circularized.fa"
 
-	"D-goat-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/A_goat_ref/goat_D_reference_circularized.fa",
+	"D-goat-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/A_goat_ref/goat_D_reference_circularized.fa"
 
-	"G-goat-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/G_goat_ref/goat_G_reference_circularized.fa",
+	"G-goat-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/G_goat_ref/goat_G_reference_circularized.fa"
 
-	"F-bezoar-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/F_bezoar//kendrick/miseq/goat/miseq/data/mit_reference_genomes/F_bezoar",
+	"F-bezoar-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/F_bezoar//kendrick/miseq/goat/miseq/data/mit_reference_genomes/F_bezoar"
 
 	"west-tur-mit" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/tur/west_caucus_tur_circularized.fa",
 }
@@ -200,11 +200,11 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	#if mit isn't no, pick a mitochondrial reference to use
 	if not (mit == "no"):
 
-		if (mit == "goat"):
+		if (mit = "goat"):
 
 				mit_references = goat_mitochondrial_genomes
 
-		elif (mit == "sheep"):
+		elif (mit == "sheep")
 	
 				mit_references = sheep_mitochondrial_genomes
 
@@ -278,58 +278,56 @@ def align_process_mit(fastq, RG_file, alignment_option, references, trim):
 
     	sample_and_reference = sample + "_" + mitochondria
 
-   	print(alignment_option + reference + " " + trimmed_fastq + " > " + sample_and_reference + ".sai 2>> " + sample_and_reference + "_alignment.log")
+   		print(alignment_option + reference + " " + trimmed_fastq + " > " + sample_and_reference + "_mit.sai 2>> " + sample_and_reference + "_mit_alignment.log")
    		
-   	call(alignment_option + reference + " " + trimmed_fastq + " > " + sample_and_reference + ".sai 2>>"+ sample_and_reference + "_alignment.log",shell=True)
+   		call(alignment_option + reference + " " + trimmed_fastq + " > " + sample_and_reference + "_mit.sai 2>>"+ sample_and_reference + "_mit_alignment.log",shell=True)
 
     	with open(RG_file) as file:
 
         	print "Looking for RG. Current sample is " + sample
 
-       		for line in file:
+       		 for line in file:
 		
-		  	print line
-                
-			split_line = line.split("\t")
-                
-			print split_line
+			  	print line
+                split_line = line.split("\t")
+                print split_line
 
-                	if (sample == split_line[0].split(".")[0]):
+                if (sample == split_line[0].split(".")[0]):
 
-                       		RG = split_line[1].rstrip("\n")
+                        RG = split_line[1].rstrip("\n")
 
-                       		#check if RG is an empty string
-                       		if not RG:
+                        #check if RG is an empty string
+                        if not RG:
 
-                               		print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree"
-                               		#should probably do something here is there are no read groups
-                               		break
-                       		else:
+                                print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree"
+                                #should probably do something here is there are no read groups
+                                break
+                        else:
 
-                               		print "Reads groups being used are:"
-                               		print RG
-        	file.seek(0)
+                                print "Reads groups being used are:"
+                                print RG
+        file.seek(0)
 
         #Print the current sample and RG
         print sample
         print RG
         
-        print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample_and_reference + ".sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_reference + "_F4.bam + 2> " + trimmed_fastq + "_" + sample_and_reference + "_alignment.log"
-        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample_and_reference + ".sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_reference +"_F4.bam", shell=True)
+        print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample_and_reference + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_reference + "_mit_F4.bam + 2> " + trimmed_fastq + "_" + sample_and_reference + "_mit_alignment.log"
+        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample_and_reference + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_reference +"_mit_F4.bam", shell=True)
 
-	call("samtools flagstat " + sample_and_reference + "_F4.bam > " + sample_and_reference + "_F4.flagstat 2>> " + sample_and_reference + "_alignment.log",shell=True)
+		call("samtools flagstat " + sample_and_reference +"_mit_F4.bam > " +sample_and_reference + "_mit_F4.flagstat 2>> " + sample_and_reference + "_mit_alignment.log",shell=True)
 
-	call ("rm "+ sample_and_reference + ".sai ",shell=True)
+		call ("rm "+ sample_and_reference + "_mit.sai ",shell=True)
 
-	print "samtools sort "  + sample_and_reference +"_F4.bam " + sample_and_reference + "_F4_sort 2>> " + sample_and_reference + "_alignment.log"
-	call("samtools sort "  + sample_and_reference +"_F4.bam " + sample_and_reference + "_F4_sort 2>> " + sample_and_reference + "_alignment.log",shell=True)
+		print "samtools sort "  + sample_and_reference +"_mit_F4.bam " + sample_and_reference + "_mit_F4_sort 2>>" + sample_and_reference + "_mit_alignment.log"
+		call("samtools sort "  + sample_and_reference +"_mit_F4.bam " + sample_and_reference + "_mit_F4_sort 2>> " + sample_and_reference + "_mit_alignment.log",shell=True)
 
-	print "samtools rmdup -s "  + sample_and_reference +"_F4_sort.bam " + sample_and_reference + "_F4_rmdup.bam 2>>" + sample_and_reference + "_alignment.log"
-	call("samtools rmdup -s "  + sample_and_reference +"_F4_sort.bam " + sample_and_reference + "_F4_rmdup.bam 2>> " + sample_and_reference + "_alignment.log",shell=True)
+		print "samtools rmdup -s "  + sample_and_reference +"_mit_F4_sort.bam " + sample_and_reference + "_mit_F4_rmdup.bam 2>>" + sample_and_reference + "_mit_alignment.log"
+		call("samtools rmdup -s "  + sample_and_reference +"_mit_F4_sort.bam " + sample_and_reference + "_mit_F4_rmdup.bam 2>> " + sample_and_reference + "_mit_alignment.log",shell=True)
 		
-	call("rm " + sample_and_reference + "_F4_sort.bam",shell=True)
-
-	call("samtools flagstat " + sample_and_reference + "_F4_rmdup.bam > " + sample_and_reference + "_F4_rmdup.flagstat",shell=True)	
+		call("rm " + sample_and_reference + "_mit_F4_sort.bam",shell=True)
+	
+		call("samtools flagstat " + sample_and_reference + "_mit_F4_rmdup.bam > " + sample_and_reference + "_mit_F4_rmdup.flagstat",shell=True)	
 
 def merge_and_process_mit(RG_file,dict_of_reference_genomes):
 
@@ -469,21 +467,21 @@ def merge_lanes_and_sample(RG_file, mit="no",dict_of_refs="no"):
 	
        		with open(RG_file) as r:
 
-	                for line in r:
+                for line in r:
 			
-        	                sample = line.split("\t")[3].rstrip("\n")
+                        sample = line.split("\t")[3].rstrip("\n")
 			
 				if [sample] not in sample_list:
-                       
+                        
 					sample_list.append([sample])
 
 		print sample_list
 		#cycle through the RG file and associate each lane with the correct sample
         	for sample in sample_list:
 
-			lane_list = []
+				lane_list = []
 
-			with open(RG_file) as r:
+				with open(RG_file) as r:
 
 				for line in r:
 
@@ -517,9 +515,11 @@ def merge_lanes_and_sample(RG_file, mit="no",dict_of_refs="no"):
 					for line in r:
 	
 						if (lane == line.split("\t")[2] ) and (sample[0] == line.split("\t")[3].rstrip("\n")):
-											
+							print lane
+							print sample[0]	
+							print line				
 							if (mit == "yes"):
-								
+					
 								files_in_lane.append(line.split("\t")[0].split("_")[0] + "_" + reference + "_" + line.split("\t")[0].split("_")[1:].split(".")[0] + "_mit_F4_rmdup.bam")
 
 							else:
