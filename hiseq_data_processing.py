@@ -101,7 +101,7 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
 
 		sys.exit("Script is terminated as no merging was desired")	
  
-    #now merge the lanes for each sample
+    	#now merge the lanes for each sample
 	#NOTE: if all the options up to process are "no", then this is where the script will start
 	#expects rmdup bams for each index in each lane, ungziped
 	merged_bam_list = merge_lanes_and_sample(RG_file)
@@ -326,11 +326,16 @@ def merge_and_process_mit(RG_file, reference):
 			call(cmd, shell=True)
 			
 			call("samtools idxstats " +  bam_root + "_rmdup_q" + QC + ".bam >" + bam_root + "_rmdup_q" + QC + ".idx",shell=True)
+			
+			for minD in ["2", "3"]:
 
-			call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd_consensus_q" + QC + "-setMinDepth 2 -minQ " + QC,shell=True)
+				call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ " + QC,shell=True)
 
-			call("gunzip " + bam_root + "_angsd_consensus_q" + QC + ".fa.gz; decircularize.py "  + bam_root + "_angsd_consensusq" + QC + ".fa > " + bam_root + "_angsd_consensus_decirc_q" + QC + ".fa",shell=True)
+				call("gunzip " + bam_root + "_angsd-consensus-" + minD + "_q" + QC + ".fa.gz; decircularize.py "  + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa > " + bam_root + "_angsd-consensus-min" + minD + "_decirc_q" + QC + ".fa",shell=True)
 
+		call("mkdir angsd-" + bam_root + "; mv *angsd-conse* angsd-" + bam_root,shell=True)
+
+		
 def align_bam(sample, RG_file, alignment_option, reference, trim):
 
     trimmed_fastq = sample + "_trimmed.fastq"
@@ -676,12 +681,16 @@ def clean_up_mit(mitochondrial_references_file):
 	call("mkdir auxillary_files; mv " + mitochondrial_references_file + " auxillary_files",shell=True)
 	
 	call("gzip *.bam",shell=True) 
+
+	call("mkdir mit_DoC; mv *DoC* mit_DoC",shell=True)
 	
 	call("mkdir mit_logs; mv *mit*.log mit_logs; mv *flagstat* flagstat_files; mkdir mit_idx_files; mv *mit*idx mit_idx_files", shell=True)
 	
 	call("bgzip *mit*bam.gz; mkdir final_mit_bams; mv *mit*q25*bam* *mit_merged_rmdup* final_mit_bams; mkdir intermediate_mit_bam_files",shell=True)
 	
-	call(" mkdir angsd_consensus; mv *angsd* angsd_consensus; mv *_mit* intermediate_mit_bam_files ; mv intermediate_mit_bam_files/final_mit_bams ./",shell=True)
+	call("mkdir angsd_consensus; mv *angsd* angsd_consensus; mv *_mit* intermediate_mit_bam_files ; mv intermediate_mit_bam_files/final_mit_bams ./",shell=True)
+
+	call("mv mit_DoC mit_logs flagstat_files mit_idx_files final_mit_bams intermediate_mit_bam_files angsd_consensus " + out_dir,shell=True)
 
 try:
 	date_of_hiseq  = sys.argv[1]
