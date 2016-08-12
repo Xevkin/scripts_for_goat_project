@@ -320,7 +320,11 @@ def merge_and_process_mit(RG_file, reference):
 			call("samtools view -b -q" + QC + " " +  bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
 
 			call("samtools index " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
+
+			cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_rmdup_q" + QC + ".bam --omitDepthOutputAtEachBase"
 		
+			call(cmd, shell=True)
+			
 			call("samtools idxstats " +  bam_root + "_rmdup_q" + QC + ".bam >" + bam_root + "_rmdup_q" + QC + ".idx",shell=True)
 
 			call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd_consensus_q" + QC + "-setMinDepth 2 -minQ " + QC,shell=True)
@@ -581,6 +585,7 @@ def indel_realignment(rmdup_bam, reference_genome):
 	print "starting realignment for sample "+rmdup_bam
 	
 	call("samtools index " + rmdup_bam,shell=True)
+	
 	cmd = "java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T RealignerTargetCreator -R " + reference_genome + " -I " + rmdup_bam + " -o forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals 2> " + rmdup_bam.split(".")[0] + "_intervals.log"
 
 	call(cmd, shell=True)
