@@ -81,10 +81,7 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
 
 			merge_and_process_mit(RG_file, mitochondrial_reference)
 
-		#make output directories and dump files 
-		call("mkdir mit_logs; mv *mit*.log mit_logs; mv *flagstat* flagstat_files; mkdir mit_idx_files; mv *mit*idx mit_idx_files", shell=True)
-		call("bgzip *mit*bam; mkdir final_mit_bams; mv *mit*q25*bam* *mit_merged_rmdup* final_mit_bams; mkdir intermediate_mit_bam_files",shell=True)
-		call(" mkdir angsd_consensus; mv *angsd* angsd_consensus; mv *_mit* intermediate_mit_bam_files ; mv intermediate_mit_bam_files/final_mit_bams ./",shell=True)
+			clean_up_mit(mit)
 
 	if (align == "yes" or align == "align"):
 
@@ -104,7 +101,7 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
 
 		sys.exit("Script is terminated as no merging was desired")	
  
-        #now merge the lanes for each sample
+    #now merge the lanes for each sample
 	#NOTE: if all the options up to process are "no", then this is where the script will start
 	#expects rmdup bams for each index in each lane, ungziped
 	merged_bam_list = merge_lanes_and_sample(RG_file)
@@ -125,29 +122,9 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
 
 		process_realigned_bams(i,reference,rescale,output_dir)
 	
-		
-	#clean up files
-	call("gunzip *flagstat.gz",shell=True)
-	call("mkdir flagstat_files; mv *flagstat flagstat_files",shell=True)
-	call("mkdir DoC; mv DoC_* DoC",shell=True)
-	call("mkdir log_files; mv *log log_files", shell=True)
-	call("mkdir angsd_consensus_sequences; mv *angsd* angsd_consensus_sequences",shell=True)
-	call("mkdir trimmed_fastq_files_and_logs",shell=True)
-	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
+	clean_up()
+	
 
-	call("mkdir idx_files; mv *idx *idx.gz idx_files; mkdir auxillary_files; mv *txt *interval* RG.tsv* *md5sum* auxillary_files",shell=True)	
-	call("bgzip *bam",shell=True)
-
-	call("mkdir final_bams; mv *F4* finals_bams/; mv final_mit_bams final_bams " + outdir + "; mkdir intermediate_bams; mv *bam* *bai intermediate_bams",shell=True)
-	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
-	
-	call("mkdir mapDamage; mv results_* mapDamage/",shell=True)
-	
-	call("mkdir fastqc; mv *fastqc* fastqc", shell=True)
-
-	call("mv mit_idx_files mit_logs flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files fastqc auxillary_files intermediate_bams mapDamage DoC fastq_files " + out_dir,shell=True)
-	
-	
 def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	#take all .fastq.gz files in current directory; print them
 	files = []
@@ -177,7 +154,7 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	
 	print "Species selected is " + species
 
-        print "Path to reference genome is " + reference
+	print "Path to reference genome is " + reference
 	
 	#if mit isn't no, pick a mitochondrial reference to use
 	if not (mit == "no"):
@@ -327,7 +304,7 @@ def merge_and_process_mit(RG_file, reference):
 	
 	merged_mit_bam_list = merge_lanes_and_sample(RG_file,"yes",reference_sequence)
 
-        for bam in merged_mit_bam_list:
+	for bam in merged_mit_bam_list:
 
 		bam_root = bam.split(".")[0]
 
@@ -337,15 +314,18 @@ def merge_and_process_mit(RG_file, reference):
 
 		call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
 
-		call("samtools view -b -q25 "+ bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q25.bam",shell=True)
+		#filter for both q25 and q30
+		for QC in ["25","30"]:
 
-		call("samtools index " + bam_root + "_rmdup_q25.bam",shell=True)
+			call("samtools view -b -q" + QC + " " +  bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
+
+			call("samtools index " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
 		
-		call("samtools idxstats " +  bam_root + "_rmdup_q25.bam >" + bam_root + "_rmdup_q25.idx",shell=True)
+			call("samtools idxstats " +  bam_root + "_rmdup_q" + QC + ".bam >" + bam_root + "_rmdup_q" + QC + ".idx",shell=True)
 
-		call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 2 -minQ 25",shell=True)
+			call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd_consensus_q" + QC + "-setMinDepth 2 -minQ " + QC,shell=True)
 
-		call("gunzip " + bam_root + "_angsd_consensus.fa.gz; decircularize.py "  + bam_root + "_angsd_consensus.fa > " + bam_root + "_angsd_consensus_decirc.fa",shell=True)
+			call("gunzip " + bam_root + "_angsd_consensus_q" + QC + ".fa.gz; decircularize.py "  + bam_root + "_angsd_consensusq" + QC + ".fa > " + bam_root + "_angsd_consensus_decirc_q" + QC + ".fa",shell=True)
 
 def align_bam(sample, RG_file, alignment_option, reference, trim):
 
@@ -653,6 +633,50 @@ def process_realigned_bams(realigned_bam, reference_genome, rescale, output_dir)
 
 	call(cmd,shell=True)
 	
+
+def clean_up():
+
+	#clean up files
+	call("gunzip *flagstat.gz",shell=True)
+	
+	call("mkdir flagstat_files; mv *flagstat flagstat_files",shell=True)
+	
+	call("mkdir DoC; mv DoC_* DoC",shell=True)
+	
+	call("mkdir log_files; mv *log log_files", shell=True)
+	
+	call("mkdir angsd_consensus_sequences; mv *angsd* angsd_consensus_sequences",shell=True)
+	
+	call("mkdir trimmed_fastq_files_and_logs",shell=True)
+	
+	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
+
+	call("mkdir idx_files; mv *idxmv --help *idx.gz idx_files; mkdir auxillary_files; mv *txt *interval* RG.tsv* *md5sum* auxillary_files",shell=True)	
+	
+	call("bgzip *bam",shell=True)
+
+	call("mkdir final_bams; mv *F4* finals_bams/; mv final_mit_bams final_bams " + outdir + "; mkdir intermediate_bams; mv *bam* *bai intermediate_bams",shell=True)
+	
+	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
+	
+	call("mkdir mapDamage; mv results_* mapDamage/",shell=True)
+	
+	call("mkdir fastqc; mv *fastqc* fastqc", shell=True)
+
+	call("mv mit_idx_files mit_logs flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files fastqc auxillary_files intermediate_bams mapDamage DoC fastq_files " + out_dir,shell=True)
+
+def clean_up_mit(mitochondrial_references_file):
+
+	#make output directories and dump files
+	call("mkdir auxillary_files; mv " + mitochondrial_references_file + " auxillary_files",shell=True)
+	
+	call("gzip *.bam",shell=True) 
+	
+	call("mkdir mit_logs; mv *mit*.log mit_logs; mv *flagstat* flagstat_files; mkdir mit_idx_files; mv *mit*idx mit_idx_files", shell=True)
+	
+	call("bgzip *mit*bam.gz; mkdir final_mit_bams; mv *mit*q25*bam* *mit_merged_rmdup* final_mit_bams; mkdir intermediate_mit_bam_files",shell=True)
+	
+	call(" mkdir angsd_consensus; mv *angsd* angsd_consensus; mv *_mit* intermediate_mit_bam_files ; mv intermediate_mit_bam_files/final_mit_bams ./",shell=True)
 
 try:
 	date_of_hiseq  = sys.argv[1]
