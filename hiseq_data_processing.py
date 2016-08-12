@@ -251,7 +251,7 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 
 def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
-	reference_sequence = reference[0]
+    reference_sequence = reference[0]
 
     reference_path = reference[1]
 
@@ -318,33 +318,32 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
 def merge_and_process_mit(RG_file, reference):
 
-
 	reference_sequence = reference[0]
 
-    reference_path = reference[1]
+	reference_path = reference[1]
 
-    #merge each lane then each sample
-    #account for the fact that we are aligning to different mitochondrial refereneces
+	#merge each lane then each sample
+	#account for the fact that we are aligning to different mitochondrial refereneces
 	
 	merged_mit_bam_list = merge_lanes_and_sample(RG_file,"yes",reference_sequence)
 
-    for bam in merged_mit_bam_list:
+        for bam in merged_mit_bam_list:
 
-        bam_root = bam.split(".")[0]
+		bam_root = bam.split(".")[0]
 
-        call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
+		call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
-        call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
+		call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
 
-        call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
+		call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
 
-        call("samtools view -b -q25 "+ bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q25.bam",shell=True)
+		call("samtools view -b -q25 "+ bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q25.bam",shell=True)
 
-        call("samtools index " + bam_root + "_rmdup_q25.bam",shell=True)
+		call("samtools index " + bam_root + "_rmdup_q25.bam",shell=True)
 		
 		call("samtools idxstats " +  bam_root + "_rmdup_q25.bam >" + bam_root + "_rmdup_q25.idx",shell=True)
 
-        call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 2 -minQ 25",shell=True)
+		call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q25.bam  -doCounts 1 -out " + bam_root + "_angsd_consensus -setMinDepth 2 -minQ 25",shell=True)
 
 		call("gunzip " + bam_root + "_angsd_consensus.fa.gz; decircularize.py "  + bam_root + "_angsd_consensus.fa > " + bam_root + "_angsd_consensus_decirc.fa",shell=True)
 
@@ -457,19 +456,20 @@ def merge_lanes_and_sample(RG_file, mit="no", mit_reference="no"):
 	
 	sample_list = []
 	
-    with open(RG_file) as r:
+	with open(RG_file) as r:
 
-        for line in r:
+        	for line in r:
 			
-            sample = line.split("\t")[3].rstrip("\n")
+            		sample = line.split("\t")[3].rstrip("\n")
 			
 			if [sample] not in sample_list:
                         
 				sample_list.append([sample])
 
 	print sample_list
+	
 	#cycle through the RG file and associate each lane with the correct sample
-    for sample in sample_list:
+	for sample in sample_list:
 
 		lane_list = []
 
@@ -540,7 +540,7 @@ def merge_lanes_and_sample(RG_file, mit="no", mit_reference="no"):
 
 			if (mit == "yes"):
 
-				sample_name = sample_name + "_"  + mit_reference  "_mit"
+				sample_name = sample_name + "_"  + mit_reference +  "_mit"
 
 			sample_lane = sample_name + "_"	+ lane + "_merged"		 
 
