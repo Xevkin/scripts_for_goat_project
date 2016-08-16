@@ -8,7 +8,7 @@ python script <date_of_hiseq> <meyer> <species> <mit_file> <trim> <align> <proce
 
 mit_file should be tab deliminated, col1 with name of reference, col2 with path
 read group file needs to be in the follow format (\t are actual tab characters)
-FASTQ_FILE.GZ\t@RG\tID:X\tSM:X\tPL:X\tLB:X\tLANE\tSAMPLE_NAME
+FASTQ_FILE.GZ\t@RG+ID:X+SM:X+PL:X+LB:X\tLANE\tSAMPLE_NAME
 ID should be in the format <sample_name>-<macrogen_index_number>-<lane_number>-<hiseq_number>
 LB should refer to PCR: <sample>-<lab index>-<macrogen-index>-<PCR_number>
 
@@ -81,7 +81,7 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
 
 			merge_and_process_mit(RG_file, mitochondrial_reference)
 
-			clean_up_mit(mit)
+		clean_up_mit(mit)
 
 	if (align == "yes" or align == "align"):
 
@@ -244,6 +244,7 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
         sample = "_".join(sample.split("_")[:-1])
 
+    print alignment_option + reference_path + " " + trimmed_fastq + " > " + sample_and_ref + "_mit.sai 2>>"+ sample_and_ref + "_mit_alignment.log"
     call(alignment_option + reference_path + " " + trimmed_fastq + " > " + sample_and_ref + "_mit.sai 2>>"+ sample_and_ref + "_mit_alignment.log",shell=True)
 
     with open(RG_file) as file:
@@ -252,10 +253,8 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
         for line in file:
 		
-		print line
-                split_line = line.split("\t")
-                print split_line
-
+		split_line = line.split("\t")
+                
                 if (sample == split_line[0].split(".")[0]):
 
                         RG = split_line[1].rstrip("\n")
@@ -276,8 +275,8 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
         print sample + " aligning to " + reference_path
 
         print RG
-        print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference_path + " " + sample_and_ref + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_ref + "_mit_F4.bam + 2> " + trimmed_fastq + "_mit_alignment.log"
-        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference_path + " " + sample_and_ref + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_ref +"_mit_F4.bam", shell=True)
+        print "bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference_path + " " + sample_and_ref + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_ref + "_mit_F4.bam + 2> " + trimmed_fastq + "_mit_alignment.log"
+        call("bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference_path + " " + sample_and_ref + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_ref +"_mit_F4.bam", shell=True)
 
 	call("samtools flagstat " + sample_and_ref +"_mit_F4.bam > " +sample_and_ref + "_mit_F4.flagstat 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
@@ -351,13 +350,9 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
     
     with open(RG_file) as file:
 
-	print sample
-
 	for line in file:
 		
-		split_line = line.split("\t")
-
-		print split_line	
+		split_line = line.split("\t")	
 
 		if (sample == split_line[0].split(".")[0]):
 
@@ -374,14 +369,9 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 				print "Reads groups being used are:"
                                	print RG
 	file.seek(0)
-
-	#Print the current sample and RG
-        print sample
-
-	print RG                        		
-	print "bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam 2>" + trimmed_fastq + "_alignment.log"
-
-        call("bwa samse -r \'" + RG.rstrip("\n") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam 2> "+ trimmed_fastq + "_alignment.log",shell=True)
+                    		
+	print "bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam 2>" + trimmed_fastq + "_alignment.log"
+        call("bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam 2> "+ trimmed_fastq + "_alignment.log",shell=True)
 	
         #flagstat the bam
         call("samtools flagstat " + sample + ".bam > " + sample + ".flagstat",shell=True)
