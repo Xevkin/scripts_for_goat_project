@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 '''
+Kevin Daly 2015/2016
+
 Script is run in a directory with bam files to be aligned to either goat, wild goat or sheep genome
 Reads will be trimmed, aligned, read groups added, duplicates removed, then 
 
 Also need to supply a date for the Hiseq run - will automatically make results file
-python script <date_of_hiseq> <meyer> <species> <mit_file> <trim> <align> <process_individual_bams> <merge+process> <rescale> <read group file> <directory in which to place output dir/>
+python script <date_of_hiseq> <meyer> <species> <mit_file> <trim> <skip mit alignment> <align> <process_individual_bams> <merge+process> <rescale> <read group file> <directory in which to place output dir/>
 
 mit_file should be tab deliminated, col1 with name of reference, col2 with path
 read group file needs to be in the follow format (\t are actual tab characters)
@@ -42,7 +44,7 @@ nuclear_genomes = {
 }
 
 
-def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale, RG_file, output_dir):
+def main(date_of_hiseq, meyer, species, mit, trim, skip_mit_align, align, process, merge, rescale, RG_file, output_dir):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
@@ -77,9 +79,11 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
 
 			print "Doing mit alignment to " + mitochondrial_reference[0]
 
-			map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mitochondrial_reference, trim), fastq_list)
+			if (skip_mit_align="no"):
 
-			merge_and_process_mit(RG_file, mitochondrial_reference)
+				map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mitochondrial_reference, trim), fastq_list)
+
+			merge_and_process_mit(RG_file, mitochondrial_reference,trim=trim)
 
 		clean_up_mit(mit,out_dir)
 
@@ -104,7 +108,7 @@ def main(date_of_hiseq, meyer, species, mit,trim, align, process, merge, rescale
     	#now merge the lanes for each sample
 	#NOTE: if all the options up to process are "no", then this is where the script will start
 	#expects rmdup bams for each index in each lane, ungziped
-	merged_bam_list = merge_lanes_and_sample(RG_file)
+	merged_bam_list = merge_lanes_and_sample(RG_file,trimmed=trim)
 	
 	realigned_bam_list = []
 
@@ -292,7 +296,7 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	
 	call("samtools flagstat " + sample_and_ref + "_mit_F4_rmdup.bam > " + sample_and_ref + "_mit_F4_rmdup.flagstat",shell=True)	
 
-def merge_and_process_mit(RG_file, reference):
+def merge_and_process_mit(RG_file, reference, trimmed_yet):
 
 	reference_sequence = reference[0]
 
@@ -301,7 +305,7 @@ def merge_and_process_mit(RG_file, reference):
 	#merge each lane then each sample
 	#account for the fact that we are aligning to different mitochondrial refereneces
 	
-	merged_mit_bam_list = merge_lanes_and_sample(RG_file,"yes",reference_sequence)
+	merged_mit_bam_list = merge_lanes_and_sample(RG_file,"yes",reference_sequence, trimmed=trimmed_yet)
 
 	for bam in merged_mit_bam_list:
 
@@ -429,7 +433,7 @@ def process_bam(sample_name):
 	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup.flagstat",shell=True)
 
 	
-def merge_lanes_and_sample(RG_file, mit="no", mit_reference="no"):
+def merge_lanes_and_sample(RG_file, mit="no", mit_reference="no", trimmed):
 
 	#get sample list from the RG file
 	
@@ -488,14 +492,28 @@ def merge_lanes_and_sample(RG_file, mit="no", mit_reference="no"):
 					if (lane == line.split("\t")[2] ) and (sample[0] == line.split("\t")[3].rstrip("\n")):
 						print lane
 						print sample[0]	
-						print line				
-						if (mit == "yes"):
-					
-							files_in_lane.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam")
+						print line
 
+						#at this stage I have an issue with naming the sample
+						#need to straighten out the name of the sample depending on if I have already trimmed prior to running the script				
+						if (mit == "yes"):
+
+							if (trimmed="no"):
+					
+								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam")
+
+							else:
+
+								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_mit_F4_rmdup.bam")
 						else:
+
+							if (trimmed="no"):
 						
-							files_in_lane.append(line.split("\t")[0].split(".")[0] + "_rmdup.bam")
+								files_in_lane.append(line.split("\t")[0].split(".")[0] + "trimmed_rmdup.bam")
+
+							else:
+
+								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_rmdup.bam")
 
 			
 			#create a "sample name" variable to apply to final bams
@@ -688,16 +706,17 @@ try:
 	species = sys.argv[3]
 	mit = sys.argv[4]
 	trim = sys.argv[5]
-	align = sys.argv[6]
-	process = sys.argv[7]
-	merge = sys.argv[8]
-	rescale = sys.argv[9]
-	RG_file  = sys.argv[10]
-	output_dir = sys.argv[11]
+	skip_mit_align = sys.argv[6]
+	align = sys.argv[7]
+	process = sys.argv[8]
+	merge = sys.argv[9]
+	rescale = sys.argv[10]
+	RG_file  = sys.argv[11]
+	output_dir = sys.argv[12]
 
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_hiseq, meyer, species, mit, trim, align, process, merge, rescale, RG_file, and the directory to put output directories/files"
+	print "Input variables are date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, and the directory to put output directories/files"
 	print "Exiting program..."
 	sys.exit()
 
@@ -705,4 +724,4 @@ if not output_dir[-1] == "/":
 
 	output_dir = output_dir + "/"
 
-main(date_of_hiseq, meyer, species, mit, trim, align, process, merge, rescale, RG_file, output_dir)
+main(date_of_hiseq, meyer, species, mit, trim, skip_mit_align, align, process, merge, rescale, RG_file, output_dir)
