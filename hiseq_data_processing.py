@@ -79,16 +79,17 @@ def main(date_of_hiseq, meyer, species, mit, trim, skip_mit_align, align, proces
 
 			print "Doing mit alignment to " + mitochondrial_reference[0]
 
-			if (skip_mit_align="no"):
+			if (skip_mit_align=="no"):
 
 				map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mitochondrial_reference, trim), fastq_list)
 
-			merge_and_process_mit(RG_file, mitochondrial_reference,trim=trim)
+			merge_and_process_mit(RG_file, mitochondrial_reference,trimmed_yet=trim)
 
 		clean_up_mit(mit,out_dir)
 
 	if (align == "yes" or align == "align"):
 
+		print trim
 		map (lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
 
 	#Remove the sai files that we don't care about
@@ -433,7 +434,7 @@ def process_bam(sample_name):
 	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup.flagstat",shell=True)
 
 	
-def merge_lanes_and_sample(RG_file, mit="no", mit_reference="no", trimmed):
+def merge_lanes_and_sample(RG_file, trimmed, mit="no", mit_reference="no"):
 
 	#get sample list from the RG file
 	
@@ -498,7 +499,7 @@ def merge_lanes_and_sample(RG_file, mit="no", mit_reference="no", trimmed):
 						#need to straighten out the name of the sample depending on if I have already trimmed prior to running the script				
 						if (mit == "yes"):
 
-							if (trimmed="no"):
+							if (trimmed=="no"):
 					
 								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam")
 
@@ -507,7 +508,7 @@ def merge_lanes_and_sample(RG_file, mit="no", mit_reference="no", trimmed):
 								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_mit_F4_rmdup.bam")
 						else:
 
-							if (trimmed="no"):
+							if (trimmed=="no"):
 						
 								files_in_lane.append(line.split("\t")[0].split(".")[0] + "trimmed_rmdup.bam")
 
