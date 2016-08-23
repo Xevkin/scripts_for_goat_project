@@ -498,13 +498,8 @@ def merge_lanes_and_sample(RG_file, trimmed, mit="no", mit_reference="no"):
 						#need to straighten out the name of the sample depending on if I have already trimmed prior to running the script				
 						if (mit == "yes"):
 
-							if (trimmed=="no"):
-					
-								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam")
-
-							else:
-
 								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_mit_F4_rmdup.bam")
+
 						else:
 
 							if (trimmed=="no"):
