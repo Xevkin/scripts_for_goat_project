@@ -83,13 +83,12 @@ def main(date_of_hiseq, meyer, species, mit, trim, skip_mit_align, align, proces
 
 				map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mitochondrial_reference, trim), fastq_list)
 
-			merge_and_process_mit(RG_file, mitochondrial_reference,trimmed_yet=trim)
+			merge_and_process_mit(RG_file, mitochondrial_reference, trim)
 
 		clean_up_mit(mit,out_dir)
 
 	if (align == "yes" or align == "align"):
 
-		print trim
 		map (lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
 
 	#Remove the sai files that we don't care about
@@ -109,7 +108,7 @@ def main(date_of_hiseq, meyer, species, mit, trim, skip_mit_align, align, proces
     	#now merge the lanes for each sample
 	#NOTE: if all the options up to process are "no", then this is where the script will start
 	#expects rmdup bams for each index in each lane, ungziped
-	merged_bam_list = merge_lanes_and_sample(RG_file,trimmed=trim)
+	merged_bam_list = merge_lanes_and_sample(RG_file, trim)
 	
 	realigned_bam_list = []
 
@@ -306,7 +305,7 @@ def merge_and_process_mit(RG_file, reference, trimmed_yet):
 	#merge each lane then each sample
 	#account for the fact that we are aligning to different mitochondrial refereneces
 	
-	merged_mit_bam_list = merge_lanes_and_sample(RG_file,"yes",reference_sequence, trimmed=trimmed_yet)
+	merged_mit_bam_list = merge_lanes_and_sample(RG_file, trimmed_yet,"yes",reference_sequence)
 
 	for bam in merged_mit_bam_list:
 
