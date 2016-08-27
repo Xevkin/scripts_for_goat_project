@@ -103,6 +103,10 @@ def main(date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, proces
 	#add an option here to kill the script if you do not want merging to occur
 	if (merge == "no"):
 
+		call("mv " + RG_file + " auxillary_files",shell=True)
+
+		call("mv auxillary_files " + out_dir,shell=True)
+
 		sys.exit("Script is terminated as no merging was desired")	
  
     	#now merge the lanes for each sample
@@ -336,7 +340,7 @@ def merge_and_process_mit(RG_file, reference, trimmed_yet):
 
 				call("gunzip " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa.gz; decircularize.py "  + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa > " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + "_decirc.fa",shell=True)
 
-		call("mkdir " + bam_root + "; mv *angsd-conse* " + bam_root,shell=True)
+		call("mkdir " + bam_root + "_angsd-consensus ; mv *angsd-conse*fa *angsd-conse*arg *angsd-conse*fa" + bam_root,shell=True)
 
 		
 def align_bam(sample, RG_file, alignment_option, reference, trim):
