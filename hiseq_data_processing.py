@@ -502,18 +502,27 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 						#need to straighten out the name of the sample depending on if I have already trimmed prior to running the script				
 						if (mit == "yes"):
 
-								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_mit_F4_rmdup.bam")
+							if (trim=="no"):
+								
+								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam"
 
+							else:
+								
+								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_mit_F4_rmdup.bam")
+						
+									
+						#may have to deal with trimmed files here
 						else:
 						
-								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_trimmed_rmdup.bam")
-
-
-
+							files_in_lane.append(line.split("\t")[0].split(".")[0] + "_trimmed_rmdup.bam")
+							
+							
 			
 			#create a "sample name" variable to apply to final bams
 			for bam in files_in_lane:
-					
+				
+				print bam
+
 				if os.path.isfile(bam):
 					
 					merge_cmd = merge_cmd + "INPUT=" + bam + " "
@@ -525,8 +534,10 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 					else:
 			
 						sample_name = bam.split("-")[0]
-
-				if (trimmed=="no"):
+					
+					print sample_name
+	
+				if (trim=="no"):
 
 					sample_name = sample_name + "_trimmed"
 					
