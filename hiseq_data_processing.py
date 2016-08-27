@@ -165,7 +165,7 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	print "Path to reference genome is " + reference
 	
 	#if mit isn't no, pick a mitochondrial reference to use
-	if not (mit == "no"):
+	if not (mit.rstrip("\n") == "no"):
 
 		mit_references = []
 
@@ -180,10 +180,11 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 				mit_references.append([reference_name, reference_path])
 
 				print "Path to " +  reference_name +" reference is " + reference_path
-	
-	else:
 
-		mit_reference = "no"
+	
+	if (mit.rstrip("\n") == "no"):
+
+		mit_references = "no"
 	
 	#define default cut_adapt
 
@@ -504,7 +505,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 
 							if (trim=="no"):
 								
-								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam"
+								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam")
 
 							else:
 								
