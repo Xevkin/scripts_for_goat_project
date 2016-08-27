@@ -300,7 +300,7 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	
 	call("samtools flagstat " + sample_and_ref + "_mit_F4_rmdup.bam > " + sample_and_ref + "_mit_F4_rmdup.flagstat",shell=True)	
 
-def merge_and_process_mit(RG_file, reference, trimmed_yet):
+def merge_and_process_mit(RG_file, reference, trim):
 
 	reference_sequence = reference[0]
 
@@ -309,7 +309,7 @@ def merge_and_process_mit(RG_file, reference, trimmed_yet):
 	#merge each lane then each sample
 	#account for the fact that we are aligning to different mitochondrial refereneces
 	
-	merged_mit_bam_list = merge_lanes_and_sample(RG_file, trimmed_yet,"yes",reference_sequence)
+	merged_mit_bam_list = merge_lanes_and_sample(RG_file, trim,"yes",reference_sequence)
 
 	for bam in merged_mit_bam_list:
 
@@ -437,7 +437,7 @@ def process_bam(sample_name):
 	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup.flagstat",shell=True)
 
 	
-def merge_lanes_and_sample(RG_file, trimmed, mit="no", mit_reference="no"):
+def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 
 	#get sample list from the RG file
 	
@@ -526,9 +526,11 @@ def merge_lanes_and_sample(RG_file, trimmed, mit="no", mit_reference="no"):
 			
 						sample_name = bam.split("-")[0]
 
-				else:
-		
-					print bam  + " is not in the current directory"
+				if (trimmed=="no"):
+
+					sample_name = sample_name + "_trimmed"
+					
+				#there should be an error to catch things
 
 			if (mit == "yes"):
 
