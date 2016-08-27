@@ -44,7 +44,7 @@ nuclear_genomes = {
 }
 
 
-def main(date_of_hiseq, meyer, species, mit, trim, skip_mit_align, align, process, merge, rescale, RG_file, output_dir):
+def main(date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, output_dir):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
@@ -696,8 +696,8 @@ try:
 	meyer = sys.argv[2]
 	species = sys.argv[3]
 	mit = sys.argv[4]
-	trim = sys.argv[5]
-	skip_mit_align = sys.argv[6]
+	skip_mit_align = sys.argv[5]
+	trim = sys.argv[6]
 	align = sys.argv[7]
 	process = sys.argv[8]
 	merge = sys.argv[9]
@@ -715,4 +715,4 @@ if not output_dir[-1] == "/":
 
 	output_dir = output_dir + "/"
 
-main(date_of_hiseq, meyer, species, mit, trim, skip_mit_align, align, process, merge, rescale, RG_file, output_dir)
+main(date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, output_dir)
