@@ -341,7 +341,7 @@ def merge_and_process_mit(RG_file, reference, trim):
 
 				call("gunzip " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa.gz; decircularize.py "  + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa > " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + "_decirc.fa",shell=True)
 
-		call("mkdir " + bam_root + "_angsd-consensus ; mv *angsd-conse*fa *angsd-conse*arg *angsd-conse*fa" + bam_root,shell=True)
+		call("mkdir " + bam_root + "_angsd-consensus ; mv *angsd-conse*fa *angsd-conse*arg *angsd-conse*fa" + bam_root + "_angsd-consensus",shell=True)
 
 		
 def align_bam(sample, RG_file, alignment_option, reference, trim):
