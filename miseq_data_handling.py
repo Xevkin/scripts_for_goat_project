@@ -40,7 +40,9 @@ mitochondrial_genomes = {
 
 	"goat" : "/kendrick/miseq/data/mit_genomes_fastq_screen/goat_mit/goat_mit.fasta",
 
-	"sheep" : "/kendrick/miseq/data/mit_genomes_fastq_screen/sheep_mit/sheep_mit.fasta"
+	"sheep" : "/kendrick/miseq/data/mit_genomes_fastq_screen/sheep_mit/sheep_mit.fasta",
+
+	"tur" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/tur/west_caucus_tur.fasta"
 
 }
 
