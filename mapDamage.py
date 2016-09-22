@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #this script is similar to the miseq_handling script, and should be merged at a later date
 #similar set-up to that script: input file list, then pipe to mapDamage
 from subprocess import call
