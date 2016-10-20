@@ -415,6 +415,11 @@ def process_bam(sample_name):
 		sample_name = "_".join(sample_name.split("_")[:-1])		
 			
 	print "Processing step for: " + sample_name
+
+	#if the bam is gzipped, gunzip
+	if os.path.isfile(sample_name + ".bam.gz"):
+
+		call("gunzip " + sample_name + ".bam.gz",shell=True)
 	
 	#flagstat the bam
 	call("samtools flagstat " + sample_name + ".bam > " + sample_name + ".flagstat",shell=True)
