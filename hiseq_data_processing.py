@@ -543,9 +543,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 					
 					print sample_name
 	
-				if (trim=="no"):
-
-					sample_name = sample_name + "_trimmed"
+				#may need to handle trimmed files here				
 					
 				#there should be an error to catch things
 
