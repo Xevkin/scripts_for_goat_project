@@ -3,7 +3,7 @@
 import sys
 
 #expects single input file
-#input file: for each line: fastq.gz name, sample name,number of indexes, indexes, hiseq number (hiseqX), lane number (laneX), PCR number (PCRX), and platform
+#input file: for each line: fastq.gz name i.e. Tube1, sample name,number of indexes, indexes, hiseq number (hiseqX), lane number (laneX), PCR number (PCRX), and platform
 #comma seperated
 
 for line in open(sys.argv[1]):
@@ -19,6 +19,9 @@ for line in open(sys.argv[1]):
 	pcr_number = entry[last_index + 2]
 	platform = entry[last_index + 3]
 
+	count = 1
 	for i in indexes:
 
-		print tube + "\t" + r"@RG\tID:" + sample + "-index" + i + "-hiseq" + hiseq_number + "-lane" + lane_number + r"\tSM:" + sample + r"\tPL:" + platform + r"\tID:" + sample + "-index" + i + "-PCR" + pcr_number + "\tlane" + lane_number + "\t" + sample 
+		print tube + "_" + str(count) + "_1.fastq.gz" + "\t" + r"@RG\tID:" + sample + "-index" + i + "-hiseq" + hiseq_number + "-lane" + lane_number + r"\tSM:" + sample + r"\tPL:" + platform + r"\tLB:" + sample + "-index" + i + "-PCR" + pcr_number + "\tlane" + lane_number + "\t" + sample 
+
+		count += 1
