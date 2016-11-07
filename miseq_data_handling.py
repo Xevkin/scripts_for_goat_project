@@ -25,24 +25,26 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"goat" : "/kendrick/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta",
+	"goat" : "/eno/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
-	"sheep" : "/kendrick/reference_genomes/sheep_oviAri3/oviAri3.fa",
+	"sheep" : "/eno/reference_genomes/sheep_oviAri3/oviAri3.fa",
 
-	"cow" : "/kendrick/reference_genomes/cow_bosTau8/bosTau8.fa",
+	"cow" : "/eno/reference_genomes/cow_bosTau8/bosTau8.fa",
 
-	"dog" : "/kendrick/reference_genomes/dog_canFam3/canFam3.fa",
+	"dog" : "/eno/reference_genomes/dog_canFam3/canFam3.fa",
 
-	"horse" : "/kendrick/reference_genomes/horse_equCab2/horse.fa"
+	"horse" : "/eno/reference_genomes/horse_equCab2/horse.fa",
+
+	"tur" : " "
 }
 
 mitochondrial_genomes = {
 
-	"goat" : "/kendrick/miseq/data/mit_genomes_fastq_screen/goat_mit/goat_mit.fasta",
+	"goat" : "/eno/miseq/goat/miseq/data/mit_reference_genomes/goat/goat_mit_revised.fa",
 
-	"sheep" : "/kendrick/miseq/data/mit_genomes_fastq_screen/sheep_mit/sheep_mit.fasta",
+	"sheep" : "/eno/miseq/data/mit_genomes_fastq_screen/sheep_mit/sheep_mit.fasta",
 
-	"tur" : "/kendrick/miseq/goat/miseq/data/mit_reference_genomes/tur/west_caucus_tur.fasta"
+	"tur" : "/eno/miseq/goat/miseq/data/mit_reference_genomes/tur/west_caucus_tur.fasta"
 
 }
 
@@ -154,7 +156,7 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 
 	        cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
 
-        	fastq_screen = "/kendrick/miseq/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
+        	fastq_screen = "/eno/miseq/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
 
 	else:
 
@@ -164,7 +166,7 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 	
 		cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 25 "
 
-                fastq_screen = "/kendrick/miseq/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf /kendrick/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
+                fastq_screen = "/eno/miseq/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf /eno/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
 
 
 	print "Species selected is " + species
@@ -178,7 +180,7 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 
 	if (species == "sheep"):
 
-		out_dir = "/kendrick/miseq/sheep/results/" + date_of_miseq +  "/" 
+		out_dir = "/eno/miseq/sheep/results/" + date_of_miseq +  "/" 
 
 	call("mkdir " + out_dir, shell=True)
 

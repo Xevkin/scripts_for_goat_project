@@ -34,13 +34,13 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"goat1" : "/kendrick/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta",
+	"goat1" : "/eno/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
-	"sheep" : "/kendrick/reference_genomes/sheep_oviAri3/oviAri3.fa",
+	"sheep" : "/eno/reference_genomes/sheep_oviAri3/oviAri3.fa",
 
-	"bezoar" : "/kendrick/reference_genomes/bezoar_CapAeg_1_0/CapAeg_renamed.fa",
+	"bezoar" : "/eno/reference_genomes/bezoar_CapAeg_1_0/CapAeg_renamed.fa",
 
-	"goat1_with_mit" : "/kendrick/reference_genomes/goat_CHIR1_0/goat_CHIR1_with_mit.fa"
+	"goat1_with_mit" : "/eno/reference_genomes/goat_CHIR1_0/goat_CHIR1_with_mit.fa"
 }
 
 
