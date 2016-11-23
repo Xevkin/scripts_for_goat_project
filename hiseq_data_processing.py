@@ -199,7 +199,7 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	#allow meyer option to be used
 	meyer_input = meyer.rstrip("\n").lower()
 
-	alignment_option = "bwa aln -t 2 -l 1024 "  
+	alignment_option = "bwa aln -t 8 -l 1024 "  
 
 	if (meyer_input == "meyer"):
 		
