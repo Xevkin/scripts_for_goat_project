@@ -11,7 +11,7 @@ with open(sys.argv[1]) as file:
 
 			if (len(sequence) > 0):
 
-				print sample + "\t" + sequence
+				print sample.replace(">","") + "\t1\t" + sequence
 
 			sample = line.strip()
 
