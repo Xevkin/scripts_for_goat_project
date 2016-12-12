@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 
 sequence = ""
@@ -25,6 +27,10 @@ with open(sys.argv[1]) as file:
 
 			sequence = sequence + line.strip()
 
+
+#print the final sequences
+
+print sample.split(" ")[0].replace(">","") + "\t1\t" + sequence
 
 
 print "\n}\n\n[[Structure]]\n\nStructureName=\"\"\nNbGroups=1\nGroup={\n\"\"\n}"
