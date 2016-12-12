@@ -40,7 +40,9 @@ nuclear_genomes = {
 
 	"bezoar" : "/eno/reference_genomes/bezoar_CapAeg_1_0/CapAeg_renamed.fa",
 
-	"goat1_with_mit" : "/eno/reference_genomes/goat_CHIR1_0/goat_CHIR1_with_mit.fa"
+	"goat1_with_mit" : "/eno/reference_genomes/goat_CHIR1_0/goat_CHIR1_with_mit.fa",
+
+	"bovine_Y" : "/oscar/RepeatMask_bostau7/bosTau7.masked.filtY.fa "
 }
 
 
