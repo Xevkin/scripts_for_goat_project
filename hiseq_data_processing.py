@@ -85,9 +85,9 @@ def main(date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, proces
 
 				map (lambda fastq : align_process_mit(fastq, RG_file, alignment_option, mitochondrial_reference, trim), fastq_list)
 
-			merge_and_process_mit(RG_file, mitochondrial_reference, trim)
+				merge_and_process_mit(RG_file, mitochondrial_reference, trim)
 
-		clean_up_mit(mit,out_dir)
+				clean_up_mit(mit,out_dir)
 
 	if (align == "yes" or align == "align"):
 
