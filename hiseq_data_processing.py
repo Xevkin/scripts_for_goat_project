@@ -683,7 +683,7 @@ def clean_up(out_dir):
 	
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
 
-	call("mkdir idx_files; mv *idxmv --help *idx.gz idx_files; mkdir auxillary_files; mv *txt *interval* RG.tsv* *md5sum* auxillary_files",shell=True)	
+	call("mkdir idx_files; mv *idx* idx_files; mkdir auxillary_files; mv *txt *interval* RG.tsv* *md5sum* auxillary_files",shell=True)	
 	
 	call("bgzip *bam",shell=True)
 
