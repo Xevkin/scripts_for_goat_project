@@ -687,7 +687,7 @@ def clean_up(out_dir):
 	
 	call("bgzip *bam",shell=True)
 
-	call("mkdir final_bams; mv *F4* finals_bams/; mv final_mit_bams final_bams " + out_dir + "; mkdir intermediate_bams; mv *bam* *bai intermediate_bams",shell=True)
+	call("mkdir final_bams ; mv *F4* final_bams/ ; mv final_mit_bams final_bams " + out_dir + "; mkdir intermediate_bams; mv *bam* *bai intermediate_bams",shell=True)
 	
 	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
 	
