@@ -27,7 +27,7 @@ PSMC_SETTINGS="-N25 -t15 -r5 -p '4+50*1+4+6'"
 while read sample min_depth max_depth FNR
 do
 	#run samtools pileup, then bcftools to create correct .vcf for psmc
-	$SAMTOOLS mpileup -C50 -uf $REF $INPUT_FOLD$sample".bam" | bcftools call -c -O v -Q 20 -o $sample".vcf" -
+	$SAMTOOLS mpileup -C50 -Q 20 -uf $REF $INPUT_FOLD$sample".bam" | bcftools call -c -O v -o $sample".vcf" -
 
 	ls $sample".vcf"
 	#run vcfutils.pl, a script that converts vcf file to  .fq format
