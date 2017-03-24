@@ -37,7 +37,7 @@ do
 	vcfutils.pl vcf2fq -d $min_depth -D $max_depth $sample".vcf" > $sample".fq"
 
 	#change headers to correct header
-	sed -e 's/@/@ch/g'   $sample".fq"  > tmp; mv tmp $sample".fq" 
+	awk '{ if ($1 ~ /^@[123456789]$/ || $1 ~ /^@[123456789][0123456789]$/ ) print "@chr"$0;  else print $0}' $sample".fq"  > tmp.fq; mv tmp.fq $sample".fq" 
 
 	#now lets seperate out the autosomes and the x chromosome
 	filter_autosomes_from_fq.awk $sample".fq" > $sample"_autosomes.fq" 
