@@ -16,7 +16,7 @@ with gzip.open(input_file) as file:
 		else:
 
 			#remove transitions
-			if (line.split()[2:3] == "C" and line.split()[3:4] == "T") or (line.split()[2:3] == "C" and line.split()[4:5] == "T") or (line.split()[2:3] == "G" and line.split()[3:4] == "A") or (line.split()[2:3] == "G" and line.split()[4:5] == "A")
+			if (line.split()[2:3] == "C" and line.split()[3:4] == "T") or (line.split()[2:3] == "C" and line.split()[4:5] == "T") or (line.split()[2:3] == "G" and line.split()[3:4] == "A") or (line.split()[2:3] == "G" and line.split()[4:5] == "A"):
 
 				continue
 
