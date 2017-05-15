@@ -21,7 +21,7 @@ with gzip.open(input_file) as file:
 
 			continue
 
-		if (int(line.split()[0:1]) not in range(1,30)):
+		if (int(line.split()[0]) not in range(1,30)):
 			
 			break
 
