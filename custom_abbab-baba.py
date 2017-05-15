@@ -20,6 +20,5 @@ with gzip.open(input_file) as file:
 
 				continue
 
-		if ((line.split()[2:3] ==  line.split()[3:4]) and  (line.split()[4:5] ==  line.split()[5:6]) and (line.split()[2:3] ==  line.split()[4:5])) or ((line.split()[2:3] ==  line.split()[4:5]) and  (line.split()[3:4] ==  line.split()[5:6]) and (line.split()[2:3] ==  line.split()[3:4])):
-
+		if ((line.split()[2:3] ==  line.split()[3:4]) and  (line.split()[4:5] ==  line.split()[5:6]) and (line.split()[2:3] !=  line.split()[4:5])) or ((line.split()[2:3] ==  line.split()[4:5]) and  (line.split()[3:4] ==  line.split()[5:6]) and (line.split()[2:3] !=  line.split()[3:4])):
 				print line
