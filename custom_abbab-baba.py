@@ -8,7 +8,7 @@ with gzip.open(input_file) as file:
 
 	for line in file:
 
-		if N in line.split()[3:7]:
+		if any("N" in s for s in line.split()[3:7]):
 
 			skip
 
