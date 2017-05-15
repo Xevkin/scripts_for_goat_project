@@ -7,6 +7,10 @@ H1 = int(sys.argv[2]) + 2
 H2 = int(sys.argv[3]) + 2
 H3 = int(sys.argv[4]) + 2
 
+ABBA_count = 0
+
+BABA_count = 0
+
 with gzip.open(input_file) as file:
 
 	for line in file:
@@ -23,5 +27,15 @@ with gzip.open(input_file) as file:
 
 				continue
 
-		if ((line.split()[2:3] ==  line.split()[H1:H1+1]) and  (line.split()[H2:H2+1] ==  line.split()[H3:H3+1]) and (line.split()[2:3] !=  line.split()[H2:H2+1])) or ((line.split()[2:3] ==  line.split()[H2:H2+1]) and  (line.split()[H1:H1+1] ==  line.split()[H3:H3+1]) and (line.split()[2:3] !=  line.split()[H1:H1+1])):
-				print line
+		if ((line.split()[2:3] ==  line.split()[H1:H1+1]) and  (line.split()[H2:H2+1] ==  line.split()[H3:H3+1]) and (line.split()[2:3] !=  line.split()[H2:H2+1])):
+
+			ABBA_count += 1
+
+
+		elif ((line.split()[2:3] ==  line.split()[H2:H2+1]) and  (line.split()[H1:H1+1] ==  line.split()[H3:H3+1]) and (line.split()[2:3] !=  line.split()[H1:H1+1])):
+				
+			BABA_count += 1
+
+		else:
+
+			continue
