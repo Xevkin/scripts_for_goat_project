@@ -15,8 +15,6 @@ with gzip.open(input_file) as file:
 
 	for line in file:
 
-		print line
-
 		if (line.startswith("chr")):
 
 			continue
@@ -51,6 +49,6 @@ with gzip.open(input_file) as file:
 			continue
 
 
-print str(ABBA_count )
+print str((ABBA_count - BABA_count)/ (ABBA_count + BABA_count))
 
-print str(BABA_count)
+
