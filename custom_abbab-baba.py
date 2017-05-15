@@ -12,7 +12,7 @@ with gzip.open(input_file) as file:
 	for line in file:
 
 		#remove Ns - FOR COMPARISON
-		if any("N" in s for s in line.split()[3:7]):
+		if any("N" in s for s in line.split()[2:3]+line.split()[H1:H1+1]+line.split()[H2:H2+1]+line.split()[H3:H3+1] ):
 
 			continue
 
