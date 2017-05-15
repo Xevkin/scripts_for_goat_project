@@ -19,7 +19,7 @@ with gzip.open(input_file) as file:
 
 		if (line.startswith("chr")):
 
-			next
+			continue
 
 		if (str(line.split()[0:1]) not in range(1,30)):
 			
