@@ -15,7 +15,11 @@ with gzip.open(input_file) as file:
 
 	for line in file:
 
-		if (str(line.split()[0:1]) not in range(1,30)) or (line.startswith("chr")):
+		if (line.startswith("chr"):
+
+			next
+
+		if (str(line.split()[0:1]) not in range(1,30)):
 			
 			break
 
