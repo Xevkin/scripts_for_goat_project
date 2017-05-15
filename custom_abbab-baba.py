@@ -17,6 +17,8 @@ with gzip.open(input_file) as file:
 
 		if (str(line.split()[0:1]) not in range(1,30) ):
 
+			print test
+			
 			break
 
 		#remove Ns - FOR COMPARISON
