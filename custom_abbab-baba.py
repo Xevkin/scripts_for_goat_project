@@ -15,7 +15,7 @@ with gzip.open(input_file) as file:
 
 	for line in file:
 
-		if (line.startswith("chr"):
+		if (line.startswith("chr")):
 
 			next
 
