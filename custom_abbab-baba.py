@@ -14,3 +14,5 @@ with gzip.open(input_file) as file:
 
 		else:
 
+			print line
+
