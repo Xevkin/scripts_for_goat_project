@@ -3,12 +3,15 @@ import gzip
 import sys
 
 input_file = sys.argv[1]
+H1 = int(sys.argv[2]) + 2
+H2 = int(sys.argv[3]) + 2
+H3 = int(sys.argv[4]) + 2
 
 with gzip.open(input_file) as file:
 
 	for line in file:
 
-		#remove Ns
+		#remove Ns - FOR COMPARISON
 		if any("N" in s for s in line.split()[3:7]):
 
 			continue
@@ -16,9 +19,9 @@ with gzip.open(input_file) as file:
 		else:
 
 			#remove transitions
-			if (line.split()[2:3] == "C" and line.split()[3:4] == "T") or (line.split()[2:3] == "C" and line.split()[4:5] == "T") or (line.split()[2:3] == "G" and line.split()[3:4] == "A") or (line.split()[2:3] == "G" and line.split()[4:5] == "A"):
+			if (line.split()[2:3] == "C" and line.split()[H3:H3+1] == "T")  or (line.split()[2:3] == "G" and line.split()[H3:H3+1] == "A"):
 
 				continue
 
-		if ((line.split()[2:3] ==  line.split()[3:4]) and  (line.split()[4:5] ==  line.split()[5:6]) and (line.split()[2:3] !=  line.split()[4:5])) or ((line.split()[2:3] ==  line.split()[4:5]) and  (line.split()[3:4] ==  line.split()[5:6]) and (line.split()[2:3] !=  line.split()[3:4])):
+		if ((line.split()[2:3] ==  line.split()[H1:H1+1]) and  (line.split()[H2:H2+1] ==  line.split()[H3:H3+1]) and (line.split()[2:3] !=  line.split()[H2:H2+1])) or ((line.split()[2:3] ==  line.split()[H2:H2+1]) and  (line.split()[H1:H1+1] ==  line.split()[H3:H3+1]) and (line.split()[2:3] !=  line.split()[H1:H1+1])):
 				print line
