@@ -45,4 +45,6 @@ with gzip.open(input_file) as file:
 			continue
 
 
-print ABBA_count BABA_count
+print str(ABBA_count )
+
+print str(BABA_count)
