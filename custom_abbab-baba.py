@@ -21,7 +21,7 @@ with gzip.open(input_file) as file:
 
 		if not line.startswith("1") and not line.startswith("2") and not line.startswith("3") and not line.startswith("4") and not line.startswith("5") and not line.startswith("6") and not line.startswith("7") and not line.startswith("8") and not line.startswith("9"):
 
-			break:
+			break
 
 		#remove Ns - FOR COMPARISON
 		if any("N" in s for s in line.split()[2:3]+line.split()[H1:H1+1]+line.split()[H2:H2+1]+line.split()[H3:H3+1] ):
