@@ -669,8 +669,6 @@ def clean_up(out_dir):
 	
 	call("mkdir log_files; mv *log log_files", shell=True)
 	
-	call("mkdir angsd_consensus_sequences; mv *angsd* angsd_consensus_sequences",shell=True)
-	
 	call("mkdir trimmed_fastq_files_and_logs",shell=True)
 	
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
