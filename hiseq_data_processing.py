@@ -34,7 +34,7 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"goat" : "/ludovic/goat_CHIR1_0/goat_CHIR1_0.fasta",
+	"ARS1" : "/home/kdaly/ARS1/ARS1.fa",
 }
 
 
@@ -85,6 +85,12 @@ def main(date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, proces
 
 		map (lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
 
+
+	#do all rmdup at same time
+	call("for i in $(ls *sort.bam | rev | cut -f2- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort.bam \"$i\"_rmdup.bam & pids+=( $! ); done; wait \"${pids[@]}\" ")
+
+
+sleep "$i"s & pids+=( $! ); done; wait "${pids[@]}
 	#Remove the sai files that we don't care about
 	call("rm *sai",shell=True)
 
@@ -193,13 +199,13 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	#allow meyer option to be used
 	meyer_input = meyer.rstrip("\n").lower()
 
-	alignment_option = "bwa aln -t 8 -l 1024 "  
+	alignment_option = "bwa aln -t 24 -l 1024 "  
 
 	if (meyer_input == "meyer"):
 		
 		print "Meyer option selected."
 		
-		alignment_option = "bwa aln -t 8 -l 1000 -n 0.01 -o 2 " 
+		alignment_option = "bwa aln -t 24 -l 1000 -n 0.01 -o 2 " 
 
 	#variable for RG file
 	RG_file = RG_file.rstrip("\n")
@@ -285,8 +291,8 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
 	call ("rm "+ sample_and_ref + "_mit.sai ",shell=True)
 
-	print "samtools sort "  + sample_and_ref +"_mit_F4.bam " + sample_and_ref + "_mit_F4_sort 2>>" + sample_and_ref + "_mit_alignment.log"
-	call("samtools sort "  + sample_and_ref +"_mit_F4.bam " + sample_and_ref + "_mit_F4_sort 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
+	print "samtools sort -@ 24 "  + sample_and_ref +"_mit_F4.bam -O BAM -o " + sample_and_ref + "_mit_F4_sort.bam 2>>" + sample_and_ref + "_mit_alignment.log"
+	call("samtools sort -@ 24 "  + sample_and_ref +"_mit_F4.bam -O BAM -o " + sample_and_ref + "_mit_F4_sort.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
 	print "samtools rmdup -s "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
 	call("samtools rmdup -s "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
@@ -321,9 +327,9 @@ def merge_and_process_mit(RG_file, reference, trim):
 
 			call("samtools view -b -q" + QC + " " +  bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
 
-			call("samtools index " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
+			call("samtools index -@ 24 " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
 
-			cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_rmdup_q" + QC + ".bam --omitDepthOutputAtEachBase"
+			cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_rmdup_q" + QC + ".bam --omitDepthOutputAtEachBase"
 		
 			call(cmd, shell=True)
 			
@@ -380,22 +386,24 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
         call("samtools flagstat " + sample + ".bam > " + sample + ".flagstat",shell=True)
 
         #sort this bam
-        print "samtools sort " + sample + ".bam " + sample + "_sort"
-        call("samtools sort " + sample + ".bam " + sample + "_sort",shell=True)
+        print "samtools sort -@ 24 " + sample + ".bam -O BAM -o " + sample + "_sort.bam"
+        call("samtools sort -@ 24 " + sample + ".bam -O BAM -o " + sample + "_sort.bam",shell=True)
 
         #gzip the original bam
-        call("gzip " + sample + ".bam",shell=True)
+        call("gzip " + sample + ".bam &",shell=True)
+
+	#we now rmdups all together
 
 	#remove duplicates from the sorted bam
-        print "samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam"
+        #print "samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam"
 
-        call("samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam 2> " + trimmed_fastq + "_alignment.log", shell=True)
+        #call("samtools rmdup -s " + sample + "_sort.bam " + sample + "_rmdup.bam 2> " + trimmed_fastq + "_alignment.log", shell=True)
 
         #remove the "sorted with duplicates" bam
-        call("rm " + sample + "_sort.bam",shell=True)
+        #call("rm " + sample + "_sort.bam",shell=True)
 
         #flagstat the rmdup bam
-        call("samtools flagstat " + sample + "_rmdup.bam > " + sample + "_rmdup.flagstat",shell=True)
+        #call("samtools flagstat " + sample + "_rmdup.bam > " + sample + "_rmdup.flagstat",shell=True)
 
 
 def process_bam(sample_name):
@@ -419,8 +427,8 @@ def process_bam(sample_name):
 	call("samtools flagstat " + sample_name + ".bam > " + sample_name + ".flagstat",shell=True)
 
 	#sort this bam
-	print "samtools sort " + sample_name + ".bam " + sample_name + "_sort"
-	call("samtools sort " + sample_name + ".bam " + sample_name + "_sort",shell=True)
+	print "samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
+	call("samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
 	
 	#gzip the original bam
 	call("gzip " + sample_name + ".bam",shell=True)
@@ -487,7 +495,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 		
 			files_in_lane = []
 
-			merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
+			merge_cmd = "java -Xmx100g -jar /home/kdaly/programs/picard/picard.jar MergeSamFiles VALIDATION_STRINGENCY=SILENT "
 
 			with open(RG_file) as r:
 
@@ -573,7 +581,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 		#each lane has been merged
 		#now, merge each lane for a given sample
 
-		merge_cmd = "java -Xmx20g -jar /research/picard-tools-1.119/MergeSamFiles.jar VALIDATION_STRINGENCY=SILENT "
+		merge_cmd = "java -Xmx100g -jar /home/kdaly/programs/picard/picard.jar  MergeSamFiles VALIDATION_STRINGENCY=SILENT "
 	
 		for bam in merged_lane_list:
 
@@ -603,13 +611,13 @@ def indel_realignment(rmdup_bam, reference_genome):
 	
 	print "starting realignment for sample "+rmdup_bam
 	
-	call("samtools index " + rmdup_bam,shell=True)
+	call("samtools index -@ 24 " + rmdup_bam,shell=True)
 	
-	cmd = "java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T RealignerTargetCreator -R " + reference_genome + " -I " + rmdup_bam + " -o forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals 2> " + rmdup_bam.split(".")[0] + "_intervals.log"
+	cmd = "java -Xmx20g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 24 -R " + reference_genome + " -I " + rmdup_bam + " -o forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals 2> " + rmdup_bam.split(".")[0] + "_intervals.log"
 
 	call(cmd, shell=True)
 	
-	call("java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log",shell=True)
+	call("java -Xmx100g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log",shell=True)
 
 	return rmdup_bam.split(".")[0] + "_realigned.bam"
 
@@ -649,11 +657,11 @@ def process_realigned_bams(realigned_bam, reference_genome, rescale, output_dir)
 	
 	call("samtools flagstat " + realigned_bam.split(".")[0] + "_F4_q25.bam > " + realigned_bam.split(".")[0] + "_F4_q25.flagstat",shell=True)
 
-	call("samtools index " + realigned_bam.split(".")[0] + "_F4_q25.bam",shell=True)
+	call("samtools index -@ 24 " + realigned_bam.split(".")[0] + "_F4_q25.bam",shell=True)
 
 	call("samtools idxstats " + realigned_bam.split(".")[0] + "_F4_q25.bam > " + realigned_bam.split(".")[0].split("_")[0] + ".idx",shell=True)
 
-	cmd="java -Xmx20g -jar /research/GenomeAnalysisTK-2.6-5-gba531bd/GenomeAnalysisTK.jar -T DepthOfCoverage -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_F4_q25.bam --omitDepthOutputAtEachBase"
+	cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_F4_q25.bam --omitDepthOutputAtEachBase"
 
 	call(cmd,shell=True)
 	
