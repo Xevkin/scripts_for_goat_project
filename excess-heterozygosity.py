@@ -12,7 +12,7 @@ to_extract = []
 
 for i in sys.argv[5:]:
 
-	to_extract.append(int(i)-1)
+	to_extract.append(int(i))
 
 bin_start = region_start
 
@@ -56,13 +56,13 @@ with open(sys.argv[1]) as file:
 
 			while (int(split_line[1]) > bin_end & bin_end <= region_end):
 
-				print "updating"
-
-				print str(danger_count)
+				print "updating...danger count: " + str(danger_count)
 
 				#we need to check how many danger sites were found
 
-				if (danger_count >= int(round((bin_end - bin_start) / 10)) ):
+				if (danger_count >= int(round((bin_end - bin_start + 1) / 20)) ):
+
+					print str(bin_start) + " " + str(bin_end)
 
 					danger="yes"
 
@@ -90,15 +90,15 @@ with open(sys.argv[1]) as file:
 						print "adding a het:"  + str(het_count)
 
 			#check hets at the end of line
-			if (het_count >= (round(len(to_extract) / 2)) ):
+			if (het_count >= (round(len(to_extract) / 3)) ):
 
 				danger_count += 1
 
-if (danger_count >= int(round((bin_end - bin_start) / 10)) ):
+if (danger_count >= int(round((bin_end - bin_start + 1) / 20)) ):
+
+	print str(bin_start) + " " + str(bin_end)
 
 	danger="yes"
-
-print str(danger_count)
 
 if (danger=="yes"):
 
