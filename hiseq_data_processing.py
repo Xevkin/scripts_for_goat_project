@@ -90,7 +90,7 @@ def main(date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, proces
 	call("for i in $(ls *sort.bam | rev | cut -f2- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort.bam \"$i\"_rmdup.bam & pids+=( $! ); done; wait \"${pids[@]}\" ")
 
 
-sleep "$i"s & pids+=( $! ); done; wait "${pids[@]}
+	#sleep "$i"s & pids+=( $! ); done; wait "${pids[@]}
 	#Remove the sai files that we don't care about
 	call("rm *sai",shell=True)
 
@@ -147,7 +147,7 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	#however, if trim option is not yes, then we use fastq files
 	if (trim != "yes"):
 
-		files = [file for file in os.listdir(".") if file.endswith("_trimmed.fastq")]
+		files = [file for file in os.listdir(".") if file.endswith("_trimmed.fastq.gz")]
 
         	print "trimmed fastq files in current directory:"
 
@@ -229,7 +229,7 @@ def trim_fastq(current_sample, cut_adapt, out_dir):
 	zipped_fastq = current_sample + ".fastq.gz"
 	
 	#Get number of lines (and from that reads - divide by four) from raw fastq
-	trimmed_fastq = current_sample + "_trimmed" + ".fastq" 
+	trimmed_fastq = current_sample + "_trimmed" + ".fastq.gz" 
 	
 	#cut raw fastq files
 	call(cut_adapt + zipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
@@ -245,11 +245,11 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
     sample_and_ref = fastq.split(".")[0] + "_" + reference_sequence
     
-    trimmed_fastq = sample + "_trimmed.fastq"
+    trimmed_fastq = sample + "_trimmed.fastq.gz"
 
     if (trim != "yes"):
 
-        trimmed_fastq = sample + ".fastq"
+        trimmed_fastq = sample + ".fastq.gz"
 
         sample = "_".join(sample.split("_")[:-1])
 
@@ -346,11 +346,11 @@ def merge_and_process_mit(RG_file, reference, trim):
 		
 def align_bam(sample, RG_file, alignment_option, reference, trim):
 
-    trimmed_fastq = sample + "_trimmed.fastq"
+    trimmed_fastq = sample + "_trimmed.fastq.gz"
 
     if (trim != "yes"):
 
-    	trimmed_fastq = sample + ".fastq"
+    	trimmed_fastq = sample + ".fastq.gz"
 
 	sample = "_".join(sample.split("_")[:-1]) 
 
