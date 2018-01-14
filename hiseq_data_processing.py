@@ -355,7 +355,7 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 
 	    	trimmed_fastq = sample + ".fastq.gz"
 
-	sample = "_".join(sample.split("_")[:-1]) 
+		sample = "_".join(sample.split("_")[:-1])
 
     print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
     call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai 2>" + trimmed_fastq + "_alignment.log",shell=True)
@@ -433,7 +433,7 @@ def process_bam(sample_name):
 	print "samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
 	call("samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
 	
-	print ("samtools view -q30 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q30.bam"
+	print "samtools view -q30 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q30.bam"
 	call("samtools view -q30 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q30.bam" ,shell=True)
 
 	#gzip the original bam
