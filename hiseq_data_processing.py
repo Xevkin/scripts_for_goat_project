@@ -95,14 +95,14 @@ def main(date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, proces
 
 		map(process_bam, fastq_list)
 
-        #do all rmdup at same time
-	call("echo Removing duplicates",shell=True)
-        #call("rm pids.list; m=1;for i in $(ls *sort.bam | rev | cut -f2- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort.bam \"$i\"_rmdup.bam > \"$i\"_rmdup.log & echo $! >> pids.list; m=`expr $m + 1`;done",shell=True)
-	call("PIDS_list="";for i in $(ls *sort.bam | rev | cut -f2- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort.bam \"$i\"_rmdup.bam > \"$i\"_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+        	#do all rmdup at same time
+		call("echo Removing duplicates",shell=True)
+        	#call("rm pids.list; m=1;for i in $(ls *sort.bam | rev | cut -f2- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort.bam \"$i\"_rmdup.bam > \"$i\"_rmdup.log & echo $! >> pids.list; m=`expr $m + 1`;done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q30.bam | rev | cut -f2- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort_q30.bam \"$i\"_q30_rmdup.bam > \"$i\"_q30_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
-       #call("for pid in ${pids[*]}; do wait $pids; done",shell=True)
+       		#call("for pid in ${pids[*]}; do wait $pids; done",shell=True)
 	
-	call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat $i.bam > $i.flagstat;done",shell=True)
+		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat $i.bam > $i.flagstat;done",shell=True)
 	#add an option here to kill the script if you do not want merging to occur
 	if (merge == "no"):
 
@@ -353,7 +353,7 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 
     if (trim != "yes"):
 
-    	trimmed_fastq = sample + ".fastq.gz"
+	    	trimmed_fastq = sample + ".fastq.gz"
 
 	sample = "_".join(sample.split("_")[:-1]) 
 
@@ -433,6 +433,9 @@ def process_bam(sample_name):
 	print "samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
 	call("samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
 	
+	print ("samtools view -q30 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q30.bam"
+	call("samtools view -q30 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q30.bam" ,shell=True)
+
 	#gzip the original bam
 	call("gzip " + sample_name + ".bam",shell=True)
 	
@@ -525,7 +528,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 						#may have to deal with trimmed files here
 						else:
 						
-							files_in_lane.append(line.split("\t")[0].split(".")[0] + "_rmdup.bam")
+							files_in_lane.append(line.split("\t")[0].split(".")[0] + "_q30_rmdup.bam")
 							
 							
 			
@@ -653,18 +656,22 @@ def process_realigned_bams(realigned_bam, reference_genome, rescale, output_dir)
 		realigned_bam = realigned_bam.split(".")[0] + "_rescaled.bam"
 
 
-	call("samtools view -b -F4 " + realigned_bam.split(".")[0] + ".bam > " + realigned_bam.split(".")[0] + "_F4.bam && samtools view -q30 -b " + realigned_bam.split(".")[0] + "_F4.bam > " + realigned_bam.split(".")[0] + "_F4_q30.bam",shell=True)
+	#call("samtools view -b -F4 " + realigned_bam.split(".")[0] + ".bam > " + realigned_bam.split(".")[0] + "_F4.bam && samtools view -q30 -b " + realigned_bam.split(".")[0] + "_F4.bam > " + realigned_bam.split(".")[0] + "_F4_q30.bam",shell=True)
 
 	#gzip the rmdup bam
-	call("gzip " + realigned_bam ,shell=True)
+	#call("gzip " + realigned_bam ,shell=True)
 	
-	call("samtools flagstat " + realigned_bam.split(".")[0] + "_F4_q30.bam > " + realigned_bam.split(".")[0] + "_F4_q30.flagstat",shell=True)
+	call("samtools flagstat "  + realigned_bam + " > " + realigned_bam.split(".")[0] + ".flagstat",shell=True)
+	#call("samtools flagstat " + realigned_bam.split(".")[0] + "_F4_q30.bam > " + realigned_bam.split(".")[0] + "_F4_q30.flagstat",shell=True)
 
-	call("samtools index -@ 24 " + realigned_bam.split(".")[0] + "_F4_q30.bam",shell=True)
+	call("samtools index -@ 24 "  + realigned_bam,shell=True)
+	#call("samtools index -@ 24 " + realigned_bam.split(".")[0] + "_F4_q30.bam",shell=True)
 
-	call("samtools idxstats " + realigned_bam.split(".")[0] + "_F4_q30.bam > " + realigned_bam.split(".")[0].split("_")[0] + ".idx",shell=True)
-
-	cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_F4_q30.bam --omitDepthOutputAtEachBase"
+	
+	#call("samtools idxstats " + realigned_bam.split(".")[0] + "_F4_q30.bam > " + realigned_bam.split(".")[0].split("_")[0] + ".idx",shell=True)
+	
+	cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam + "  --omitDepthOutputAtEachBase"
+	#cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_F4_q30.bam --omitDepthOutputAtEachBase"
 
 	call(cmd,shell=True)
 	
