@@ -436,6 +436,9 @@ def process_bam(sample_name):
 	print "samtools view -q30 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q30.bam"
 	call("samtools view -q30 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q30.bam" ,shell=True)
 
+	print "samtools flagstat " + sample_name + "_sort_q30.bam > " + sample_name + "_sort_q30.flagstat"
+	call("samtools flagstat " + sample_name + "_sort_q30.bam > " + sample_name + "_sort_q30.flagstat",shell=True) 
+
 	#gzip the original bam
 	call("gzip " + sample_name + ".bam",shell=True)
 	
