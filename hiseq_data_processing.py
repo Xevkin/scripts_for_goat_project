@@ -612,10 +612,11 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 
 		#flagstat the merged bam
 		call("samtools flagstat " + sample_name + "_merged.bam > " + sample_name+ "_merged.flagstat",shell=True)
-	
-		merged_bam_list.append(sample_name + "_merged.bam")
 
-	#note: output is not rmdup. rmdup occurs after indel realignment
+		call("samtools rmdup -s " + sample_name + "_merged.bam " + sample_name + "_merged_rmdup.bam 2> " + sample_name + "_merged_rmdup.log",shell=True)
+
+		merged_bam_list.append(sample_name + "_merged_rmdup.bam")
+
 	return merged_bam_list
 
 def indel_realignment(rmdup_bam, reference_genome):
