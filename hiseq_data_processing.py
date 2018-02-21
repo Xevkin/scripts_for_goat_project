@@ -40,12 +40,12 @@ nuclear_genomes = {
 }
 
 
-def main(date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, output_dir):
+def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, output_dir):
 	
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
 	
-	files, reference, mit_references, out_dir, cut_adapt, alignment_option, fastq_list = set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim) 
+	files, reference, mit_references, out_dir, cut_adapt, alignment_option, fastq_list = set_up(date_of_hiseq, meyer, threads,species, mit, RG_file, output_dir, trim) 
 	
 	#make a folder for flagstat files	
 	call("mkdir flagstat_files",shell=True)
@@ -138,7 +138,7 @@ def main(date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, proces
 	clean_up(out_dir)
 	
 
-def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
+def set_up(date_of_hiseq, meyer, threads ,species, mit, RG_file, output_dir, trim):
 	#take all .fastq.gz files in current directory; print them
 	files = []
 
@@ -204,13 +204,13 @@ def set_up(date_of_hiseq, meyer, species, mit, RG_file, output_dir, trim):
 	#allow meyer option to be used
 	meyer_input = meyer.rstrip("\n").lower()
 
-	alignment_option = "bwa aln -t 24 -l 1024 "  
+	alignment_option = "bwa aln -l 1024 -t " + threads
 
 	if (meyer_input == "meyer" or meyer_input == "yes"):
 		
 		print "Meyer option selected."
 		
-		alignment_option = "bwa aln -t 32 -l 1024 -n 0.01 -o 2 " 
+		alignment_option = "bwa aln -l 1024 -n 0.01 -o 2 -t " + threads
 
 	#variable for RG file
 	RG_file = RG_file.rstrip("\n")
@@ -731,20 +731,21 @@ def clean_up_mit(mitochondrial_references_file,out_dir):
 try:
 	date_of_hiseq  = sys.argv[1]
 	meyer = sys.argv[2]
-	species = sys.argv[3]
-	mit = sys.argv[4]
-	skip_mit_align = sys.argv[5]
-	trim = sys.argv[6]
-	align = sys.argv[7]
-	process = sys.argv[8]
-	merge = sys.argv[9]
-	rescale = sys.argv[10]
-	RG_file  = sys.argv[11]
-	output_dir = sys.argv[12]
+	threads=sys.argv[3]
+	species = sys.argv[4]
+	mit = sys.argv[5]
+	skip_mit_align = sys.argv[6]
+	trim = sys.argv[7]
+	align = sys.argv[8]
+	process = sys.argv[9]
+	merge = sys.argv[10]
+	rescale = sys.argv[11]
+	RG_file  = sys.argv[12]
+	output_dir = sys.argv[13]
 
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, and the directory to put output directories/files"
+	print "Input variables are date_of_hiseq, meyer, number of threads, reference genome, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, and the directory to put output directories/files"
 	print "Exiting program..."
 	sys.exit()
 
@@ -752,4 +753,4 @@ if not output_dir[-1] == "/":
 
 	output_dir = output_dir + "/"
 
-main(date_of_hiseq, meyer, species, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, output_dir)
+main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, output_dir)
