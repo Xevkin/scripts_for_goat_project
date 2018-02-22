@@ -204,13 +204,13 @@ def set_up(date_of_hiseq, meyer, threads ,species, mit, RG_file, output_dir, tri
 	#allow meyer option to be used
 	meyer_input = meyer.rstrip("\n").lower()
 
-	alignment_option = "bwa aln -l 1024 -t " + threads
+	alignment_option = "bwa aln -l 1024 -t " + threads + " "
 
 	if (meyer_input == "meyer" or meyer_input == "yes"):
 		
 		print "Meyer option selected."
 		
-		alignment_option = "bwa aln -l 1024 -n 0.01 -o 2 -t " + threads
+		alignment_option = "bwa aln -l 1024 -n 0.01 -o 2 -t " + threads + " "
 
 	#variable for RG file
 	RG_file = RG_file.rstrip("\n")
