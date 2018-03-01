@@ -100,7 +100,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all rmdup at same time
 		call("echo Removing duplicates",shell=True)
         	#call("rm pids.list; m=1;for i in $(ls *sort.bam | rev | cut -f2- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort.bam \"$i\"_rmdup.bam > \"$i\"_rmdup.log & echo $! >> pids.list; m=`expr $m + 1`;done",shell=True)
-		call("PIDS_list="";for i in $(ls *sort_q30.bam | rev | cut -f3- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort_q30.bam \"$i\"_q30_rmdup.bam > \"$i\"_q30_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q30.bam | rev | cut -f3- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort_q30.bam \"$i\"_q30_rmdup.bam 2> \"$i\"_q30_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
        		#call("for pid in ${pids[*]}; do wait $pids; done",shell=True)
 	
