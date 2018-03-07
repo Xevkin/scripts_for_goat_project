@@ -321,27 +321,34 @@ def merge_and_process_mit(RG_file, reference, trim):
 
 		bam_root = bam.split(".")[0]
 
+		print "samtools flagstat " + bam + "  > " + bam_root + ".flagstat"
 		call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
+		print "samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam "
 		call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
 
+		print "samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat"
 		call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
 
 		#filter for just q30
 		for QC in ["30"]:
 
+			print "samtools view -b -q" + QC + " " +  bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q" + QC + ".bam"
 			call("samtools view -b -q" + QC + " " +  bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
 
+			print "samtools index -@ 24 " + bam_root + "_rmdup_q" + QC + ".bam"
 			call("samtools index -@ 24 " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
 
 			cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_rmdup_q" + QC + ".bam --omitDepthOutputAtEachBase"
-		
+			print cmd
 			call(cmd, shell=True)
 			
+			print "samtools idxstats " +  bam_root + "_rmdup_q" + QC + ".bam >" + bam_root + "_rmdup_q" + QC + ".idx"
 			call("samtools idxstats " +  bam_root + "_rmdup_q" + QC + ".bam >" + bam_root + "_rmdup_q" + QC + ".idx",shell=True)
 			
 			for minD in ["2", "3"]:
 
+				print "angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 15" + QC
 				call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 15" + QC,shell=True)
 
 				call("gunzip " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa.gz; python ~/programs/scripts_for_goat_project/decircularize.py "  + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa > " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + "_decirc.fa",shell=True)
