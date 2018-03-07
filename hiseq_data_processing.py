@@ -104,6 +104,8 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
        		#call("for pid in ${pids[*]}; do wait $pids; done",shell=True)
 	
+		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
+
 		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat $i.bam > $i.flagstat;done",shell=True)
 	#add an option here to kill the script if you do not want merging to occur
 	if (merge == "no"):
