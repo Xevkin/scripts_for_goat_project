@@ -444,14 +444,14 @@ def process_bam(sample_name):
 	print "samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
 	call("samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
 	
-	print "samtools view -q30 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q30.bam"
-	call("samtools view -q30 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q30.bam" ,shell=True)
+	print "samtools view -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam"
+	call("samtools view -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam" ,shell=True)
 
-	print "rm " + sample_name + "_sort.bam"
-	call("rm " + sample_name + "_sort.bam" ,shell=True)
+	print "rm " + sample_name + "_sort.ba*"
+	call("rm " + sample_name + "_sort.ba*" ,shell=True)
 
-	print "samtools flagstat " + sample_name + "_sort_q30.bam > " + sample_name + "_sort_q30.flagstat"
-	call("samtools flagstat " + sample_name + "_sort_q30.bam > " + sample_name + "_sort_q30.flagstat",shell=True) 
+	print "samtools flagstat " + sample_name + "_sort_q20.bam > " + sample_name + "_sort_q20.flagstat"
+	call("samtools flagstat " + sample_name + "_sort_q20.bam > " + sample_name + "_sort_q20.flagstat",shell=True) 
 
 	#gzip the original bam
 	call("gzip " + sample_name + ".bam",shell=True)
