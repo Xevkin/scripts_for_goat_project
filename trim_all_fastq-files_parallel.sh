@@ -6,6 +6,8 @@ echo cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "$i".fastq.gz -o 
 
 done
 
-parallel -x $1 -a trimlist.sh
+echo parallel -x $1 -a trimlist.sh
+
+parallel -j $1 -a trimlist.sh
 
 rm trimlist.sh

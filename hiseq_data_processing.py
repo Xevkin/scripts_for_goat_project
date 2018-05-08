@@ -83,7 +83,10 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 				clean_up_mit(mit,out_dir)
 
+	print "alignment option is " + align
 	if (align == "yes" or align == "align"):
+
+		print fastq_list
 
 		map (lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
 
@@ -360,6 +363,8 @@ def merge_and_process_mit(RG_file, reference, trim):
 		
 def align_bam(sample, RG_file, alignment_option, reference, trim):
 
+    print "bam alignment"
+
     trimmed_fastq = sample + "_trimmed.fastq.gz"
 
     if (trim != "yes"):
@@ -370,12 +375,17 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 
     print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
     call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai 2>" + trimmed_fastq + "_alignment.log",shell=True)
-    
+
+#    print "looking for read group for " + sample
+#   print "opening read group file"
+#  print "current sample is " + sample
     with open(RG_file) as file:
 
 	for line in file:
 		
-		split_line = line.split("\t")	
+		split_line = line.split("\t")
+#		print "checking " + split_line[0].split(".")[0]
+#		print "would take " + split_line[1].rstrip("\n") + " as read group"
 
 		if (sample == split_line[0].split(".")[0]):
 
@@ -552,18 +562,24 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 			#create a "sample name" variable to apply to final bams
 			for bam in files_in_lane:
 				
+				print "for the purpose of figuring out sample_name variable"
 				print bam
 
+				print "if os.path.isfile(bam):"
 				if os.path.isfile(bam):
 					
+					print "merge_cmd = merge_cmd + \"INPUT=\" + bam + \" \""
 					merge_cmd = merge_cmd + "INPUT=" + bam + " "
-											
+					
+					print "if not \"-\" in bam:"
 					if not "-" in bam:
 				
+						print "sample_name = bam.split(\"_\")[0]"
 						sample_name = bam.split("_")[0]
- 
+ 					
 					else:
-			
+						print "else"
+						print "sample_name = bam.split(\"-\")[0]"
 						sample_name = bam.split("-")[0]
 					
 					print sample_name
