@@ -103,7 +103,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all rmdup at same time
 		call("echo Removing duplicates",shell=True)
         	#call("rm pids.list; m=1;for i in $(ls *sort.bam | rev | cut -f2- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort.bam \"$i\"_rmdup.bam > \"$i\"_rmdup.log & echo $! >> pids.list; m=`expr $m + 1`;done",shell=True)
-		call("PIDS_list="";for i in $(ls *sort_q30.bam | rev | cut -f3- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort_q30.bam \"$i\"_q30_rmdup.bam 2> \"$i\"_q30_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | rev | cut -f3- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
        		#call("for pid in ${pids[*]}; do wait $pids; done",shell=True)
 	
@@ -353,8 +353,8 @@ def merge_and_process_mit(RG_file, reference, trim):
 			
 			for minD in ["2", "3"]:
 
-				print "angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 15" + QC
-				call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 15" + QC,shell=True)
+				print "angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 15 minMapQ " + QC
+				call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 15 -minMapQ " + QC,shell=True)
 
 				call("gunzip " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa.gz; python ~/programs/scripts_for_goat_project/decircularize.py "  + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa > " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + "_decirc.fa",shell=True)
 
