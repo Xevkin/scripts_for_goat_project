@@ -555,7 +555,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 						#may have to deal with trimmed files here
 						else:
 						
-							files_in_lane.append(line.split("\t")[0].split(".")[0] + "_q30_rmdup.bam")
+							files_in_lane.append(line.split("\t")[0].split(".")[0] + "_q20_rmdup.bam")
 							
 							
 			
