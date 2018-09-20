@@ -735,9 +735,9 @@ def clean_up(out_dir):
 	
 	call("mkdir mapDamage; mv results_* mapDamage/",shell=True)
 	
-	call("mkdir fastqc; mv *fastqc* fastqc", shell=True)
+	call("mv mit_idx_files mit_logs flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files auxillary_files intermediate_bams mapDamage DoC fastq_files " + out_dir,shell=True)
 
-	call("mv mit_idx_files mit_logs flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files fastqc auxillary_files intermediate_bams mapDamage DoC fastq_files " + out_dir,shell=True)
+	call("gzip intermediate_bams/*bam",shell=True)
 
 def clean_up_mit(mitochondrial_references_file,out_dir):
 
