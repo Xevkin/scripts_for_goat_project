@@ -25,9 +25,9 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"goat" : "/eno/reference_genomes/goat_CHIR1_0/goat_CHIR1_0.fasta",
+	"goat" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
-	"sheep" : "/eno/reference_genomes/sheep_oviAri3/oviAri3.fa",
+	"sheep" : "/home/kdaly/miseq/reference_genomes/oviAri3.fa",
 
 	"cow" : "/eno/reference_genomes/cow_bosTau8/bosTau8.fa",
 
@@ -156,7 +156,7 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 
 	        cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
 
-        	fastq_screen = "/eno/miseq/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
+        	fastq_screen = "/home/kdaly/miseq/mit_reference_genomes/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
 
 	else:
 
@@ -276,7 +276,7 @@ def align(sample, alignment_option, reference):
 def process_bam(sample_name):
 		
 	#sort this bam
-	call("samtools sort " + sample_name + ".bam " + sample_name + "_sort",shell=True)
+	call("~/programs/samtools-HL/samtools sort " + sample_name + ".bam " + sample_name + "_sort",shell=True)
 	
 	#remove duplicates from the sorted bam
 	call("samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam", shell=True)
@@ -294,7 +294,7 @@ def process_bam(sample_name):
 	call("samtools view -b -q25 " + sample_name + "_rmdup_only_aligned.bam >" + sample_name + "_q25.bam",shell=True)
 
 	#sort this bam
-       	call("samtools sort " + sample_name + "_q25.bam " + sample_name + "_q25_sort",shell=True)
+       	call("~/programs/samtools-HL/samtools sort " + sample_name + "_q25.bam " + sample_name + "_q25_sort",shell=True)
 
        	#remove duplicates from the sorted bam
        	call("samtools rmdup -s " + sample_name + "_q25_sort.bam " + sample_name + "_q25_rmdup.bam", shell=True)

@@ -20,7 +20,7 @@ with open(vcf) as file:
 
 			newline=[]
 
-			newline.extend(splitline[0:10])
+			newline.extend(splitline[0:9])
 
 			for sample in splitline[9:len(splitline)]:
 
@@ -47,7 +47,6 @@ with open(vcf) as file:
 					else:
 
 						newline.append("0/0:"+ ":".join(splitsample[1:len(splitsample)]))
-
 
 
 			print "\t".join(newline)
