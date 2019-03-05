@@ -750,7 +750,7 @@ def clean_up_mit(mitochondrial_references_file,out_dir):
 
 	call("bgzip *mit*bam.gz; mkdir final_mit_bams; mv *mit*q25*bam* *mit_merged_rmdup* final_mit_bams; mkdir intermediate_mit_bam_files",shell=True)
 
-	call("mkdir angsd_consensus; mv *angsd* angsd_consensus; mv *_mit* intermediate_mit_bam_files ; mv intermediate_mit_bam_files/final_mit_bams ./",shell=True)
+	call("mkdir angsd_consensus; mv *angsd* angsd_consensus; mv *_mit*.bam* intermediate_mit_bam_files ",shell=True)
 
 	call("mv mit_DoC mit_logs flagstat_files mit_idx_files final_mit_bams intermediate_mit_bam_files angsd_consensus " + out_dir,shell=True)
 

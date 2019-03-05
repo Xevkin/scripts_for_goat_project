@@ -13,7 +13,7 @@ python script <date_of_miseq> <meyer> <species> <mit> <trim> <fastqc> <fastq_scr
 import csv
 
 #apparently this is a better way to make system calls using python, rather than "os.system"
-import subprocess 
+import subprocess
 from subprocess import call
 
 #need to import sys anyways to access input file (a list)
@@ -25,7 +25,7 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"goat" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta",
+	"goat" : "/home/kdaly/ARS1/ARS1.fa",
 
 	"sheep" : "/home/kdaly/miseq/reference_genomes/oviAri3.fa",
 
@@ -49,52 +49,52 @@ mitochondrial_genomes = {
 }
 
 def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fastqc):
-	
+
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
-	
-	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, species, mit, output_dir, trim) 
-	
+
+	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, species, mit, output_dir, trim)
+
 	#sample is the file root
 	#trim fastq files and produce fastqc files
 	#the masterlist will change each time so it needs be equated to the function
-	
+
 	if (trim == "yes"):
-		
-		#make an output directory for fastqc	
+
+		#make an output directory for fastqc
 		call("mkdir " +  out_dir + "fastqc/", shell=True)
 
 		for sample in sample_list:
-		
+
 			trim_fastq(sample, cut_adapt, out_dir, fastqc)
-	
+
 	#run fastq screen on the samples if input variable for fastq_screen is "yes"
 	if (fastq_screen.lower() == "yes"):
 
 		map(lambda sample: run_fastq_screen(sample, out_dir, fastq_screen_option), sample_list)
-	
+
 	#at this stage we have our fastq files with adaptors trimmed, fastqc and fastq screen run
 	#we can now move on to the next step: alignment
-	
+
 	#going to align to CHIR1.0, as that what was used for AdaptMap
 
 	map(lambda sample : align(sample,  alignment_option, reference), sample_list)
-	
+
 	#testing a function here, to process a bam to a q25 version
 	map(process_bam, sample_list)
-	
+
 	for sample in sample_list:
 
 		master_list = get_summary_info(master_list, sample)
-	
+
 	call("mkdir trimmed_fastq_files_and_logs",shell=True)
 	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
-		
+
 	for sample in sample_list:
-	
+
 		#clean up files
 		call("gzip "+ sample + "*",shell=True)
-	
+
 		#going to make an output directory for each sample
 		#then move all produced files to this directory
 		call("mkdir " + out_dir + sample,shell=True)
@@ -106,64 +106,64 @@ def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fa
 	call("mv trimmed_fastq_files_and_logs/ " + out_dir,shell=True)
 
 	output_summary = date_of_miseq + "_summary.table"
-	
+
 	#print summary stats
 	with open(output_summary, "w") as f:
 
-		writer = csv.writer(f, delimiter='\t', lineterminator='\n')
+		writer = csv.writer(f, delimiter='\s', lineterminator='\n')
 		writer.writerows(master_list)
 
 	call("wc -l " + output_summary,shell=True)
-	
+
 	number_of_samples = (int((subprocess.check_output("wc -l " + output_summary,shell=True).split(" ")[0])) - 1)
-	
+
 	call("head -n1 " + output_summary + "> header.txt ",shell=True)
-	
+
 	call("tail -n " + str(number_of_samples) + " " + output_summary + " | sort | cat header.txt - > tmp; mv tmp " + output_summary + ";rm header.txt tmp",shell=True)
 
 	call("mv " + output_summary + " " + out_dir,shell=True)
 
 
 def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
-	
+
 	files = []
 	#if not trim, take all "trimmed.fastq" files:
 	if (trim == "no"):
 
-		files = [file for file in os.listdir(".") if file.endswith("trimmed.fastq")]
+		files = [file for file in os.listdir(".") if file.endswith("trimmed.fastq.gz")]
 		#print the trimmed fastq files in current directory
 		print "Trimmed fastq files in the curent directory:"
 		print map(lambda x : x ,files)
 
 	else:
 		#take all .fastq.gz files in current directory; print them
-	
-		files = [file for file in os.listdir(".") if file.endswith(".fastq.gz")] 
-	
+
+		files = [file for file in os.listdir(".") if file.endswith(".fastq.gz")]
+
 		print "fastq.gz files in current directory:"
-	
+
 		print map(lambda x : x ,files)
 
-	#variables will be initialized here so they can be modified by options 
+	#variables will be initialized here so they can be modified by options
 
 
-	if (mit != "yes"): 
-		
+	if (mit != "yes"):
+
 		#reference genome to be used
-		reference = nuclear_genomes[species] 
+		reference = nuclear_genomes[species]
 
 		#define default cut_adapt and fastq screen
 
 	        cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
 
-        	fastq_screen = "/home/kdaly/miseq/mit_reference_genomes/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --outdir ./"
+        	fastq_screen = "/Software/fastq_screen --aligner bowtie --outdir ./"
 
 	else:
 
 		print "Mitochondrial alignment selected"
 
 		reference = mitochondrial_genomes[species]
-	
+
 		cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 25 "
 
                 fastq_screen = "/eno/miseq/goat/miseq/src/fastq_screen_v0.4.4/fastq_screen --aligner bowtie --conf /eno/miseq/src/fastq_screen_v0.4.4/capture_config/capture.conf --outdir ./"
@@ -180,20 +180,20 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 
 	if (species == "sheep"):
 
-		out_dir = "/eno/miseq/sheep/results/" + date_of_miseq +  "/" 
+		out_dir = "/eno/miseq/sheep/results/" + date_of_miseq +  "/"
 
 	call("mkdir " + out_dir, shell=True)
 
 	#allow meyer option to be used
 	meyer_input = meyer.rstrip("\n").lower()
 
-	alignment_option = "bwa aln -t 8 -l 1000 "  
+	alignment_option = "bwa aln -t 8 -l 1000 "
 
-	if (meyer_input == "meyer"):
-		
+	if (meyer_input == "meyer" or meyer_input == "yes"):
+
 		print "Meyer option selected."
-		
-		alignment_option = "bwa aln -t 8 -l 1000 -n 0.01 -o 2 " 
+
+		alignment_option = "bwa aln -t 8 -l 1000 -n 0.01 -o 2 "
 
 	#initialize a masterlist that will carry summary stats of each sample
 	master_list = [["Sample", "read_count_raw", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_remaining","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"]]
@@ -211,76 +211,75 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 
 		else:
 
-			#unzip fastq
-			call("gunzip " + file, shell=True)
-			current_file = file.split(".")[0] + ".fastq"
+			#call("gunzip " + file, shell=True)
+			current_file = file.split(".")[0] + ".fastq.gz"
 
 			#rename the file
 			#also save the current sample as a variable to be used later
 			split_file = current_file.split(".")[0].split("_")
-		
-			call("mv " + current_file + " " + split_file[0] + ".fastq",shell=True)
-	
+
+			call("mv " + current_file + " " + split_file[0] + ".fastq.gz",shell=True)
+
 			#current_file = split_file[0] + ".fastq"
-	
+
 			sample_list.append(split_file[0].rstrip("\n"))
-	
+
 	for i in sample_list:
-	
+
 		master_list.append([i])
-	
+
 	return files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen
 
 
 def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc):
-	
+
 	print "Current sample is: " + current_sample
-	
-	unzipped_fastq = current_sample + ".fastq"
-	
+
+	fastq = current_sample + ".fastq.gz"
+
 	#Get number of lines (and from that reads - divide by four) from raw fastq
-	trimmed_fastq = current_sample + "_trimmed" + ".fastq" 
-	
-	cmd = "wc -l " + unzipped_fastq + " | cut -f1 -d' '" 
-	
+	trimmed_fastq = current_sample + "_trimmed" + ".fastq.gz"
+
+	cmd = "gunzip -c " + fastq + " | wc -l |cut -f1 -d' '"
+
 	#cut raw fastq files
-	call(cut_adapt + unzipped_fastq + " > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
-	
+	call(cut_adapt + fastq + " | gzip -c - > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
+
        	#run fastqc on both the un/trimmed fastq files
 	#first we want to create an output directory if there is none to begin with
 	if (fastqc == "yes"):
-			
-		call("fastqc " + unzipped_fastq + " -o " + out_dir + "fastqc/", shell=True)
-		call("fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
-       	
-       	
+
+		call("~/programs/FastQC/fastqc " + fastq + " -o " + out_dir + "fastqc/", shell=True)
+		call("~/programs/FastQC/fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
+
+
 def run_fastq_screen(current_sample, out_dir, fastq_screen_option):
 
 	call("mkdir " + out_dir + "fastq_screen/",shell=True)
-	
+
 	call("mkdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
-	
-	call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.fastq --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
+
+	call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.fastq.gz --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
 
 
 def align(sample, alignment_option, reference):
 
-    trimmed_fastq = sample + "_trimmed.fastq"
+    trimmed_fastq = sample + "_trimmed.fastq.gz"
 
     print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
     call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)
-    
-    print sample                        		
+
+    print sample
     call("bwa samse "  + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
 
 def process_bam(sample_name):
-		
+
 	#sort this bam
 	call("~/programs/samtools-HL/samtools sort " + sample_name + ".bam " + sample_name + "_sort",shell=True)
-	
+
 	#remove duplicates from the sorted bam
 	call("samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam", shell=True)
-	
+
 	#remove the "sorted with duplicates" bam
 	call("rm " + sample_name + "_sort.bam",shell=True)
 
@@ -304,10 +303,10 @@ def process_bam(sample_name):
 
       	#make a copy of the samtools flagstat
       	call("samtools flagstat " + sample_name + "_q25_rmdup.bam > " + sample_name + "_q25_flagstat.txt",shell=True)
-      	
+
       	#index the q25 bam
 	call("samtools index "+ sample_name + "_q25_rmdup.bam",shell=True)
-	
+
 	#get idx stats
 	call("samtools idxstats "+ sample_name + "_q25_rmdup.bam > "  + sample_name + ".idx",shell=True)
 
@@ -318,23 +317,23 @@ def get_summary_info(master_list, current_sample):
 	print master_list
 	to_add = []
 
-	unzipped_fastq = current_sample + ".fastq"
-	
-	trimmed_fastq = current_sample + "_trimmed.fastq"
+	fastq = current_sample + ".fastq.gz"
 
-	cmd = "wc -l " + unzipped_fastq + " | cut -f1 -d' '" 
+	trimmed_fastq = current_sample + "_trimmed.fastq.gz"
+
+	cmd = "gunzip -c " + fastq + " | wc -l | cut -f1 -d' '" 
 
 	#raw reads
 	file_length = subprocess.check_output(cmd,shell=True)
 	raw_read_number = int(file_length) / 4
-	
+
 	to_add.append(raw_read_number)
-	
+
 	#grab summary statistics of trimmed file
-	cmd = "wc -l " + trimmed_fastq + "| cut -f1 -d' '"
+	cmd = "gunzip -c  " + trimmed_fastq + " | wc -l| cut -f1 -d' '"
        	file_length = subprocess.check_output(cmd,shell=True)
 	trimmed_read_number = int(file_length) / 4
-       	
+
 	to_add.append(str(trimmed_read_number).rstrip("\n"))
        	#get number of reads aligned without rmdup
 	raw_reads_aligned = subprocess.check_output("samtools flagstat " + current_sample + ".bam |  grep 'mapped (' | cut -f1 -d' '",shell=True)
@@ -363,14 +362,14 @@ def get_summary_info(master_list, current_sample):
 	fixed_percentage = str(((float(q25_reads_aligned)) * 100)/ float(rmdup_reads_remaining))
 	to_add.append(fixed_percentage.rstrip("\n"))
 
-	
+
 	for i in master_list:
-		
-		print i		
+
+		print i
 		if (i[0] == current_sample):
-			i.extend(to_add)		
+			i.extend(to_add)
 			break
-		
+
 	return master_list
 
 try:
