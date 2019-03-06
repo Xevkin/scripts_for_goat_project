@@ -65,7 +65,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 			prepare_trim_fastq(fastq, cut_adapt, out_dir)
 
 		#now actually trim in parallel, and remove the trim.sh file afterwards
-		call("parallel -j " + threads + " -a trim.sh",shell=True)
+		call("parallel -j " + threads + " -a trim.sh; rm trim.sh",shell=True)
 
 	#at this stage we have our fastq files with adaptors trimmed
 	#We can now move on to the next step: alignment
@@ -88,7 +88,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 				merge_and_process_mit(RG_file, mitochondrial_reference, trim)
 
-				clean_up_mit(mit,out_dir)
+		clean_up_mit(mit,out_dir)
 
 	print "alignment option is " + align
 	if (align == "yes" or align == "align"):
@@ -101,7 +101,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 		map (lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
 
 		#run the samse.sh command file, then remove it
-		call("parallel -j " +threads + " -a samse.sh",shell=True)
+		call("parallel -j " +threads + " -a samse.sh; rm samse.sh",shell=True)
 
 	#sleep "$i"s & pids+=( $! ); done; wait "${pids[@]}
 	#Remove the sai files that we don't care about
@@ -358,7 +358,7 @@ def merge_and_process_mit(RG_file, reference, trim):
 			print "samtools index -@ 24 " + bam_root + "_rmdup_q" + QC + ".bam"
 			call("samtools index -@ 24 " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
 
-			cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_rmdup_q" + QC + ".bam --omitDepthOutputAtEachBase"
+			cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_rmdup_q" + QC + ".bam --omitDepthOutputAtEachBase --omitIntervalStatistics"
 			print cmd
 			call(cmd, shell=True)
 
@@ -367,12 +367,12 @@ def merge_and_process_mit(RG_file, reference, trim):
 
 			for minD in ["2", "3"]:
 
-				print "angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 15 minMapQ " + QC
-				call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 15 -minMapQ " + QC,shell=True)
+				print "angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 20 minMapQ " + QC
+				call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 20 -minMapQ " + QC,shell=True)
 
 				call("gunzip " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa.gz; python ~/programs/scripts_for_goat_project/decircularize.py "  + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa > " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + "_decirc.fa",shell=True)
 
-		call("mkdir " + bam_root + "_angsd-consensus ; mv *angsd-conse*fa *angsd-conse*arg *angsd-conse*fa" + bam_root + "_angsd-consensus",shell=True)
+		call("mkdir " + bam_root + "_angsd-consensus ; mv *angsd-conse*fa *angsd-conse*arg *angsd*.fa* -t " + bam_root + "_angsd-consensus",shell=True)
 
 
 def align_bam(sample, RG_file, alignment_option, reference, trim):
@@ -390,16 +390,11 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
     print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
     call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai 2>" + trimmed_fastq + "_alignment.log",shell=True)
 
-#    print "looking for read group for " + sample
-#   print "opening read group file"
-#  print "current sample is " + sample
     with open(RG_file) as file:
 
 	for line in file:
 
 		split_line = line.split("\t")
-#		print "checking " + split_line[0].split(".")[0]
-#		print "would take " + split_line[1].rstrip("\n") + " as read group"
 
 		if (sample == split_line[0].split(".")[0]):
 
@@ -423,7 +418,7 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 	f=open("samse.sh","a+")
 	f.write("bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -@ 2 -Sb - > " + sample + ".bam 2> "+ trimmed_fastq + "_alignment.log; samtools flagstat -@ 2 " + sample + ".bam > " + sample + ".flagstat\n")
 	f.close()
-	
+
 	call("echo bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " \"|\" samtools view -@ 2 -Sb - \">\" " + sample + ".bam \"2>\" "+ trimmed_fastq + "_alignment.log\";\" samtools flagstat -@ 2 " + sample + ".bam \">\" " + sample + ".flagstat",shell=True)
 	#call("echo bwa samse -r \\'" + RG.rstrip("\n").replace("+", "\\t") + "\\' " + reference + " " + sample + ".sai " + trimmed_fastq + " \"|\" samtools view -@ 2 -Sb - \">\" " + sample + ".bam \"2>\" "+ trimmed_fastq + "_alignment.log\";\" samtools flagstat -@ 2 " + sample + ".bam \">\" " + sample + ".flagstat >> samse.sh",shell=True)
 
@@ -534,7 +529,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 
 					if (lane == line.split("\t")[2] ) and (sample[0] == line.split("\t")[3].rstrip("\n")):
 						print lane
-						print sample[0]	
+						print sample[0]
 						print line
 
 						#at this stage I have an issue with naming the sample
@@ -559,25 +554,15 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 			#create a "sample name" variable to apply to final bams
 			for bam in files_in_lane:
 
-				print "for the purpose of figuring out sample_name variable"
-				print bam
-
-				print "if os.path.isfile(bam):"
 				if os.path.isfile(bam):
 
-					print "merge_cmd = merge_cmd + \"INPUT=\" + bam + \" \""
 					merge_cmd = merge_cmd + "INPUT=" + bam + " "
 
-					print "if not \"-\" in bam:"
 					if not "-" in bam:
-
-						print "sample_name = bam.split(\"_\")[0]"
 
 						sample_name = bam.split("_")[0]
 
 					else:
-						print "else"
-						print "sample_name = bam.split(\"-\")[0]"
 						sample_name = bam.split("-")[0]
 
 					print sample_name
@@ -630,18 +615,18 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 
 			sample_name = sample_name + "_" + mit_reference + "_mit"
 
-		merge_cmd = merge_cmd + "OUTPUT=" + sample_name + "_merged.bam 2>" + sample_name + "_merged.log"
+		merge_cmd = merge_cmd + "OUTPUT=" + sample_name + "_q20_merged.bam 2>" + sample_name + "_q20_merged.log"
 
 		print merge_cmd
 
 		call(merge_cmd,shell=True)
 
 		#flagstat the merged bam
-		call("samtools flagstat " + sample_name + "_merged.bam > " + sample_name+ "_merged.flagstat",shell=True)
+		call("samtools flagstat " + sample_name + "_q20_merged.bam > " + sample_name+ "_q20_merged.flagstat",shell=True)
 
-		call("samtools rmdup -s " + sample_name + "_merged.bam " + sample_name + "_merged_rmdup.bam 2> " + sample_name + "_merged_rmdup.log",shell=True)
+		call("samtools rmdup -s " + sample_name + "_q20_merged.bam " + sample_name + "_q20_merged_rmdup.bam 2> " + sample_name + "_q20_merged_rmdup.log",shell=True)
 
-		merged_bam_list.append(sample_name + "_merged_rmdup.bam")
+		merged_bam_list.append(sample_name + "_q20_merged_rmdup.bam")
 
 	return merged_bam_list
 
@@ -713,7 +698,7 @@ def clean_up(out_dir):
 	#clean up files
 	call("gunzip *flagstat.gz",shell=True)
 
-	call("mkdir flagstat_files; mv *flagstat flagstat_files",shell=True)
+	call("mkdir flagstat_files; mv *flagstat -t flagstat_files",shell=True)
 
 	call("mkdir DoC; mv DoC_* DoC",shell=True)
 
@@ -721,38 +706,38 @@ def clean_up(out_dir):
 
 	call("mkdir trimmed_fastq_files_and_logs",shell=True)
 
-	call("mv *trimmed* trimmed_fastq_files_and_logs/",shell=True)
+	call("mv *trimmed*  -t trimmed_fastq_files_and_logs/",shell=True)
 
-	call("mkdir idx_files; mv *idx* idx_files; mkdir auxillary_files; mv *txt *interval* RG* *md5sum* auxillary_files",shell=True)
+	call("mkdir idx_files; mv *idx* -t idx_files; mkdir auxillary_files; mv *txt *interval* RG* *md5sum* -t auxillary_files",shell=True)
 
 	call("gzip *bam",shell=True)
 
-	call("mkdir final_bams ; mv *rescaled* final_bams/ ; mv final_mit_bams final_bams " + out_dir + "; mkdir intermediate_bams; mv *bam* *bai intermediate_bams",shell=True)
+	call("mkdir final_bams ; mv *rescaled* *realigned.b* -t final_bams/ ; mv final_mit_bams final_bams -t " + out_dir + "; mkdir intermediate_bams; mv *bam* *bai -t intermediate_bams",shell=True)
 
 	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
 
-	call("mkdir mapDamage; mv results_* mapDamage/",shell=True)
+	call("mkdir mapDamage; mv results_* -t mapDamage/",shell=True)
 
-	call("mv mit_idx_files mit_logs flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files auxillary_files intermediate_bams mapDamage DoC fastq_files " + out_dir,shell=True)
+	call("mv mit_idx_files mit_logs flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files auxillary_files intermediate_bams mapDamage DoC fastq_files -t " + out_dir,shell=True)
 
 	call("gzip intermediate_bams/*bam",shell=True)
 
 def clean_up_mit(mitochondrial_references_file,out_dir):
 
 	#make output directories and dump files
-	call("mkdir auxillary_files; cp " + mitochondrial_references_file + " auxillary_files" ,shell=True)
+	call("mkdir auxillary_files; mv " + mitochondrial_references_file + " auxillary_files" ,shell=True)
 
-	call("gzip *.bam",shell=True) 
+	call("gzip *.bam",shell=True)
 
 	call("mkdir mit_DoC; mv *DoC* mit_DoC",shell=True)
 
-	call("mkdir mit_logs; mv *mit*.log mit_logs; mv *flagstat* flagstat_files; mkdir mit_idx_files; mv *mit*idx mit_idx_files", shell=True)
+	call("mkdir angsd_consensus; mv *angsd* -t angsd_consensus",shell=True)
 
-	call("bgzip *mit*bam.gz; mkdir final_mit_bams; mv *mit*q25*bam* *mit_merged_rmdup* final_mit_bams; mkdir intermediate_mit_bam_files",shell=True)
+	call("mkdir mit_logs; mv *mit*.log -t mit_logs; mv *flagstat* -t flagstat_files; mkdir mit_idx_files; mv *mit*idx -t mit_idx_files", shell=True)
 
-	call("mkdir angsd_consensus; mv *angsd* angsd_consensus; mv *_mit*.bam* intermediate_mit_bam_files ",shell=True)
+	call("bgzip *mit*bam.gz; mkdir final_mit_bams; mv *mit*q30.bam* -t final_mit_bams; mkdir intermediate_mit_bam_files; mv *_mit*.bam.gz -t intermediate_mit_bam_files ",shell=True)
 
-	call("mv mit_DoC mit_logs flagstat_files mit_idx_files final_mit_bams intermediate_mit_bam_files angsd_consensus " + out_dir,shell=True)
+	call("mv trimmed_fastq_files_and_logs mit_DoC mit_logs flagstat_files mit_idx_files final_mit_bams intermediate_mit_bam_files angsd_consensus -t " + out_dir,shell=True)
 
 try:
 	date_of_hiseq  = sys.argv[1]
