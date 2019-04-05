@@ -256,7 +256,7 @@ def prepare_trim_fastq(current_sample, cut_adapt, out_dir):
 	trimmed_fastq = current_sample + "_trimmed" + ".fastq.gz" 
 
 	#cut raw fastq files
-	call("echo " + cut_adapt + zipped_fastq + " -o " + trimmed_fastq + " \"2>\" " + trimmed_fastq + ".log >> trim.sh", shell=True)
+	call("echo " + cut_adapt + zipped_fastq + " -o " + trimmed_fastq + " \">\" " + trimmed_fastq + ".log >> trim.sh", shell=True)
 
 
 def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
@@ -585,20 +585,21 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 			call(merge_cmd,shell=True)
 
 			#flagstat the merged bam
-			call("samtools flagstat "+ sample[0]+ "_" + sample_lane + ".bam >"+ sample[0]+ "_" + sample_lane + ".flagstat" ,shell=True)
+			call("samtools flagstat -@ 20 "+ sample[0]+ "_" + sample_lane + ".bam >"+ sample[0]+ "_" + sample_lane + ".flagstat" ,shell=True)
 
-			#remove duplicates from the merged lane bam
-			cmd = "samtools rmdup -s " + sample[0]+ "_" + sample_lane + ".bam " + sample[0]+ "_" + sample_lane + "_rmdup.bam 2> " + sample[0]+ "_" + sample_lane + "_rmdup.log"
+			#temporary fix - no longer removing duplicates at this stage. Ultimate aim is to stop merging at the lane level
+			#cmd = "samtools rmdup -s " + sample[0]+ "_" + sample_lane + ".bam " + sample[0]+ "_" + sample_lane + "_rmdup.bam 2> " + sample[0]+ "_" + sample_lane + "_rmdup.log"
 
-			call(cmd,shell=True)
-
-			#gzip the original merged bam
-			call("gzip " + sample[0]+ "_" + sample_lane + ".bam",shell=True)
+			#call(cmd,shell=True)
 
 			#flagstat the rmdup_merged file
-			call("samtools flagstat "+ sample[0]+ "_" + sample_lane + "_rmdup.bam > "+ sample[0]+ "_" + sample_lane + "_rmdup.flagstat" ,shell=True)
+			#call("samtools flagstat "+ sample[0]+ "_" + sample_lane + "_rmdup.bam > "+ sample[0]+ "_" + sample_lane + "_rmdup.flagstat" ,shell=True)
 
-			merged_lane_list.append(sample[0]+ "_" + sample_lane + "_rmdup.bam")
+			merged_lane_list.append(sample[0]+ "_" + sample_lane + ".bam")
+
+                        #gzip the original merged bam
+	                #call("gzip " + sample[0]+ "_" + sample_lane + ".bam",shell=True)
+
 
 		#each lane has been merged
 		#now, merge each lane for a given sample
@@ -622,11 +623,17 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 		call(merge_cmd,shell=True)
 
 		#flagstat the merged bam
-		call("samtools flagstat " + sample_name + "_q20_merged.bam > " + sample_name+ "_q20_merged.flagstat",shell=True)
+		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name+ "_q20_merged.flagstat",shell=True)
 
 		call("samtools rmdup -s " + sample_name + "_q20_merged.bam " + sample_name + "_q20_merged_rmdup.bam 2> " + sample_name + "_q20_merged_rmdup.log",shell=True)
 
-		merged_bam_list.append(sample_name + "_q20_merged_rmdup.bam")
+		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_q20_merged.flagstat",shell=True)
+
+		call("samtools view -b -q 30 -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_merged_rmdup_q30.bam",shell=True)
+
+		call("samtools flagstat -@ 20 " + sample_name + "_merged_rmdup_q30.bam > " + sample_name + "_merged_rmdup_q30.flagstat",shell=True)
+
+		merged_bam_list.append(sample_name + "_merged_rmdup_q30.bam")
 
 	return merged_bam_list
 
