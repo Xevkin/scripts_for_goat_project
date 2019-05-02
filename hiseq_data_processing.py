@@ -6,11 +6,12 @@ Script is run in a directory with bam files to be aligned to either goat, wild g
 Reads will be trimmed, aligned, read groups added, duplicates removed, then 
 
 Also need to supply a date for the Hiseq run - will automatically make results file
-python script <date_of_hiseq> <meyer> <species> <mit_file> <trim> <skip mit alignment> <align> <process_individual_bams> <merge+process> <rescale> <read group file> <directory in which to place output dir/>
+python script <date_of_hiseq> <meyer> <species> <mit_file> <trim> <skip mit alignment> <align> <process_individual_bams> <merge+process> <clip> <read group file> <directory in which to place output dir/>
 
 mit_file should be tab deliminated, col1 with name of reference, col2 with path
+
 read group file needs to be in the follow format (\t are actual tab characters)
-FASTQ_FILE.GZ\t@RG+ID:X+SM:X+PL:X+LB:X\tLANE\tSAMPLE_NAME
+FASTQ_FILE.GZ\t@RG+ID:X+SM:X+PL:X+LB:X\tSAMPLE_NAME
 ID should be in the format <sample_name>-<macrogen_index_number>-<lane_number>-<hiseq_number>
 LB should refer to PCR: <sample>-<lab index>-<macrogen-index>-<PCR_number>
 
@@ -40,7 +41,7 @@ nuclear_genomes = {
 }
 
 
-def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, output_dir):
+def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, align, process, merge, clip, RG_file, output_dir):
 
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
@@ -57,7 +58,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 	if (trim == "yes" or trim == "trim"):
 
 	        #remove the trimming command script
-	        call("rm trim.sh",shell=True)
+	        #call("rm trim.sh",shell=True)
 
 		#create the trimming command file
 		for fastq in fastq_list:
@@ -136,12 +137,27 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
     	#now merge the lanes for each sample
 	#NOTE: if all the options up to process are "no", then this is where the script will start
 	#expects rmdup bams for each index in each lane, ungziped
+	#output will be merged, no rmdup
 	merged_bam_list = merge_lanes_and_sample(RG_file, trim)
+
+	merged_rmdup_bam_list = []
+
+	call("rm rmdup.sh",shell=True)
+
+	for bam in merged_bam_list:
+
+		sample=  bam.split(".")[0]
+
+		call("echo samtools rmdup -s " + bam + " " + sample + "_rmdup.bam \">\"  " + sample + "_rmdup.log >> rmdup.sh",shell=True)
+
+		merged_rmdup_bam_list.append(sample + "_rmdup.bam")
+
+	call("parallel -a rmdup.sh -j " + threads, shell=True)
 
 	realigned_bam_list = []
 
 	#indel realignment
-	for i in merged_bam_list:
+	for i in merged_rmdup_bam_list:
 
 		print "Indel realignment on sample " + i
 
@@ -152,7 +168,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 	#duplicates will also be removed at this point
 	for i in realigned_bam_list:
 
-		process_realigned_bams(i,reference,rescale,output_dir)
+		process_realigned_bams(i,reference,clip,output_dir)
 
 	clean_up(out_dir)
 
@@ -481,7 +497,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 
         	for line in r:
 
-            		sample = line.split("\t")[3].rstrip("\n")
+            		sample = line.split("\t")[2].rstrip("\n")
 
 			if [sample] not in sample_list:
 
@@ -498,7 +514,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 
 			for line in r:
 
-				if sample[0] == line.split("\t")[3].rstrip("\n"):
+				if sample[0] == line.split("\t")[2].rstrip("\n"):
 
 					lane = line.split("\t")[2]
 
@@ -512,14 +528,14 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 	#create a list of final merged,rmdup bams that will be returned
 	merged_bam_list = []
 
-	#for each sample, go through each lane for that sample and merge each bam for that sample
+	#Merge each bam for each sample
 	for sample in sample_list:
 
-		merged_lane_list = []
+		merged_sample_list = []
 
 		for lane in sample[1]:
 
-			files_in_lane = []
+			sample_files = []
 
 			merge_cmd = "java -Xmx100g -jar /home/kdaly/programs/picard/picard.jar MergeSamFiles VALIDATION_STRINGENCY=SILENT "
 
@@ -527,10 +543,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 
 				for line in r:
 
-					if (lane == line.split("\t")[2] ) and (sample[0] == line.split("\t")[3].rstrip("\n")):
-						print lane
-						print sample[0]
-						print line
+					if (sample[0] == line.split("\t")[2].rstrip("\n")):
 
 						#at this stage I have an issue with naming the sample
 						#need to straighten out the name of the sample depending on if I have already trimmed prior to running the script
@@ -538,54 +551,56 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 
 							if (trim=="no"):
 
-								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam")
 
 							else:
 
-								files_in_lane.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_mit_F4_rmdup.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_mit_F4_rmdup.bam")
 
 
 						#may have to deal with trimmed files here
 						else:
 
-							files_in_lane.append(line.split("\t")[0].split(".")[0] + "_q20_rmdup.bam")
+							sample_files.append(line.split("\t")[0].split(".")[0] + "_q20_rmdup.bam")
 
 
 			#create a "sample name" variable to apply to final bams
-			for bam in files_in_lane:
+			for bam in sample_files:
 
 				if os.path.isfile(bam):
 
-					merge_cmd = merge_cmd + "INPUT=" + bam + " "
+					merged_sample_list.append(bam)
 
-					if not "-" in bam:
+			#		merge_cmd = merge_cmd + "INPUT=" + bam + " "
 
-						sample_name = bam.split("_")[0]
+			#		if not "-" in bam:
 
-					else:
-						sample_name = bam.split("-")[0]
+			#			sample_name = bam.split("_")[0]
 
-					print sample_name
+			#		else:
+			#			sample_name = bam.split("-")[0]
+
+			#		print sample_name
 
 				#may need to handle trimmed files here
 
 				#there should be an error to catch things
 
-			if (mit == "yes"):
+			#if (mit == "yes"):
 
-				sample_name = sample_name + "_"  + mit_reference +  "_mit"
+			#	sample_name = sample_name + "_"  + mit_reference +  "_mit"
 
-			sample_lane = sample_name + "_"	+ lane + "_merged"
+			#sample_lane = sample_name + "_"	+ lane + "_merged"
 
-			merge_cmd = merge_cmd + "OUTPUT=" + sample[0]+ "_" + sample_lane + ".bam 2>" + sample[0] + "_" + sample_lane + ".log"
+			#merge_cmd = merge_cmd + "OUTPUT=" + sample[0]+ "_" + sample_lane + ".bam 2>" + sample[0] + "_" + sample_lane + ".log"
 
-			print merge_cmd
+			#print merge_cmd
 
 			#now merge each bam file associated with a given lane
-			call(merge_cmd,shell=True)
+			#call(merge_cmd,shell=True)
 
 			#flagstat the merged bam
-			call("samtools flagstat -@ 20 "+ sample[0]+ "_" + sample_lane + ".bam >"+ sample[0]+ "_" + sample_lane + ".flagstat" ,shell=True)
+			#call("samtools flagstat -@ 20 "+ sample[0]+ "_" + sample_lane + ".bam >"+ sample[0]+ "_" + sample_lane + ".flagstat" ,shell=True)
 
 			#temporary fix - no longer removing duplicates at this stage. Ultimate aim is to stop merging at the lane level
 			#cmd = "samtools rmdup -s " + sample[0]+ "_" + sample_lane + ".bam " + sample[0]+ "_" + sample_lane + "_rmdup.bam 2> " + sample[0]+ "_" + sample_lane + "_rmdup.log"
@@ -595,18 +610,17 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 			#flagstat the rmdup_merged file
 			#call("samtools flagstat "+ sample[0]+ "_" + sample_lane + "_rmdup.bam > "+ sample[0]+ "_" + sample_lane + "_rmdup.flagstat" ,shell=True)
 
-			merged_lane_list.append(sample[0]+ "_" + sample_lane + ".bam")
+			#merged_lane_list.append(sample[0]+ "_" + sample_lane + ".bam")
 
                         #gzip the original merged bam
 	                #call("gzip " + sample[0]+ "_" + sample_lane + ".bam",shell=True)
 
 
-		#each lane has been merged
 		#now, merge each lane for a given sample
 
 		merge_cmd = "java -Xmx100g -jar /home/kdaly/programs/picard/picard.jar  MergeSamFiles VALIDATION_STRINGENCY=SILENT "
 
-		for bam in merged_lane_list:
+		for bam in merged_sample_list:
 
 			merge_cmd = merge_cmd + "INPUT=" + bam + " "
 
@@ -625,15 +639,17 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 		#flagstat the merged bam
 		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name+ "_q20_merged.flagstat",shell=True)
 
-		call("samtools rmdup -s " + sample_name + "_q20_merged.bam " + sample_name + "_q20_merged_rmdup.bam 2> " + sample_name + "_q20_merged_rmdup.log",shell=True)
+		call("samtools view -b -q 30 -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_merged_q30.bam",shell=True)
+
+		#call("samtools rmdup -s " + sample_name + "_merged_q30.bam " + sample_name + "_merged_q30_rmdup.bam 2> " + sample_name + "_merged_q30_rmdup.log",shell=True)
 
 		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_q20_merged.flagstat",shell=True)
 
-		call("samtools view -b -q 30 -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_merged_rmdup_q30.bam",shell=True)
+		call("samtools flagstat -@ 20 " + sample_name + "_merged_q30.bam > " + sample_name + "_merged_q30.flagstat",shell=True)
 
-		call("samtools flagstat -@ 20 " + sample_name + "_merged_rmdup_q30.bam > " + sample_name + "_merged_rmdup_q30.flagstat",shell=True)
+		#call("samtools flagstat -@ 20 " + sample_name + "_merged_q30_rmdup.bam > " + sample_name + "_merged_q30_rmdup.flagstat",shell=True)
 
-		merged_bam_list.append(sample_name + "_merged_rmdup_q30.bam")
+		merged_bam_list.append(sample_name + "_merged_q30.bam")
 
 	return merged_bam_list
 
@@ -652,34 +668,26 @@ def indel_realignment(rmdup_bam, reference_genome):
 	return rmdup_bam.split(".")[0] + "_realigned.bam"
 
 
-def mapDamage_rescale(bam,reference_genome, out_dir):
+def softclip_bam(bam,reference_genome, out_dir, to_clip = "4"):
+
+	call("samtools view -h " + bam + " | python ~/programs/scripts_for_goat_project/softclip_mod.py - " + to_clip + " | samtools view -Sb - > " + bam.split(".")[0] + "_softclipped.bam",shell=True)
+
+	call("echo samtools view -h " + bam + " \"|\" python ~/programs/scripts_for_goat_project/softclip_mod.py - " + to_clip + " \"|\" samtools view -Sb - \">\" " + bam.split(".")[0] + "_softclipped.bam",shell=True)
+
+	return (bam.split(".")[0] + "_softclipped.bam")
 
 
-	#no longer rescales
-	call("mapDamage -i " + bam + " -r " + reference_genome + " --verbose",shell=True)
-
-	#gzip the input bam
-	call("gzip " + bam,shell=True)
-
-	print "mv results_" + bam.split(".")[0] + "/" +bam.split(".")[0] + ".rescaled.bam ./" + bam.split(".")[0] + "_rescaled.bam"
-	call("mv results_" + bam.split(".")[0] + "/" +bam.split(".")[0] + ".rescaled.bam ./" + bam.split(".")[0] + "_rescaled.bam",shell=True)
-
-	print bam.split(".")[0] + "_rescaled.bam"
-
-	return (bam.split(".")[0] + "_rescaled.bam")
-
-
-def process_realigned_bams(realigned_bam, reference_genome, rescale, output_dir):
+def process_realigned_bams(realigned_bam, reference_genome, clip, output_dir):
 
 	print "Realigned bam files is: "
 	print realigned_bam
 
-	if (rescale == "yes"):
+	if (clip == "yes"):
 
 		#rescale at this point
-		mapDamage_rescale(realigned_bam,reference_genome,output_dir)
+		softclip_bam(realigned_bam,reference_genome,output_dir)
 
-		realigned_bam = realigned_bam.split(".")[0] + "_rescaled.bam"
+		realigned_bam = realigned_bam.split(".")[0] + "_softclipped.bam"
 
 
 	#call("samtools view -b -F4 " + realigned_bam.split(".")[0] + ".bam > " + realigned_bam.split(".")[0] + "_F4.bam && samtools view -q30 -b " + realigned_bam.split(".")[0] + "_F4.bam > " + realigned_bam.split(".")[0] + "_F4_q30.bam",shell=True)
@@ -757,13 +765,13 @@ try:
 	align = sys.argv[8]
 	process = sys.argv[9]
 	merge = sys.argv[10]
-	rescale = sys.argv[11]
+	clip = sys.argv[11]
 	RG_file  = sys.argv[12]
 	output_dir = sys.argv[13]
 
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_hiseq, meyer, number of threads, reference genome, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, and the directory to put output directories/files"
+	print "Input variables are date_of_hiseq, meyer, number of threads, reference genome, mit, skip_mit_align, trim, align, process, merge, clip, RG_file, and the directory to put output directories/files"
 	print "Exiting program..."
 	sys.exit()
 
@@ -771,4 +779,4 @@ if not output_dir[-1] == "/":
 
 	output_dir = output_dir + "/"
 
-main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, align, process, merge, rescale, RG_file, output_dir)
+main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, align, process, merge, clip, RG_file, output_dir)
