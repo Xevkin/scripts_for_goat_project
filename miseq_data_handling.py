@@ -76,11 +76,11 @@ def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fa
 	#at this stage we have our fastq files with adaptors trimmed, fastqc and fastq screen run
 	#we can now move on to the next step: alignment
 
-	#going to align to CHIR1.0, as that what was used for AdaptMap
+	#going to align to ARS1
 
 	map(lambda sample : align(sample,  alignment_option, reference), sample_list)
 
-	#testing a function here, to process a bam to a q25 version
+	#testing a function here, to process a bam to a q30 version
 	map(process_bam, sample_list)
 
 	for sample in sample_list:
@@ -196,7 +196,7 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 		alignment_option = "bwa aln -t 8 -l 1000 -n 0.01 -o 2 "
 
 	#initialize a masterlist that will carry summary stats of each sample
-	master_list = [["Sample", "read_count_raw", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_remaining","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q25", "percentage_reads_aligned_q25"]]
+	master_list = [["Sample", "read_count_raw", "trimmed_read_count","raw_reads_aligned", "raw %age endogenous", "rmdup_reads_remaining","rmdup_reads_aligned" ,"rmdup_alignment_percent", "reads_aligned_q30", "percentage_reads_aligned_q30"]]
 
 	sample_list = []
 	#cycle through each line in the input file, gunzip
@@ -272,6 +272,10 @@ def align(sample, alignment_option, reference):
     print sample
     call("bwa samse "  + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
 
+    call("samtools flagstat " + sample + ".bam > " +  sample + ".flagstat",shell=True)
+
+
+
 def process_bam(sample_name):
 
 	#sort this bam
@@ -284,22 +288,19 @@ def process_bam(sample_name):
 	call("rm " + sample_name + "_sort.bam",shell=True)
 
 	#make a copy of the samtools flagstat
-	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_flagstat.txt",shell=True)
+	call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup.flagstat",shell=True)
 
-	#remove unaligned reads from this bam
-	call("samtools view -b -F 4 " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup_only_aligned.bam",shell=True)
-
-	#produce q25 bams
-	call("samtools view -b -q25 " + sample_name + "_rmdup_only_aligned.bam >" + sample_name + "_q25.bam",shell=True)
+	#produce q30 bams
+	call("samtools view -b -F 4 -q30 " + sample_name + "_rmdup.bam >" + sample_name + "_rmdup_q30.bam",shell=True)
 
       	#make a copy of the samtools flagstat
-      	call("samtools flagstat " + sample_name + "_q25.bam > " + sample_name + "_q25.flagstat",shell=True)
+      	call("samtools flagstat " + sample_name + "_rmdup_q30.bam > " + sample_name + "_rmdup_q30.flagstat",shell=True)
 
-      	#index the q25 bam
-	call("samtools index "+ sample_name + "_q25.bam",shell=True)
+      	#index the q30 bam
+	call("samtools index "+ sample_name + "_rmdup_q30.bam",shell=True)
 
 	#get idx stats
-	call("samtools idxstats "+ sample_name + "_q25.bam > "  + sample_name + ".idx",shell=True)
+	call("samtools idxstats "+ sample_name + "_rmdup_q30.bam > "  + sample_name + ".idx",shell=True)
 
 
 def get_summary_info(master_list, current_sample):
@@ -335,22 +336,23 @@ def get_summary_info(master_list, current_sample):
 	to_add.append(str(raw_alignment_percentage).rstrip("\n"))
 
 
-	rmdup_reads_remaining = subprocess.check_output("more " + current_sample + "_flagstat.txt | head -n1 | cut -f1 -d' '",shell=True) 
+	rmdup_reads_remaining = subprocess.check_output("more " + current_sample + "_rmdup.flagstat | head -n1 | cut -f1 -d' '",shell=True) 
 	to_add.append(rmdup_reads_remaining.rstrip("\n"))
+
 	#get reads that aligned following rmdup
-	rmdup_reads_aligned = subprocess.check_output("more " + current_sample + "_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
+	rmdup_reads_aligned = subprocess.check_output("more " + current_sample + "_rmdup.flagstat | grep 'mapped (' | cut -f1 -d' '",shell=True)
 	to_add.append(rmdup_reads_aligned.rstrip("\n"))
 
   	#capture the alignment percentage of the flagstat file, both no q and q30
-	raw_alignment = subprocess.check_output("more " + current_sample + "_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
+	raw_alignment = subprocess.check_output("more " + current_sample + ".flagstat | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
 	to_add.append(raw_alignment.rstrip("\n"))
 
-	#get q25 reads aligned
-	q25_reads_aligned = subprocess.check_output("more " + current_sample + "_q25.flagstat | grep 'mapped (' | cut -f1 -d' '",shell=True)
-       	to_add.append(q25_reads_aligned.rstrip("\n"))
+	#get q30 reads aligned
+	q30_reads_aligned = subprocess.check_output("more " + current_sample + "_rmdup_q30.flagstat | grep 'mapped (' | cut -f1 -d' '",shell=True)
+       	to_add.append(q30_reads_aligned.rstrip("\n"))
 
-	#q25_percent_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
-	fixed_percentage = str(((float(q25_reads_aligned)) * 100)/ float(rmdup_reads_remaining))
+	#q30_percent_aligned = subprocess.check_output("more " + sample + "_q30_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
+	fixed_percentage = str(((float(q30_reads_aligned)) * 100)/ float(rmdup_reads_remaining))
 	to_add.append(fixed_percentage.rstrip("\n"))
 
 
