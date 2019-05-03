@@ -243,7 +243,7 @@ def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc):
 	cmd = "gunzip -c " + fastq + " | wc -l |cut -f1 -d' '"
 
 	#cut raw fastq files
-	call(cut_adapt + fastq + " | gzip -c - > " + trimmed_fastq + " 2> " + trimmed_fastq + ".log", shell=True)
+	call(cut_adapt + fastq + " | gzip -c - > " + trimmed_fastq + " > " + trimmed_fastq + ".log", shell=True)
 
        	#run fastqc on both the un/trimmed fastq files
 	#first we want to create an output directory if there is none to begin with
@@ -292,23 +292,14 @@ def process_bam(sample_name):
 	#produce q25 bams
 	call("samtools view -b -q25 " + sample_name + "_rmdup_only_aligned.bam >" + sample_name + "_q25.bam",shell=True)
 
-	#sort this bam
-       	call("~/programs/samtools-HL/samtools sort " + sample_name + "_q25.bam " + sample_name + "_q25_sort",shell=True)
-
-       	#remove duplicates from the sorted bam
-       	call("samtools rmdup -s " + sample_name + "_q25_sort.bam " + sample_name + "_q25_rmdup.bam", shell=True)
-
-       	#remove the "sorted with duplicates" bam
-       	call("rm " + sample_name + "_q25_sort.bam",shell=True)
-
       	#make a copy of the samtools flagstat
-      	call("samtools flagstat " + sample_name + "_q25_rmdup.bam > " + sample_name + "_q25_flagstat.txt",shell=True)
+      	call("samtools flagstat " + sample_name + "_q25.bam > " + sample_name + "_q25.flagstat",shell=True)
 
       	#index the q25 bam
-	call("samtools index "+ sample_name + "_q25_rmdup.bam",shell=True)
+	call("samtools index "+ sample_name + "_q25.bam",shell=True)
 
 	#get idx stats
-	call("samtools idxstats "+ sample_name + "_q25_rmdup.bam > "  + sample_name + ".idx",shell=True)
+	call("samtools idxstats "+ sample_name + "_q25.bam > "  + sample_name + ".idx",shell=True)
 
 
 def get_summary_info(master_list, current_sample):
@@ -355,7 +346,7 @@ def get_summary_info(master_list, current_sample):
 	to_add.append(raw_alignment.rstrip("\n"))
 
 	#get q25 reads aligned
-	q25_reads_aligned = subprocess.check_output("more " + current_sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f1 -d' '",shell=True)
+	q25_reads_aligned = subprocess.check_output("more " + current_sample + "_q25.flagstat | grep 'mapped (' | cut -f1 -d' '",shell=True)
        	to_add.append(q25_reads_aligned.rstrip("\n"))
 
 	#q25_percent_aligned = subprocess.check_output("more " + sample + "_q25_flagstat.txt | grep 'mapped (' | cut -f5 -d' ' | cut -f1 -d'%' | sed 's/(//'", shell=True)
