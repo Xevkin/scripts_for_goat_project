@@ -37,7 +37,7 @@ nuclear_genomes = {
 
 	"ARS1" : "/home/kdaly/ARS1/ARS1.fa",
 
-	"CHIR1" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta"
+	"CHIR1" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
 	"Sheep" : "/lascelles/sheep_OarRambouillet/OarRambouillet.fa"
 }
