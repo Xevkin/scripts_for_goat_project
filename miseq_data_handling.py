@@ -110,7 +110,7 @@ def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fa
 	#print summary stats
 	with open(output_summary, "w") as f:
 
-		writer = csv.writer(f, delimiter='\s', lineterminator='\n')
+		writer = csv.writer(f, delimiter=' ', lineterminator='\n')
 		writer.writerows(master_list)
 
 	call("wc -l " + output_summary,shell=True)
@@ -177,10 +177,6 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 	#Prepare output directory
 
 	out_dir = output_dir + date_of_miseq +  "/"
-
-	if (species == "sheep"):
-
-		out_dir = "/eno/miseq/sheep/results/" + date_of_miseq +  "/"
 
 	call("mkdir " + out_dir, shell=True)
 

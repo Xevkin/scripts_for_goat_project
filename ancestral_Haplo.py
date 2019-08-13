@@ -24,7 +24,7 @@ with open(sys.argv[1]) as file:
 
 			split_line = split_line[0:len(split_line)-1]
 
-			ancestral = split_line[anc_col]
+			ancestral = split_line[(anc_col)-1]
 
 			sampled = split_line[3:]
 
@@ -59,4 +59,6 @@ with open(sys.argv[1]) as file:
 					new_line = new_line + "2\t"
 
 
-			print new_line
+			if not ("2" in new_line.split("\t")[1:]):
+
+				print new_line

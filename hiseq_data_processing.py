@@ -38,6 +38,8 @@ nuclear_genomes = {
 	"ARS1" : "/home/kdaly/ARS1/ARS1.fa",
 
 	"CHIR1" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta"
+
+	"Sheep" : "/lascelles/sheep_OarRambouillet/OarRambouillet.fa"
 }
 
 
@@ -168,7 +170,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 	#duplicates will also be removed at this point
 	for i in realigned_bam_list:
 
-		process_realigned_bams(i,reference,clip,output_dir)
+		process_realigned_bams(i,reference,clip,output_dir,species)
 
 	clean_up(out_dir)
 
@@ -677,7 +679,7 @@ def softclip_bam(bam,reference_genome, out_dir, to_clip = "4"):
 	return (bam.split(".")[0] + "_softclipped.bam")
 
 
-def process_realigned_bams(realigned_bam, reference_genome, clip, output_dir):
+def process_realigned_bams(realigned_bam, reference_genome, clip, output_dir, species):
 
 	print "Realigned bam files is: "
 	print realigned_bam
@@ -706,6 +708,13 @@ def process_realigned_bams(realigned_bam, reference_genome, clip, output_dir):
 	#cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_F4_q30.bam --omitDepthOutputAtEachBase"
 
 	call(cmd,shell=True)
+
+	#now awkwardly rename all the bam files to have the species name
+	sample = realigned_bam.split("_")[0]
+
+	file_end = realigned_bam.split("_")[1]
+
+	call("for i in $(ls " + sample "*.bam*); do I=`echo $i | cut -f1 -d'_'`; J=`echo $i | cut -f2 -d'_'`; mv ${i} ${I}_" + species + "_${J}; done" ,shell=True)
 
 
 def clean_up(out_dir):
