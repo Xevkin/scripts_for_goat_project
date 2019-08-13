@@ -714,7 +714,7 @@ def process_realigned_bams(realigned_bam, reference_genome, clip, output_dir, sp
 
 	file_end = realigned_bam.split("_")[1]
 
-	call("for i in $(ls " + sample "*.bam*); do I=`echo $i | cut -f1 -d'_'`; J=`echo $i | cut -f2 -d'_'`; mv ${i} ${I}_" + species + "_${J}; done" ,shell=True)
+	call("for i in $(ls " + sample + "*.bam*); do I=`echo $i | cut -f1 -d'_'`; J=`echo $i | cut -f2 -d'_'`; mv ${i} ${I}_" + species + "_${J}; done" ,shell=True)
 
 
 def clean_up(out_dir):
