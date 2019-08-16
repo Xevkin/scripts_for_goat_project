@@ -8,6 +8,10 @@ import numpy
 
 import random
 
+#Run like this:
+#python ~/programs/scripts_for_goat_project/biallelic_lineage_specific_bootstrap.py direkli4_dom_HC_all_fixed_high-col43_no-missing-biallelic_Trans.haplo 6,31 5,7,8,11,13,15,16,17,18,19,20,21,22,23,24,25,26,28,29,30 32
+
+
 random_number = str(random.random())
 
 seed = random_number.split(".")[1]
