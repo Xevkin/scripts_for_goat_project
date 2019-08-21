@@ -101,7 +101,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 		#remove the samse.sh file
 		call("rm samse.sh",shell=True)
 
-		map (lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim), fastq_list)
+		map (lambda fastq : align_bam(fastq, RG_file, alignment_option, reference, trim, species), fastq_list)
 
 		#run the samse.sh command file, then remove it
 		call("parallel -j " +threads + " -a samse.sh; rm samse.sh",shell=True)
@@ -113,12 +113,12 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 	#sort and remove duplicates from each bam
 	if (process == "yes" or process == "process"):
 
-		map(process_bam, fastq_list)
+		map(process_bam, fastq_list, species)
 
         	#do all rmdup at same time
 		call("echo Removing duplicates",shell=True)
         	#call("rm pids.list; m=1;for i in $(ls *sort.bam | rev | cut -f2- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort.bam \"$i\"_rmdup.bam > \"$i\"_rmdup.log & echo $! >> pids.list; m=`expr $m + 1`;done",shell=True)
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | rev | cut -f3- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | rev | cut -f4- -d'_' | rev ); do samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
        		#call("for pid in ${pids[*]}; do wait $pids; done",shell=True)
 
@@ -140,7 +140,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 	#NOTE: if all the options up to process are "no", then this is where the script will start
 	#expects rmdup bams for each index in each lane, ungziped
 	#output will be merged, no rmdup
-	merged_bam_list = merge_lanes_and_sample(RG_file, trim)
+	merged_bam_list = merge_lanes_and_sample(RG_file, trim, species)
 
 	merged_rmdup_bam_list = []
 
@@ -257,7 +257,7 @@ def set_up(date_of_hiseq, meyer, threads ,species, mit, RG_file, output_dir, tri
 	#create a list of all fastq files
 	for file in files:
 
-		current_file = file.split(".")[0] 
+		current_file = file.split(".")[0]
 
 		fastq_list.append(current_file.rstrip("\n"))
 
@@ -393,11 +393,13 @@ def merge_and_process_mit(RG_file, reference, trim):
 		call("mkdir " + bam_root + "_angsd-consensus ; mv *angsd-conse*fa *angsd-conse*arg *angsd*.fa* -t " + bam_root + "_angsd-consensus",shell=True)
 
 
-def align_bam(sample, RG_file, alignment_option, reference, trim):
+def align_bam(sample, RG_file, alignment_option, reference, trim, species):
 
     print "bam alignment"
 
     trimmed_fastq = sample + "_trimmed.fastq.gz"
+
+    sample_ref = sample + "_" + species
 
     if (trim != "yes"):
 
@@ -405,8 +407,8 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 
 		sample = "_".join(sample.split("_")[:-1])
 
-    print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
-    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai 2>" + trimmed_fastq + "_alignment.log",shell=True)
+    print(alignment_option + reference + " " + trimmed_fastq + " > " + sample_ref + ".sai")
+    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample_ref + ".sai 2>" + trimmed_fastq + "_" + species + "alignment.log",shell=True)
 
     with open(RG_file) as file:
 
@@ -434,14 +436,14 @@ def align_bam(sample, RG_file, alignment_option, reference, trim):
 	#big question if the -@ 2 is actually efficient with parallel
 	#need to use the print command due to needing the ' symbol
 	f=open("samse.sh","a+")
-	f.write("bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -@ 2 -Sb - > " + sample + ".bam 2> "+ trimmed_fastq + "_alignment.log; samtools flagstat -@ 2 " + sample + ".bam > " + sample + ".flagstat\n")
+	f.write("bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference + " " + sample_ref + ".sai " + trimmed_fastq + " | samtools view -@ 2 -Sb - > " + sample_ref + ".bam 2> "+ trimmed_fastq + "_" + species + "_alignment.log; samtools flagstat -@ 2 " + sample_ref + ".bam > " + sample_ref + ".flagstat\n")
 	f.close()
 
-	call("echo bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference + " " + sample + ".sai " + trimmed_fastq + " \"|\" samtools view -@ 2 -Sb - \">\" " + sample + ".bam \"2>\" "+ trimmed_fastq + "_alignment.log\";\" samtools flagstat -@ 2 " + sample + ".bam \">\" " + sample + ".flagstat",shell=True)
+	call("echo bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference + " " + sample_ref + ".sai " + trimmed_fastq + " \"|\" samtools view -@ 2 -Sb - \">\" " + sample_ref + ".bam \"2>\" "+ trimmed_fastq + "_" + species + "_alignment.log\";\" samtools flagstat -@ 2 " + sample_ref + ".bam \">\" " + sample_ref + ".flagstat",shell=True)
 	#call("echo bwa samse -r \\'" + RG.rstrip("\n").replace("+", "\\t") + "\\' " + reference + " " + sample + ".sai " + trimmed_fastq + " \"|\" samtools view -@ 2 -Sb - \">\" " + sample + ".bam \"2>\" "+ trimmed_fastq + "_alignment.log\";\" samtools flagstat -@ 2 " + sample + ".bam \">\" " + sample + ".flagstat >> samse.sh",shell=True)
 
 
-def process_bam(sample_name):
+def process_bam(sample_name,species):
 
 	#the input list will be different depending on whether the fastq files have been trimmed prior to the script being run
 	#ie if the script was interupted and had to be restarted
@@ -452,6 +454,8 @@ def process_bam(sample_name):
 		sample_name = "_".join(sample_name.split("_")[:-1])
 
 	print "Processing step for: " + sample_name
+
+	sample_name = sample_name.split("_")[0] + "_" + species + "_" + sample_name.split("_")[1:]
 
 	#if the bam is gzipped, gunzip
 	if os.path.isfile(sample_name + ".bam.gz"):
@@ -489,7 +493,7 @@ def process_bam(sample_name):
 	#call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup.flagstat",shell=True)
 
 
-def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
+def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no", species):
 
 	#get sample list from the RG file
 
@@ -563,7 +567,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 						#may have to deal with trimmed files here
 						else:
 
-							sample_files.append(line.split("\t")[0].split(".")[0] + "_q20_rmdup.bam")
+							sample_files.append(line.split("\t")[0].split(".")[0] + "_" + species + "_q20_rmdup.bam")
 
 
 			#create a "sample name" variable to apply to final bams
@@ -626,7 +630,7 @@ def merge_lanes_and_sample(RG_file, trim, mit="no", mit_reference="no"):
 
 			merge_cmd = merge_cmd + "INPUT=" + bam + " "
 
-		sample_name =  sample[0]
+		sample_name =  sample[0] + "_" + species
 
 		if (mit == "yes"):
 
@@ -663,9 +667,14 @@ def indel_realignment(rmdup_bam, reference_genome):
 
 	cmd = "java -Xmx20g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 24 -R " + reference_genome + " -I " + rmdup_bam + " -o forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals 2> " + rmdup_bam.split(".")[0] + "_intervals.log"
 
+	print cmd
 	call(cmd, shell=True)
 
-	call("java -Xmx100g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log",shell=True)
+	cmd = "java -Xmx100g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log"
+
+	print cmd
+
+	call(cmd,shell=True)
 
 	return rmdup_bam.split(".")[0] + "_realigned.bam"
 
