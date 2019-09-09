@@ -124,7 +124,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		call("PIDS_list="";for i in $(ls *sort_q20.bam | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log;  samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
-		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
+		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
 		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat $i.bam > $i.flagstat;done",shell=True)
 	#add an option here to kill the script if you do not want merging to occur
@@ -681,13 +681,6 @@ def process_realigned_bams(realigned_bam, reference_genome, clip, output_dir, sp
 	#cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_F4_q30.bam --omitDepthOutputAtEachBase"
 
 	call(cmd,shell=True)
-
-	#now awkwardly rename all the bam files to have the species name
-	sample = realigned_bam.split("_")[0]
-
-	file_end = realigned_bam.split("_")[1]
-
-	call("for i in $(ls " + sample + "*.bam*); do I=`echo $i | cut -f1 -d'_'`; J=`echo $i | cut -f2- -d'_'`; mv ${i} ${I}_" + species + "_${J}; done" ,shell=True)
 
 
 def clean_up(out_dir):
