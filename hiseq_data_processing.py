@@ -343,7 +343,7 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
 	call("rm " + sample_and_ref + "_mit_F4_sort.bam",shell=True)
 
-	call("samtools flagstat " + sample_and_ref + "_mit_F4_rmdup.bam > " + sample_and_ref + "_mit_F4_rmdup.flagstat",shell=True)	
+	call("samtools flagstat " + sample_and_ref + "_mit_F4_rmdup.bam > " + sample_and_ref + "_mit_F4_rmdup.flagstat",shell=True)
 
 def merge_and_process_mit(RG_file, reference, trim):
 
@@ -354,7 +354,7 @@ def merge_and_process_mit(RG_file, reference, trim):
 	#merge each lane then each sample
 	#account for the fact that we are aligning to different mitochondrial refereneces
 
-	merged_mit_bam_list = merge_lanes_and_sample(RG_file, trim,"yes",reference_sequence)
+	merged_mit_bam_list = merge_lanes_and_sample(RG_file, trim,reference_sequence,"yes",reference_sequence)
 
 	for bam in merged_mit_bam_list:
 
@@ -702,7 +702,7 @@ def clean_up(out_dir):
 
 	call("gzip *bam",shell=True)
 
-	call("mkdir final_bams ; mv *rescaled* *realigned.b* -t final_bams/ ; mv final_mit_bams final_bams -t " + out_dir + "; mkdir intermediate_bams; mv *bam* *bai -t intermediate_bams",shell=True)
+	call("mkdir final_bams ; mv *rescaled* *softcli* *realigned.b* -t final_bams/ ; mv final_mit_bams final_bams -t " + out_dir + "; mkdir intermediate_bams; mv *bam* *bai -t intermediate_bams",shell=True)
 
 	call("gzip trimmed_fastq_files_and_logs/*",shell=True)
 
