@@ -385,7 +385,7 @@ def merge_and_process_mit(RG_file, reference, trim):
 			print "samtools idxstats " +  bam_root + "_rmdup_q" + QC + ".bam >" + bam_root + "_rmdup_q" + QC + ".idx"
 			call("samtools idxstats " +  bam_root + "_rmdup_q" + QC + ".bam >" + bam_root + "_rmdup_q" + QC + ".idx",shell=True)
 
-			for minD in ["2", "3"]:
+			for minD in ["1", "2", "3"]:
 
 				print "angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 20 minMapQ " + QC
 				call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 20 -minMapQ " + QC,shell=True)
@@ -680,7 +680,7 @@ def process_realigned_bams(realigned_bam, reference_genome, clip, output_dir, sp
 	cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam + "  --omitDepthOutputAtEachBase 2>  DoC_" + realigned_bam.split(".")[0] + ".log"
 	#cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_F4_q30.bam --omitDepthOutputAtEachBase"
 
-	call(cmd,shell=True)
+	call("sh /home/kdaly/programs/scripts_for_goat_project/run_DoC_autosomes.sh " + reference_genome + " " + realigned_bam,shell=True)
 
 
 def clean_up(out_dir):
