@@ -27,7 +27,7 @@ nuclear_genomes = {
 
 	"goat" : "/home/kdaly/ARS1/ARS1.fa",
 
-	"sheep" : "/home/kdaly/miseq/reference_genomes/oviAri3.fa",
+	"sheep" : "/home/kdaly/st1/miseq/reference_genomes/oviAri3.fa",
 
 	"cow" : "/eno/reference_genomes/cow_bosTau8/bosTau8.fa",
 
@@ -239,7 +239,7 @@ def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc):
 	cmd = "gunzip -c " + fastq + " | wc -l |cut -f1 -d' '"
 
 	#cut raw fastq files
-	call(cut_adapt + fastq + " | gzip -c - > " + trimmed_fastq + " > " + trimmed_fastq + ".log", shell=True)
+	call(cut_adapt + fastq + " -o " + trimmed_fastq + " > " + trimmed_fastq + ".log", shell=True)
 
        	#run fastqc on both the un/trimmed fastq files
 	#first we want to create an output directory if there is none to begin with
