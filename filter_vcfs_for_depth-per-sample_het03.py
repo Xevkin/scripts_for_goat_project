@@ -4,6 +4,8 @@ import sys
 
 #modified to set het sites to missing if < 0.3 reads support het
 
+#also do a GQ filter of 30. May be more appropriate to do VQSR then filter
+
 #vcf and depth file
 # depth file should have one samples per row, tab separated
 # sample, mean depth, minimum depth
@@ -56,10 +58,20 @@ with open(sys.argv[1]) as file:
 
 			SP = int(individual.split(":")[3].rstrip("\n"))
 
+			GQ = int(individual.split(":")[8].rstrip("\n"))
+
 			if (DP < min_depth[n]) or (DP > int(round(mean_depth[n]*2))) or (SP > 13):
 
 				#come back to this
 				#print str(DP) + " " + str(min_depth[n]) + " " + str(int(round(mean_depth[n]*2)))
+
+				blank_genotype="./."
+
+				new_entry = blank_genotype + ":" + ":".join(individual.split(":")[1:])
+
+				new_line.append(new_entry)
+
+			elif (GQ < 30):
 
 				blank_genotype="./."
 
@@ -77,7 +89,7 @@ with open(sys.argv[1]) as file:
 
 				prop = float(float(alt)/float(total))
 
-				if (prop < 0.3):
+				if (prop < 0.3) or (prop > 0.7):
 
 					blank_genotype="./."
 
