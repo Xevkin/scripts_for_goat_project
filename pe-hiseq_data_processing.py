@@ -132,7 +132,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all rmdup at same time
 		call("echo Removing duplicates",shell=True)
 
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log;  samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log;  samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *sort_q20.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log; samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
 		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
@@ -296,50 +296,56 @@ def prepare_trim_fastq(current_sample, adapter_removal, out_dir):
 
 def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
-    reference_sequence = reference[0]
+	reference_sequence = reference[0]
 
-    reference_path = reference[1]
+	reference_path = reference[1]
 
-    sample =  fastq.split(".")[0]
+	sample =  fastq.split(".")[0]
 
-    sample_and_ref = fastq.split(".")[0] + "_" + reference_sequence
+	sample_and_ref = fastq.split(".")[0] + "_" + reference_sequence
 
-    trimmed_fastq = sample + "_trimmed.fastq.gz"
+	trimmed_fastq = sample + "_trimmed.fastq.gz"
 
-    if (trim != "yes"):
+	if (trim != "yes"):
 
-        trimmed_fastq = sample + ".fastq.gz"
+		trimmed_fastq = sample + ".fastq.gz"
 
-        sample = "_".join(sample.split("_")[:-1])
+		sample = "_".join(sample.split("_")[:-1])
 
-    print alignment_option + reference_path + " " + trimmed_fastq + " > " + sample_and_ref + "_mit.sai 2>>"+ sample_and_ref + "_mit_alignment.log"
-    call(alignment_option + reference_path + " " + trimmed_fastq + " > " + sample_and_ref + "_mit.sai 2>>"+ sample_and_ref + "_mit_alignment.log",shell=True)
+		print "Trimmed fastq is " + trimmed_fastq
 
-    with open(RG_file) as file:
+		print "Trimmed sample is " + sample
 
-        print "Looking for RG. Current sample is " + sample
+		print "Trimmed sample and ref " + sample_and_ref
 
-        for line in file:
+	print alignment_option + reference_path + " " + trimmed_fastq + " > " + sample_and_ref + "_mit.sai 2>>"+ sample_and_ref + "_mit_alignment.log"
+	call(alignment_option + reference_path + " " + trimmed_fastq + " > " + sample_and_ref + "_mit.sai 2>>"+ sample_and_ref + "_mit_alignment.log",shell=True)
 
-		split_line = line.split("\t")
+	with open(RG_file) as file:
 
-                if (sample == split_line[0].split(".")[0]):
+		print "Looking for RG. Current sample is " + sample
 
-                        RG = split_line[1].rstrip("\n")
+		for line in file:
 
-                        #check if RG is an empty string
-                        if not RG:
+			split_line = line.split("\t")
 
-                                print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree"
-                                #should probably do something here is there are no read groups
-                                break
-                        else:
+	                if (sample == split_line[0].split(".")[0]):
 
-                                print "Reads groups being used are:"
-                                print RG
-	file.seek(0)
+        	                RG = split_line[1].rstrip("\n")
 
-        #Print the current sample and RG
+                	        #check if RG is an empty string
+	                        if not RG:
+
+        	                        print "No RGs were detected for this sample - please check sample names in fastq files and in RG file agree"
+                	                #should probably do something here is there are no read groups
+                        	        break
+	                        else:
+
+        	                        print "Reads groups being used are:"
+                	                print RG
+		file.seek(0)
+
+       	#Print the current sample and RG
         print sample + " aligning to " + reference_path
 
         print RG
@@ -505,7 +511,7 @@ def align_bam_pe(sample, RG_file, alignment_option, reference, trim, species):
 
 		f=open("sampe.sh","a+")
 
-		f.write("bwa sampe -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference + " " + sample + "_r1_" + species + ".sai " +  sample + "_r2_" + species + ".sai " +  sample + "_r1_trimmed.fastq.gz " +  sample + "_r2_trimmed.fastq.gz  | samtools view -@ 2 -Sb - > " + sample + "_" + species + "_pe.bam 2> "+ trimmed_fastq + "_" + species + "_pe_alignment.log; samtools flagstat -@ 2 " + sample + "_" + species + "_pe.bam > " + sample + "_" + species + ".flagstat\n")
+		f.write("bwa sampe -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference + " " + sample + "_r1_" + species + ".sai " +  sample + "_r2_" + species + ".sai " +  sample + "_r1_trimmed.fastq.gz " +  sample + "_r2_trimmed.fastq.gz  | samtools view -@ 2 -Sb - > " + sample + "_pe_" + species + ".bam 2> "+ trimmed_fastq + "_" + species + "_pe_alignment.log; samtools flagstat -@ 2 " + sample + "_pe_" + species + ".bam > " + sample + "_pe_" + species + ".flagstat\n")
 
 
 
@@ -521,48 +527,36 @@ def process_bam(sample_name,species):
 
 	print "Processing step for: " + sample_name
 
-	sample_name = "_".join(sample_name.split("_")[0:3]) + "_" + species
+	for sample_name in ["_".join(sample_name.split("_")[0:3]) + "_" + species, "_".join(sample_name.split("_")[0:3]) + "_pe_" + species]:
 
-	print "With species: " + sample_name
+		print "With species: " + sample_name
 
-	sample_name.rstrip("_")
+		sample_name.rstrip("_")
 
-	#if the bam is gzipped, gunzip
-	if os.path.isfile(sample_name + ".bam.gz"):
+		#if the bam is gzipped, gunzip
+		if os.path.isfile(sample_name + ".bam.gz"):
 
-		call("gunzip " + sample_name + ".bam.gz",shell=True)
+			call("gunzip " + sample_name + ".bam.gz",shell=True)
 
-	#flagstat the bam
-	print "samtools flagstat -@ 24 " + sample_name + ".bam > " + sample_name + ".flagstat"
-	call("samtools flagstat -@ 24 " + sample_name + ".bam > " + sample_name + ".flagstat",shell=True)
+		#flagstat the bam
+		print "samtools flagstat -@ 24 " + sample_name + ".bam > " + sample_name + ".flagstat"
+		call("samtools flagstat -@ 24 " + sample_name + ".bam > " + sample_name + ".flagstat",shell=True)
 
-	#sort this bam
-	print "samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
-	call("samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
+		#sort this bam
+		print "samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
+		call("samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
 
-	print "samtools view -@ 24 -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam"
-	call("samtools view -@ 24  -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam" ,shell=True)
+		print "samtools view -@ 24 -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam"
+		call("samtools view -@ 24  -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam" ,shell=True)
 
-	print "rm " + sample_name + "_sort.ba*"
-	call("rm " + sample_name + "_sort.ba*" ,shell=True)
+		print "rm " + sample_name + "_sort.ba*"
+		call("rm " + sample_name + "_sort.ba*" ,shell=True)
 
-	print "samtools flagstat -@ 24 " + sample_name + "_sort_q20.bam > " + sample_name + "_sort_q20.flagstat"
-	call("samtools flagstat -@ 24 " + sample_name + "_sort_q20.bam > " + sample_name + "_sort_q20.flagstat",shell=True)
+		print "samtools flagstat -@ 24 " + sample_name + "_sort_q20.bam > " + sample_name + "_sort_q20.flagstat"
+		call("samtools flagstat -@ 24 " + sample_name + "_sort_q20.bam > " + sample_name + "_sort_q20.flagstat",shell=True)
 
-	#gzip the original bam
-	call("gzip " + sample_name + ".bam",shell=True)
-
-	#print "samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam 2>" + sample_name + "_alignment.log"
-
-	#remove duplicates from the sorted bam
-	#call("samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam 2> "  + sample_name + "_alignment.log", shell=True)
-
-	#remove the "sorted with duplicates" bam
-	#call("rm " + sample_name + "_sort.bam",shell=True)
-
-	#flagstat the rmdup bam
-	#call("samtools flagstat " + sample_name + "_rmdup.bam > " + sample_name + "_rmdup.flagstat",shell=True)
-
+		#gzip the original bam
+		call("gzip " + sample_name + ".bam",shell=True)
 
 def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
