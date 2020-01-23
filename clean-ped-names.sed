@@ -207,3 +207,7 @@ s/SAMN06233877/Csibirica01/g
 s/SRR5803200/Cfalconeri01/g
 s/SRR5803204/Cfalconeri03/g
 s/SRR5803207/Cfalconeri02/g
+s/szaz1/Szaz1/g
+s/qumis1/Qumis1/g
+s/cov6/Cov6/g
+s/cov9/Cov9/g

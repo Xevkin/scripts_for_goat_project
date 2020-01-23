@@ -15,7 +15,7 @@ s/^Chinese[123456789] /Chinese /g
 s/^Sudanese. /Sudanese /g
 s/^Ethiopian. /Ethiopian /g
 s/^Bangladesh. /Bangladeshi /g
-s/^CHIR1 /Chinese_Yunnan /g
+s/^CHIR1 /Chinese /g
 s/^Italian. /Italian /g
 s/^French. /French /g
 s/^QazvinBezoar. /Qazvin_Bezoar /g
@@ -51,6 +51,8 @@ s/^Bouc /Levant /g
 s/^Fars. /Chalcolithic_Iran /g
 s/^GanjDareh.. /Neolithic_GanjDareh /g
 s/^GanjDareh. /Neolithic_GanjDareh /g
+s/^Ganjdareh.. /Neolithic_GanjDareh /g
+s/^Ganjdareh. /Neolithic_GanjDareh /g
 s/^Darre1 /Chalcolithic_Iran /g
 s/^Chalow. /Bronze_Iran /g
 s/^Darre2 /Iron_Medieval_Iran /g
