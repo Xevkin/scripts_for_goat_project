@@ -241,7 +241,7 @@ def set_up(date_of_hiseq, meyer, threads ,species, mit, RG_file, output_dir, tri
 
 	#define default AdapterRemoval
 
-	adapter_removal = "/home/kdaly/programs/adapterremoval-2.3.1/build/AdapterRemoval --threads 6 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip "
+	adapter_removal = "/home/kdaly/programs/adapterremoval-2.3.1/build/AdapterRemoval --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTCTCTGCAGTGTAGATCTC --minlength 30 --gzip --trimns --trimqualities "
 
 	#Prepare output directory
 
@@ -639,15 +639,15 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 							if (trim=="no"):
 
-								sample_files.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","")  + mit_reference +  "_mit_F4_rmdup.bam")
 
-								sample_files.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_pe_mit_F4_rmdup.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","") +  "_pe_mit_F4_rmdup.bam")
 
 							else:
 
-								sample_files.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_mit_F4_rmdup.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","") +  "_mit_F4_rmdup.bam")
 
-								sample_files.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_pe_mit_F4_rmdup.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","") +  "_pe_mit_F4_rmdup.bam")
 
 
 						#may have to deal with trimmed files here
