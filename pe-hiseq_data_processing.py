@@ -132,7 +132,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all rmdup at same time
 		call("echo Removing duplicates",shell=True)
 
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log;  samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *sort_q20.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log; samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log;  samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *sort_q20.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -S \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log; samtools rmdup -S \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
 		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
@@ -191,24 +191,24 @@ def set_up(date_of_hiseq, meyer, threads ,species, mit, RG_file, output_dir, tri
 	#take all .fastq.gz files in current directory; print them
 	files = []
 
-	files = [file for file in os.listdir(".") if file.endswith("r1.fastq.gz")]
+	if (trim == "yes"):
 
-	print "r1.fastq.gz files in current directory:"
+		files = [file for file in os.listdir(".") if file.endswith("r1.fastq.gz")]
 
-	print map(lambda x : x ,files)
+		print "r1.fastq.gz files in current directory:"
+
+		print map(lambda x : x ,files)
 
 	#however, if trim option is not yes, then we use fastq files
 	if (trim != "yes"):
 
-		files = [file for file in os.listdir(".") if file.endswith("_trimmed.fastq.gz")]
+		files = [file for file in os.listdir(".") if file.endswith("r1_trimmed.fastq.gz")]
 
         	print "trimmed fastq files in current directory:"
 
 	        print map(lambda x : x ,files)
 
-
 	#variables will be initialized here so they can be modified by options
-
 
 	#reference genome to be used
 	reference = nuclear_genomes[species]
@@ -300,26 +300,25 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
 	reference_path = reference[1]
 
-	sample =  fastq.split(".")[0]
+	sample =  fastq.split(".")[0].replace("_r1","")
 
-	sample_and_ref = fastq.split(".")[0] + "_" + reference_sequence
+	sample_and_ref = sample + "_" + reference_sequence
 
 	trimmed_fastq = sample + "_trimmed.fastq.gz"
 
-	if (trim != "yes"):
+	trimmed_r1 = sample + "_r1_trimmed.fastq.gz"
 
-		trimmed_fastq = sample + ".fastq.gz"
-
-		sample = "_".join(sample.split("_")[:-1])
-
-		print "Trimmed fastq is " + trimmed_fastq
-
-		print "Trimmed sample is " + sample
-
-		print "Trimmed sample and ref " + sample_and_ref
+	trimmed_r2 = sample + "_r2_trimmed.fastq.gz"
 
 	print alignment_option + reference_path + " " + trimmed_fastq + " > " + sample_and_ref + "_mit.sai 2>>"+ sample_and_ref + "_mit_alignment.log"
 	call(alignment_option + reference_path + " " + trimmed_fastq + " > " + sample_and_ref + "_mit.sai 2>>"+ sample_and_ref + "_mit_alignment.log",shell=True)
+
+	print alignment_option + reference_path + " " + trimmed_r1 + " > " + sample_and_ref + "_r1_mit.sai 2>>"+ sample_and_ref + "_r1_mit_alignment.log"
+	call(alignment_option + reference_path + " " + trimmed_r1 + " > " + sample_and_ref + "_r1_mit.sai 2>>"+ sample_and_ref + "_r1_mit_alignment.log",shell=True)
+
+	print alignment_option + reference_path + " " + trimmed_r2 + " > " + sample_and_ref + "_r2_mit.sai 2>>"+ sample_and_ref + "_r2_mit_alignment.log"
+	call(alignment_option + reference_path + " " + trimmed_r2 + " > " + sample_and_ref + "_r2_mit.sai 2>>"+ sample_and_ref + "_r2_mit_alignment.log",shell=True)
+
 
 	with open(RG_file) as file:
 
@@ -329,7 +328,7 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 
 			split_line = line.split("\t")
 
-	                if (sample == split_line[0].split(".")[0]):
+	                if (sample.replace("_r1","") == split_line[0].split(".")[0].replace("_r1","")):
 
         	                RG = split_line[1].rstrip("\n")
 
@@ -349,22 +348,34 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
         print sample + " aligning to " + reference_path
 
         print RG
-        print "bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference_path + " " + sample_and_ref + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_ref + "_mit_F4.bam + 2> " + trimmed_fastq + "_mit_alignment.log"
-        call("bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference_path + " " + sample_and_ref + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_ref +"_mit_F4.bam", shell=True)
+        print "bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference_path + " " + sample_and_ref + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_ref + "_mit_F4.bam + 2> " + sample_and_ref + "_mit_alignment.log"
+        call("bwa samse -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference_path + " " + sample_and_ref + "_mit.sai " + trimmed_fastq + " | samtools view -Sb -F 4 - > " + sample_and_ref +"_mit_F4.bam 2> " + sample_and_ref + "_mit_alignment.log", shell=True)
+
+	print "bwa sampe -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference_path + " " + sample_and_ref + "_r1_mit.sai "  + " " + sample_and_ref + "_r2_mit.sai " + trimmed_r1 + " " + trimmed_r2 + " | samtools view -Sb -F 4 - > " + sample_and_ref + "_pe_mit_F4.bam + 2> " + sample_and_ref + "_pe_mit_alignment.log"
+	call( "bwa sampe -r \'" + RG.rstrip("\n").replace("+", "\\t") + "\' " + reference_path + " " + sample_and_ref + "_r1_mit.sai "  + " " + sample_and_ref + "_r2_mit.sai " + trimmed_r1 + " " + trimmed_r2 +  " | samtools view -Sb -F 4 - > " + sample_and_ref + "_pe_mit_F4.bam + 2> " + sample_and_ref + "_pe_mit_alignment.log",shell=True)
 
 	call("samtools flagstat " + sample_and_ref +"_mit_F4.bam > " +sample_and_ref + "_mit_F4.flagstat 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
+	call("samtools flagstat " + sample_and_ref +"_pe_mit_F4.bam > " +sample_and_ref + "_pe_mit_F4.flagstat 2>> " + sample_and_ref + "_pe_mit_alignment.log",shell=True)
 
-	call ("rm "+ sample_and_ref + "_mit.sai ",shell=True)
+	call ("rm "+ sample_and_ref + "*_mit.sai ",shell=True)
 
 	print "samtools sort -@ 24 "  + sample_and_ref +"_mit_F4.bam -O BAM -o " + sample_and_ref + "_mit_F4_sort.bam 2>>" + sample_and_ref + "_mit_alignment.log"
 	call("samtools sort -@ 24 "  + sample_and_ref +"_mit_F4.bam -O BAM -o " + sample_and_ref + "_mit_F4_sort.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
+	print "samtools sort -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log"
+	call("samtools sort -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log",shell=True)
+
 	print "samtools rmdup -s "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
 	call("samtools rmdup -s "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
-	call("rm " + sample_and_ref + "_mit_F4_sort.bam",shell=True)
+	print "samtools rmdup -S "  + sample_and_ref +"_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_rmdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log"
+	call("samtools rmdup -S "  + sample_and_ref +"_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_rmdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log",shell=True)
+
+	call("rm " + sample_and_ref + "*_mit_F4_sort.bam",shell=True)
 
 	call("samtools flagstat " + sample_and_ref + "_mit_F4_rmdup.bam > " + sample_and_ref + "_mit_F4_rmdup.flagstat",shell=True)
+	call("samtools flagstat " + sample_and_ref + "_pe_mit_F4_rmdup.bam > " + sample_and_ref + "_pe_mit_F4_rmdup.flagstat",shell=True)
+
 
 def merge_and_process_mit(RG_file, reference, trim):
 
@@ -420,17 +431,15 @@ def align_bam(sample, RG_file, alignment_option, reference, trim, species):
 
 	print "bam alignment"
 
-	for sample_split in [sample + "_mate-discard", sample]:
+	if (trim == "yes"):
 
-		trimmed_fastq = sample + "_trimmed.fastq.gz"
+		sample = sample + "_dummy"
 
-		if (trim != "yes"):
+	for sample_split in ["_".join(sample.split("_")[:-1]) + "_mate-discard", "_".join(sample.split("_")[:-1])]:
 
-			trimmed_fastq = sample + ".fastq.gz"
+		trimmed_fastq = sample_split + "_trimmed.fastq.gz"
 
-			sample = "_".join(sample.split("_")[:-1])
-
-		sample_ref = sample + "_" + species
+		sample_ref = sample_split + "_" + species
 
 		print(alignment_option + reference + " " + trimmed_fastq + " > " + sample_ref + ".sai")
 		call(alignment_option + reference + " " + trimmed_fastq + " > " + sample_ref + ".sai 2>" + sample_ref + "_alignment.log",shell=True)
@@ -441,7 +450,11 @@ def align_bam(sample, RG_file, alignment_option, reference, trim, species):
 
 				split_line = line.split("\t")
 
-				if (sample.replace("_mate-discard","") == split_line[0].split(".")[0]):
+				print sample_split.replace("_mate-discard","")
+
+				print split_line[0].split(".")[0]
+
+				if (sample_split.replace("_mate-discard","")  == split_line[0].split(".")[0].replace("_r1","")):
 
 					RG = split_line[1].rstrip("\n")
 
@@ -472,15 +485,11 @@ def align_bam_pe(sample, RG_file, alignment_option, reference, trim, species):
 
         print "bam alignment"
 
+	sample = sample.replace("_r1","")
+
 	for trimmed_fastq in [ sample + "_r1_trimmed.fastq.gz", sample + "_r2_trimmed.fastq.gz"]:
 
-		if (trim != "yes"):
-
-			trimmed_fastq = sample + ".fastq.gz"
-
-			sample = "_".join(sample.split("_")[:-1])
-
-		sample_ref = "_".join(trimmed_fastq.split("_")[:-1]) + "_" + species
+		sample_ref =  "_".join(trimmed_fastq.split("_")[:-1]) + "_" + species
 
 		print(alignment_option + reference + " " + trimmed_fastq + " > " + sample_ref + ".sai")
 		call(alignment_option + reference + " " + trimmed_fastq + " > " + sample_ref + ".sai 2>" + sample_ref + "_alignment.log",shell=True)
@@ -491,7 +500,11 @@ def align_bam_pe(sample, RG_file, alignment_option, reference, trim, species):
 
 			split_line = line.split("\t")
 
-			if (sample == split_line[0].split(".")[0]):
+			print sample
+
+			print split_line[0].split(".")[0]
+
+			if (sample  == split_line[0].split(".")[0].replace("_r1","")):
 
 				RG = split_line[1].rstrip("\n")
 
@@ -525,9 +538,13 @@ def process_bam(sample_name,species):
 
 		sample_name = "_".join(sample_name.split("_")[:-1])
 
+	sample_name = sample_name.replace("_r1","")
+
 	print "Processing step for: " + sample_name
 
-	for sample_name in ["_".join(sample_name.split("_")[0:3]) + "_" + species, "_".join(sample_name.split("_")[0:3]) + "_pe_" + species]:
+	#for sample_name in ["_".join(sample_name.split("_")[0]) + "_" + species, "_".join(sample_name.split("_")[0]) + "_pe_" + species]:
+
+	for sample_name in [sample_name + "_" + species, sample_name + "_pe_" +  species]:
 
 		print "With species: " + sample_name
 
@@ -624,9 +641,13 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 								sample_files.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_mit_F4_rmdup.bam")
 
+								sample_files.append(line.split("\t")[0].split(".")[0] + "_trimmed_" + mit_reference +  "_pe_mit_F4_rmdup.bam")
+
 							else:
 
 								sample_files.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_mit_F4_rmdup.bam")
+
+								sample_files.append(line.split("\t")[0].split(".")[0] + "_" + mit_reference +  "_pe_mit_F4_rmdup.bam")
 
 
 						#may have to deal with trimmed files here
