@@ -132,11 +132,14 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all rmdup at same time
 		call("echo Removing duplicates",shell=True)
 
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log;  samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *sort_q20.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -S \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log; samtools rmdup -S \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log;  samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *sort_q20.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log; samtools rmdup -S \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
 		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
-		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat $i.bam > $i.flagstat;done",shell=True)
+		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat $i.bam > $i.flagstat; done",shell=True)
+
+		call("for i in $(ls *_pe_*rmdup.bam | cut -f 1 -d'.'); do samtools view -@ 12 -f 2 -b $i.bam > ${i}_ppair.bam && samtools flagstat -@ 12 ${i}_ppair.bam > ${i}_ppair.flagstat ; done",)
+
 	#add an option here to kill the script if you do not want merging to occur
 	if (merge == "no"):
 
@@ -435,7 +438,10 @@ def align_bam(sample, RG_file, alignment_option, reference, trim, species):
 
 		sample = sample + "_dummy"
 
-	for sample_split in ["_".join(sample.split("_")[:-1]) + "_mate-discard", "_".join(sample.split("_")[:-1])]:
+	#used to do mate-discard, but I think it's best if it's removed and not included
+	#for sample_split in ["_".join(sample.split("_")[:-1]) + "_mate-discard", "_".join(sample.split("_")[:-1])]:
+
+	for sample_split in ["_".join(sample.split("_")[:-1])]
 
 		trimmed_fastq = sample_split + "_trimmed.fastq.gz"
 
@@ -449,10 +455,6 @@ def align_bam(sample, RG_file, alignment_option, reference, trim, species):
 			for line in file:
 
 				split_line = line.split("\t")
-
-				print sample_split.replace("_mate-discard","")
-
-				print split_line[0].split(".")[0]
 
 				if (sample_split.replace("_mate-discard","")  == split_line[0].split(".")[0].replace("_r1","")):
 
