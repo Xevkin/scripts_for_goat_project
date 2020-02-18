@@ -3,8 +3,6 @@ import sys
 #print out the bins that do not have sufficient sites
 BLOCK_SIZE = 500000
 
-MINIMUM = 50
-
 chromosomes = []
 
 with open("/home/kdaly/chromosomes.length") as file:
@@ -20,6 +18,8 @@ for CHROMOSOME in chromosomes:
 	CURRENT_COUNT = 0
 
 	SWITCH = 0
+
+	BLOCK = [1,BLOCK_SIZE - 1]
 
 	with open(sys.argv[1]) as file:
 
@@ -51,7 +51,7 @@ for CHROMOSOME in chromosomes:
 
 					CURRENT_COUNT = 0
 
-					BLOCK[0] = BLOCK[1]
+					BLOCK[0] = BLOCK[1] + 1
 
 					BLOCK[1] = BLOCK[1] + BLOCK_SIZE
 
@@ -73,11 +73,28 @@ for CHROMOSOME in chromosomes:
 
 				CURRENT_COUNT = 0
 
-				BLOCK[0] = BLOCK[1]
+				BLOCK[0] = BLOCK[1] + 1
 
 				BLOCK[1] = BLOCK[1] + BLOCK_SIZE
 
 			#if we're in the correct block, print the variant count
-			if POS >= BLOCK[0] and POS < BLOCK[1]:
+			if POS >= BLOCK[0] and POS <= BLOCK[1]:
 
 				CURRENT_COUNT = CURRENT_COUNT + 1
+
+
+#deal with the last chromosome
+while BLOCK[1] < int(CHROMOSOME[1]):
+
+	print str(CHR - 1) + " " + str(BLOCK[0]) + " " + str(BLOCK[1]) + " " + str(CURRENT_COUNT)
+
+        CURRENT_COUNT = 0
+
+        BLOCK[0] = BLOCK[1] + 1
+
+        BLOCK[1] = BLOCK[1] + BLOCK_SIZE
+
+BLOCK[1] = int(CHROMOSOME[1])
+
+print str(CHR) + " " + str(BLOCK[0]) + " " + str(BLOCK[1]) + " " + str(CURRENT_COUNT)
+
