@@ -19,7 +19,7 @@ for CHROMOSOME in chromosomes:
 
 	SWITCH = 0
 
-	BLOCK = [1,BLOCK_SIZE - 1]
+	BLOCK = [1,BLOCK_SIZE]
 
 	with open(sys.argv[1]) as file:
 
@@ -51,7 +51,7 @@ for CHROMOSOME in chromosomes:
 
 					CURRENT_COUNT = 0
 
-					BLOCK[0] = BLOCK[1] + 1
+					BLOCK[0] = BLOCK[1]
 
 					BLOCK[1] = BLOCK[1] + BLOCK_SIZE
 
@@ -73,7 +73,7 @@ for CHROMOSOME in chromosomes:
 
 				CURRENT_COUNT = 0
 
-				BLOCK[0] = BLOCK[1] + 1
+				BLOCK[0] = BLOCK[1] 
 
 				BLOCK[1] = BLOCK[1] + BLOCK_SIZE
 
@@ -86,11 +86,11 @@ for CHROMOSOME in chromosomes:
 #deal with the last chromosome
 while BLOCK[1] < int(CHROMOSOME[1]):
 
-	print str(CHR - 1) + " " + str(BLOCK[0]) + " " + str(BLOCK[1]) + " " + str(CURRENT_COUNT)
+	print str(CHR) + " " + str(BLOCK[0]) + " " + str(BLOCK[1]) + " " + str(CURRENT_COUNT)
 
         CURRENT_COUNT = 0
 
-        BLOCK[0] = BLOCK[1] + 1
+        BLOCK[0] = BLOCK[1] 
 
         BLOCK[1] = BLOCK[1] + BLOCK_SIZE
 
