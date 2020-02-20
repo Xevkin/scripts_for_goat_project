@@ -211,3 +211,5 @@ s/szaz1/Szaz1/g
 s/qumis1/Qumis1/g
 s/cov6/Cov6/g
 s/cov9/Cov9/g
+s/abdol/Abdul/g
+s/abdul/Abdul/g

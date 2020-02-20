@@ -15,6 +15,8 @@ NUM_BIN = 1
 
 ROH_LIST = []
 
+HET_LIMIT = int(sys.argv[2])
+
 with open(sys.argv[1]) as file:
 
 	for line in file:
@@ -53,8 +55,7 @@ with open(sys.argv[1]) as file:
 
 		HET_SUM = sum(BLOCK)
 
-		#setting het limit to 10
-		if (HET_SUM < 10) and (LAST_END > 0):
+		if (HET_SUM < HET_LIMIT) and (LAST_END > 0):
 
 			if ((int(split_line[1]) - 1) == LAST_END) :
 
