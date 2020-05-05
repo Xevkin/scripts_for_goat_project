@@ -1,3 +1,4 @@
+s/_merged//g
 s/-relaxed//g 
 s/ERR470103/French1/g 
 s/ERR470101/French2/g 
@@ -28,7 +29,7 @@ s/ERR313204/Iranian18/g
 s/ERR313207/Iranian19/g 
 s/ERR313212/Iranian20/g
 s/ERR340340/AzerbaijanBezoar1/g 
-s/ERR340331/AzerbaijanBezoar2/g 
+s/ERR340331/AlborzBezoar7/g 
 s/ERR340334/AzerbaijanBezoar3/g
 s/ERR340336/AzerbaijanBezoar4/g
 s/ERR340342/AzerbaijanBezoar5/g
@@ -37,16 +38,16 @@ s/ERR340344/AzerbaijanBezoar7/g
 s/ERR340345/AzerbaijanBezoar8/g
 s/ERR340347/AzerbaijanBezoar9/g
 s/ERR340426/AzerbaijanBezoar10/g
-s/ERR470100/QazvinBezoar1/g
-s/ERR340330/QazvinBezoar2/g
-s/ERR340328/QazvinBezoar3/g
-s/ERR340338/QazvinBezoar4/g
-s/ERR470104/QazvinBezoar5/g 
-s/ERR470106/QazvinBezoar6/g
-s/ERR340329/HamedanBezoar1/g
-s/ERR340333/HamedanBezoar2/g
-s/ERR340335/HamedanBezoar3/g
-s/ERR340341/HamedanBezoar4/g
+s/ERR470100/AlborzBezoar1/g
+s/ERR340330/AlborzBezoar2/g
+s/ERR340328/AlborzBezoar3/g
+s/ERR340338/AlborzBezoar4/g
+s/ERR470104/AlborzBezoar5/g 
+s/ERR470106/AlborzBezoar6/g
+s/ERR340329/ZagrosBezoar1/g
+s/ERR340333/ZagrosBezoar2/g
+s/ERR340335/ZagrosBezoar3/g
+s/ERR340341/ZagrosBezoar4/g
 s/ERR340348/MarkaziBezoar1/g 
 s/SRR4052525/Alashan1/g 
 s/SRR4052677/Alashan2/g 
@@ -198,8 +199,8 @@ s/SRR5803227/Dutch2/g
 s/SRR5803232/Spanish1/g
 s/SRR5803234/Dutch1/g
 s/SRR5803235/French5/g
-s/SRR1576679/HamedanBezoar6/g
-s/SRR5803211/HamedanBezoar5/g
+s/SRR1576679/MarkaziBezoar2/g
+s/SRR5803211/MarkaziBezoar3/g
 s/SRR5602566/Iranian21/g
 s/SRR5803218/Iranian22/g
 s/SRR5803219/Iranian23/g
@@ -213,3 +214,4 @@ s/cov6/Cov6/g
 s/cov9/Cov9/g
 s/abdol/Abdul/g
 s/abdul/Abdul/g
+s/Abdul4-hiseq-novaseqJan/Abdul4/g

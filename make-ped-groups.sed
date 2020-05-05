@@ -1,3 +1,11 @@
+s/^Gadachrili. /Neolithic_Georgia /g
+s/^Sarakenos. /Neolithic_Greece /g
+s/^Abd[uo]l4 /Zagros_Outlier /g
+s/^[Gg]anj[Dd]areh35 /Zagros_Outlier /g
+s/^Gadachrili./Neolithic Georgia/g
+s/^Sarakenos./Neolithic Greece/g
+s/^Abd[uo]l4/Zagros Outlier/g
+s/^[Gg]anj[Dd]areh35/Zagros Outlier/g
 s/^Moroccan[12]. /Moroccan /g
 s/^Moroccan. /Moroccan /g
 s/^TOG /Togolese /g
@@ -36,6 +44,7 @@ s/^Ainghazal. /Neolithic_Levant /g
 s/^AP.. /Neolithic_SE_Europe /g
 s/^Asikli.. /Neolithic_Asikli /g
 s/^Asikli. /Neolithic_Asikli /g
+s/^Asikli14-33 /Neolithic_Asikli /g
 s/^Azer3-5 /Bronze_Caucasus /g
 s/^Azer4 /Iron_Medieval_Caucasus /g
 s/^Azer6 /Chalcolithic_Caucasus /g
