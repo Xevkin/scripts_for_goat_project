@@ -72,7 +72,7 @@ s/^Lur9 /Neolithic_Zagros /g
 s/^Kazbegi1 /Iron_Medieval_Caucasus /g
 s/^Kov57 /Neolithic_SE_Europe /g
 s/^Kohneh. /Bronze_Caucasus /g
-s/^Miqne5 /Iron_Medieval_Iran /g
+s/^Miqne5 /Iron_Medieval_Levant /g
 s/^Montou. /Bronze_France /g
 s/^Nizzana. /Iron_Medieval_Levant /g
 s/^Geor2 /Iron_Medieval_Caucasus /g
