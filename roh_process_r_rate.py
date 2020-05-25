@@ -101,19 +101,30 @@ with open(sys.argv[1]) as file:
 
 			BLOCK.append(split_line)
 
+		#counter for first and last positions
+		i= 0
+
+		BEG_END_SWITCH = 0
+
 		for x in BLOCK:
 
 			#in our current chunk of X windows, is there any window with too high a rate?
 			#if so, set the RATE_BREAK to 1
-			if float(x[8]) > RATE_LIMIT:
+			if (float(x[8]) > RATE_LIMIT):
 
 				RATE_BREAK = RATE_BREAK + 1
+
+				if i == 0 or i == (len(BLOCK) - 1):
+
+					BEG_END_SWITCH = 1
+
+			i = i + 1
 
 		if len(BLOCK) == RUN_OF_WINDOWS:
 
 			#if there are a X 500K windows with lower than the het prop limit
 			#^if we haven't broke the rate limit
-			if (RATE_BREAK <= TOLERANCE) and (LAST_END > 0):
+			if (RATE_BREAK <= TOLERANCE) and (LAST_END > 0) and BEG_END_SWITCH == 0:
 
 				if ((int(split_line[1]) - 1) <= (LAST_END2 + SMUDGE)) :
 
