@@ -23,6 +23,8 @@ RATE_LIMIT = float(sys.argv[2])
 
 RUN_OF_WINDOWS = int(sys.argv[4])
 
+TOLERANCE = int(sys.argv[5])
+
 with open(sys.argv[1]) as file:
 
 	for line in file:
@@ -105,13 +107,13 @@ with open(sys.argv[1]) as file:
 			#if so, set the RATE_BREAK to 1
 			if float(x[8]) > RATE_LIMIT:
 
-				RATE_BREAK = 1
+				RATE_BREAK = RATE_BREAK + 1
 
 		if len(BLOCK) == RUN_OF_WINDOWS:
 
 			#if there are a X 500K windows with lower than the het prop limit
 			#^if we haven't broke the rate limit
-			if (RATE_BREAK != 1) and (LAST_END > 0):
+			if (RATE_BREAK <= TOLERANCE) and (LAST_END > 0):
 
 				if ((int(split_line[1]) - 1) <= (LAST_END2 + SMUDGE)) :
 
