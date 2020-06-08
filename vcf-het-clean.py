@@ -29,7 +29,7 @@ with gzip.open(sys.argv[1], "rt") as file:
 
 				if "0" in allele_depth:
 
-					root.append("./." + individual.split(":")[1:])
+					root.append("./." + ":".join(individual.split(":")[1:]))
 
 				else:
 
