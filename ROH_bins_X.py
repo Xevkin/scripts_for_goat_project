@@ -30,6 +30,8 @@ for CHR in chromosomes:
 
 	HET_COUNT = 0
 
+	VAR_COUNT = 0
+
 	SWITCH = 0
 
 	with open(sys.argv[1]) as file:
@@ -53,13 +55,17 @@ for CHR in chromosomes:
 
 					if (HET_COUNT != 0):
 
-						print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t" + str(HET_COUNT) + "\t1"
+						print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t" + str(HET_COUNT) + "\t1\t" + str(VAR_COUNT)
 
 						HET_COUNT = 0
 
+						VAR_COUNT = 0
+
 					else:
 
-						print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t0\t0"
+						print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t0\t0\t" + str(VAR_COUNT)
+
+						VAR_COUNT = 0
 
 					BIN_START = BIN_START + BIN_LENGTH + 1
 
@@ -75,7 +81,9 @@ for CHR in chromosomes:
 
 					BIN = "0"
 
-				print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t" + str(HET_COUNT) + "\t" + BIN
+				print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t" + str(HET_COUNT) + "\t" + BIN + "\t" + str(VAR_COUNT)
+
+				VAR_COUNT = 0
 
 				SWITCH = 1
 
@@ -92,14 +100,18 @@ for CHR in chromosomes:
 				#if the last window had a het, print the window and reset the het
 				if (HET_COUNT != 0):
 
-					print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t" + str(HET_COUNT) + "\t1"
+					print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t" + str(HET_COUNT) + "\t1\t" + str(VAR_COUNT)
 
 					HET_COUNT = 0
+
+					VAR_COUNT = 0
 
 				#otherwise, print empty windows
 				else:
 
-					print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t0\t0"
+					print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t0\t0\t" + str(VAR_COUNT)
+
+					VAR_COUNT = 0
 
 				#update the bin
 				BIN_START = BIN_START + BIN_LENGTH + 1
@@ -107,24 +119,32 @@ for CHR in chromosomes:
 				BIN_END = BIN_START + BIN_LENGTH
 
 			#if we are up to the variant, update the window as having an additional het and move onto the next variant
-			if  (SAMPLE_POS <= BIN_END ) and (SAMPLE_POS >= BIN_START) and (SAMPLE_HET == 1):
+			if  (SAMPLE_POS <= BIN_END ) and (SAMPLE_POS >= BIN_START):
 
-				HET_COUNT = HET_COUNT + 1
+				VAR_COUNT = VAR_COUNT + 1
 
-				continue
+				if (SAMPLE_HET == 1):
+
+					HET_COUNT = HET_COUNT + 1
+
+					continue
 
 #for the very last window
 while BIN_END < CHR_END:
 
 	if (HET_COUNT != 0):
 
-		print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t" + str(HET_COUNT) + "\t1"
+		print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t" + str(HET_COUNT) + "\t1\t" + str(VAR_COUNT)
 
 		HET_COUNT = 0
 
+		VAR_COUNT =0
+
 	else:
 
-		print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t0\t0"
+		print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t0\t0\t" + str(VAR_COUNT)
+
+		VAR_COUNT = 0
 
 	BIN_START = BIN_START + BIN_LENGTH + 1
 
@@ -140,4 +160,4 @@ else:
 
 	BIN = "0"
 
-print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t" + str(HET_COUNT) + "\t" + BIN
+print str(CURRENT_CHR) + "\t" +  str(BIN_START) + "\t" + str(BIN_END) + "\t" + str(HET_COUNT) + "\t" + BIN + "\t" + str(VAR_COUNT)
