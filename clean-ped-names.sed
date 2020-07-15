@@ -215,3 +215,4 @@ s/cov9/Cov9/g
 s/abdol/Abdul/g
 s/abdul/Abdul/g
 s/Abdul4-hiseq-novaseqJan/Abdul4/g
+s/aze3/Azer3/g
