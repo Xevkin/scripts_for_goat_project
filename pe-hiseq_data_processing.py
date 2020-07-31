@@ -244,7 +244,7 @@ def set_up(date_of_hiseq, meyer, threads ,species, mit, RG_file, output_dir, tri
 
 	#define default AdapterRemoval
 
-	adapter_removal = "/home/kdaly/programs/adapterremoval-2.3.1/build/AdapterRemoval --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT --minlength 30 --gzip --trimns --trimqualities "
+	adapter_removal = "/home/kdaly/programs/adapterremoval-2.3.1/build/AdapterRemoval --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip --trimns --trimqualities "
 
 	#Prepare output directory
 
