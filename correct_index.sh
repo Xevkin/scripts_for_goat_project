@@ -16,6 +16,6 @@ for j in $(ls *fastq.gz *fq.gz | grep -v "exact") ; do i=`echo $j | cut -f1 -d'.
 
 	echo "zcat ${j} | grep \"^@*$INDEX[A-Z]?[A-Z]?$\" | cut -f1 -d' ' | sed -f2 -d'@' >> ${i}_exact.txt ; ~/programs/seqtk/seqtk subseq ${j} ${i}_exact.txt | gzip -c - > ${i}_exact.fastq.gz  " >> index_parallel.txt; done
 
-parallel -a index_parallel.txt $1
+parallel -a index_parallel.txt -j $1
 
 rm index_parallel.txt
