@@ -39,7 +39,9 @@ nuclear_genomes = {
 
 	"CHIR1" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
-	"Sheep" : "/lascelles/sheep_OarRambouillet/OarRambouillet.fa"
+	"Sheep" : "/lascelles/sheep_OarRambouillet/OarRambouillet.fa",
+
+	"Deer" : "/home/kdaly/st1/deer/deer_genome/CerEla1-0_mod.fa"
 }
 
 

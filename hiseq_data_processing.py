@@ -39,7 +39,9 @@ nuclear_genomes = {
 
 	"CHIR1" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
-	"Sheep" : "/lascelles/sheep_OarRambouillet/OarRambouillet.fa"
+	"Sheep" : "/lascelles/sheep_OarRambouillet/OarRambouillet.fa",
+
+	"Deer" : "/home/kdaly/st1/deer/deer_genome/CerEla1-0_mod.fa"
 }
 
 
@@ -597,7 +599,7 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 		if (mit == "yes"):
 
-			sample_name = sample_name + "_" + mit_reference + "_mit"
+			sample_name = sample_name + "_mit"
 
 		merge_cmd = merge_cmd + "OUTPUT=" + sample_name + "_q20_merged.bam 2>" + sample_name + "_q20_merged.log"
 
