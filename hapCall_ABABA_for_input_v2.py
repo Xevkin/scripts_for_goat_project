@@ -1,5 +1,4 @@
 import sys
-import os
 import gzip
 import multiprocessing
 
@@ -15,6 +14,9 @@ ANC_POP_SET_INPUT = [int(i)+2 for i in ANC_POP_SET_INPUT]
 
 DER_POP_SET_INPUT = sys.argv[3].rstrip("\n").split(",")
 DER_POP_SET_INPUT = [int(i)+2 for i in DER_POP_SET_INPUT]
+
+#remove the output file if it exists already
+call("rm " + INPUT_HAP_ROOT + ".out ")
 
 #function for getting counts of derived allele sharing
 def calc_X(INPUT_HAP_FILE_GZ, ANC_POP_SET=ANC_POP_SET_INPUT, DER_POP_SET=DER_POP_SET_INPUT):
@@ -88,14 +90,18 @@ for CHR in range(1,30):
 
 	INPUT_FILES.append(INPUT_HAP_ROOT + "_chr" + str(CHR) + ".haplo.gz")
 
+#multithread over 8 threads
 p = multiprocessing.Pool(8)
 
 p.map(calc_X,INPUT_FILES)
 
+
+#create final count variables
 FINAL_COUNT = 0
 
 FINAL_TRANSV_COUNT = 0
 
+#run over the output file and total the final (all and transversion) counts
 with open(INPUT_HAP_ROOT + ".out ") as f:
 
 	for line in f:
@@ -105,6 +111,5 @@ with open(INPUT_HAP_ROOT + ".out ") as f:
 		FINAL_COUNT += int(split_f[2])
 
 		FINAL_TRANSV_COUNT += int(split_f[3])
-
 
 print str(FINAL_COUNT) + " " + str(FINAL_TRANSV_COUNT)
