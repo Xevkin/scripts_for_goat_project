@@ -1,6 +1,7 @@
 import sys
 import gzip
 import multiprocessing
+import subprocess
 
 #take the root of the haplo file names
 INPUT_HAP_ROOT = sys.argv[1]
@@ -16,7 +17,7 @@ DER_POP_SET_INPUT = sys.argv[3].rstrip("\n").split(",")
 DER_POP_SET_INPUT = [int(i)+2 for i in DER_POP_SET_INPUT]
 
 #remove the output file if it exists already
-call("rm " + INPUT_HAP_ROOT + ".out ")
+subprocess.call("rm " + INPUT_HAP_ROOT + ".out ",shell=True)
 
 #function for getting counts of derived allele sharing
 def calc_X(INPUT_HAP_FILE_GZ, ANC_POP_SET=ANC_POP_SET_INPUT, DER_POP_SET=DER_POP_SET_INPUT):
