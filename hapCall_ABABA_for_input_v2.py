@@ -1,5 +1,7 @@
 import sys
+import os
 import gzip
+import multiprocessing
 
 #take the root of the haplo file names
 INPUT_HAP_ROOT = sys.argv[1]
@@ -15,7 +17,7 @@ DER_POP_SET_INPUT = sys.argv[3].rstrip("\n").split(",")
 DER_POP_SET_INPUT = [int(i)+2 for i in DER_POP_SET_INPUT]
 
 #function for getting counts of derived allele sharing
-def calc_X(INPUT_HAP_FILE_GZ, ANC_POP_SET, DER_POP_SET):
+def calc_X(INPUT_HAP_FILE_GZ, ANC_POP_SET=ANC_POP_SET_INPUT, DER_POP_SET=DER_POP_SET_INPUT):
 
 	#create count variables
 	COUNT = 0
@@ -70,13 +72,39 @@ def calc_X(INPUT_HAP_FILE_GZ, ANC_POP_SET, DER_POP_SET):
 					COUNT += 1
 
 					#if the variant is not a transition, add to the transversion count
-					if not ( (ANC_BASES[0] == "G" and  DER_BASES[0] == "A") and (ANC_BASES[0] == "A" and  DER_BASES[0] == "G") and \
-					(ANC_BASES[0] == "C" and  DER_BASES[0] == "T") and (ANC_BASES[0] == "T" and  DER_BASES[0] == "C") ):
+					if not ( (ANC_BASES[0] == "G" and  DER_BASES[0] == "A") or (ANC_BASES[0] == "A" and  DER_BASES[0] == "G") or \
+					(ANC_BASES[0] == "C" and  DER_BASES[0] == "T") or (ANC_BASES[0] == "T" and  DER_BASES[0] == "C") ):
 
 						COUNT_TRANSV += 1
 
 		#print the counts
-		print str(COUNT) + " " + str(COUNT_TRANSV)
+		call("echo " + INPUT_HAP_FILE_GZ + " " + str(COUNT) + " " + str(COUNT_TRANSV) + " >> " + INPUT_HAP_ROOT + ".out ",shell=True)
+
+#input file variable
+INPUT_FILES = []
+
+#iterate through goat chromosomes
+for CHR in range(1,30):
+
+	INPUT_FILES.append(INPUT_HAP_ROOT + "_chr" + str(CHR) + ".haplo.gz")
+
+p = multiprocessing.Pool(8)
+
+p.map(calc_X,INPUT_FILES)
+
+FINAL_COUNT = 0
+
+FINAL_TRANSV_COUNT = 0
+
+with open(INPUT_HAP_ROOT + ".out ") as f:
+
+	for line in f:
+
+		split_f = f.rstrip("\n").split(" ")
+
+		FINAL_COUNT += int(split_f[2])
+
+		FINAL_TRANSV_COUNT += int(split_f[3])
 
 
-calc_X(INPUT_HAP_ROOT, ANC_POP_SET_INPUT, DER_POP_SET_INPUT)
+print str(FINAL_COUNT) + " " + str(FINAL_TRANSV_COUNT)
