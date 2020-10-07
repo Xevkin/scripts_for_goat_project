@@ -81,7 +81,7 @@ def calc_X(INPUT_HAP_FILE_GZ, ANC_POP_SET=ANC_POP_SET_INPUT, DER_POP_SET=DER_POP
 						COUNT_TRANSV += 1
 
 		#print the counts
-		call("echo " + INPUT_HAP_FILE_GZ + " " + str(COUNT) + " " + str(COUNT_TRANSV) + " >> " + INPUT_HAP_ROOT + ".out ",shell=True)
+		subprocess.call("echo " + INPUT_HAP_FILE_GZ + " " + str(COUNT) + " " + str(COUNT_TRANSV) + " >> " + INPUT_HAP_ROOT + ".out ",shell=True)
 
 #input file variable
 INPUT_FILES = []
@@ -103,7 +103,7 @@ FINAL_COUNT = 0
 FINAL_TRANSV_COUNT = 0
 
 #run over the output file and total the final (all and transversion) counts
-with open(INPUT_HAP_ROOT + ".out ") as f:
+with open(INPUT_HAP_ROOT + ".out") as f:
 
 	for line in f:
 
