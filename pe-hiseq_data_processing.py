@@ -131,16 +131,16 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		#map(process_bam, fastq_list, species)
 
-        	#do all rmdup at same time
+        	#do all markdup at same time
 		call("echo Removing duplicates",shell=True)
 
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log;  samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *sort_q20.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log; samtools rmdup -S \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools markdups -r \"$i\"_sort_q20.bam \"$i\"_q20_markdup.bam \"2>\" \"$i\"_q20_markdup.log;  samtools markdups -r \"$i\"_sort_q20.bam \"$i\"_q20_markdup.bam 2> \"$i\"_q20_markdup.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *resort.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools markdup -r \"$i\"_sort_q20_fix_resort.bam \"$i\"_q20_markdup.bam \"2>\" \"$i\"_q20_markdup.log; samtools markdup  \"$i\"_sort_q20_fix_resort.bam \"$i\"_q20_markdup.bam 2> \"$i\"_q20_markdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
-		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
+		call("for i in $(ls *markdup.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
-		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat $i.bam > $i.flagstat; done",shell=True)
+		call("for i in $(ls *markdup.bam | cut -f 1 -d'.'); do samtools flagstat $i.bam > $i.flagstat; done",shell=True)
 
-		call("for i in $(ls *_pe_*rmdup.bam | cut -f 1 -d'.'); do samtools view -@ 12 -f 2 -b $i.bam > ${i}_ppair.bam && samtools flagstat -@ 12 ${i}_ppair.bam > ${i}_ppair.flagstat ; done",)
+		call("for i in $(ls *_pe_*markdup.bam | cut -f 1 -d'.'); do samtools view -@ 12 -f 2 -b $i.bam > ${i}_ppair.bam && samtools flagstat -@ 12 ${i}_ppair.bam > ${i}_ppair.flagstat ; done",)
 
 	#add an option here to kill the script if you do not want merging to occur
 	if (merge == "no"):
@@ -155,28 +155,28 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
     	#now merge the lanes for each sample
 	#NOTE: if all the options up to process are "no", then this is where the script will start
-	#expects rmdup bams for each index in each lane, ungziped
-	#output will be merged, no rmdup
+	#expects markdup bams for each index in each lane, ungziped
+	#output will be merged, no markdup
 	merged_bam_list = merge_lanes_and_sample(RG_file, trim, species)
 
-	merged_rmdup_bam_list = []
+	merged_markdup_bam_list = []
 
-	call("rm rmdup.sh",shell=True)
+	call("rm markdup.sh",shell=True)
 
 	for bam in merged_bam_list:
 
 		sample =  bam.split(".")[0]
 
-		call("echo samtools rmdup -s " + bam + " " + sample + "_rmdup.bam \">\"  " + sample + "_rmdup.log >> rmdup.sh",shell=True)
+		call("echo samtools markdups -r " + bam + " " + sample + "_markdup.bam \">\"  " + sample + "_markdup.log >> markdup.sh",shell=True)
 
-		merged_rmdup_bam_list.append(sample + "_rmdup.bam")
+		merged_markdup_bam_list.append(sample + "_markdup.bam")
 
-	call("parallel -a rmdup.sh -j " + threads, shell=True)
+	call("parallel -a markdup.sh -j " + threads, shell=True)
 
 	realigned_bam_list = []
 
 	#indel realignment
-	for i in merged_rmdup_bam_list:
+	for i in merged_markdup_bam_list:
 
 		print "Indel realignment on sample " + i
 
@@ -367,19 +367,25 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	print "samtools sort -@ 24 "  + sample_and_ref +"_mit_F4.bam -O BAM -o " + sample_and_ref + "_mit_F4_sort.bam 2>>" + sample_and_ref + "_mit_alignment.log"
 	call("samtools sort -@ 24 "  + sample_and_ref +"_mit_F4.bam -O BAM -o " + sample_and_ref + "_mit_F4_sort.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
-	print "samtools sort -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log"
-	call("samtools sort -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log",shell=True)
+	print "samtools sort -n -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log"
+	call("samtools sort -n -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log",shell=True)
 
-	print "samtools rmdup -s "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
-	call("samtools rmdup -s "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
+	print "samtools fixmate -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam"
+	call("samtools fixmate -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam",shell=T)
 
-	print "samtools rmdup -S "  + sample_and_ref +"_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_rmdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log"
-	call("samtools rmdup -S "  + sample_and_ref +"_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_rmdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log",shell=True)
+	print "samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam"
+	call("samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam",shell=T)
+
+	print "samtools markdups -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_markdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
+	call("samtools markdups -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_markdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
+
+	print "samtools markdups -r "  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam " + sample_and_ref + "_pe_mit_F4_markdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log"
+	call("samtools markdups -r "  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam " + sample_and_ref + "_pe_mit_F4_markdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log",shell=True)
 
 	call("rm " + sample_and_ref + "*_mit_F4_sort.bam",shell=True)
 
-	call("samtools flagstat " + sample_and_ref + "_mit_F4_rmdup.bam > " + sample_and_ref + "_mit_F4_rmdup.flagstat",shell=True)
-	call("samtools flagstat " + sample_and_ref + "_pe_mit_F4_rmdup.bam > " + sample_and_ref + "_pe_mit_F4_rmdup.flagstat",shell=True)
+	call("samtools flagstat " + sample_and_ref + "_mit_F4_markdup.bam > " + sample_and_ref + "_mit_F4_markdup.flagstat",shell=True)
+	call("samtools flagstat " + sample_and_ref + "_pe_mit_F4_markdup.bam > " + sample_and_ref + "_pe_mit_F4_markdup.flagstat",shell=True)
 
 
 def merge_and_process_mit(RG_file, reference, trim):
@@ -400,32 +406,32 @@ def merge_and_process_mit(RG_file, reference, trim):
 		print "samtools flagstat " + bam + "  > " + bam_root + ".flagstat"
 		call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
-		print "samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam "
-		call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
+		print "samtools markdups -r " + bam_root + ".bam " + bam_root + "_markdup.bam "
+		call("samtools markdups -r " + bam_root + ".bam " + bam_root + "_markdup.bam ",shell=True)
 
-		print "samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat"
-		call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
+		print "samtools flagstat " + bam_root + "_markdup.bam > " + bam_root + "_markdup.flagstat"
+		call("samtools flagstat " + bam_root + "_markdup.bam > " + bam_root + "_markdup.flagstat",shell=True)
 
 		#filter for just q30
 		for QC in ["30"]:
 
-			print "samtools view -b -q" + QC + " " +  bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q" + QC + ".bam"
-			call("samtools view -b -q" + QC + " " +  bam_root + "_rmdup.bam > " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
+			print "samtools view -b -q" + QC + " " +  bam_root + "_markdup.bam > " + bam_root + "_markdup_q" + QC + ".bam"
+			call("samtools view -b -q" + QC + " " +  bam_root + "_markdup.bam > " + bam_root + "_markdup_q" + QC + ".bam",shell=True)
 
-			print "samtools index -@ 24 " + bam_root + "_rmdup_q" + QC + ".bam"
-			call("samtools index -@ 24 " + bam_root + "_rmdup_q" + QC + ".bam",shell=True)
+			print "samtools index -@ 24 " + bam_root + "_markdup_q" + QC + ".bam"
+			call("samtools index -@ 24 " + bam_root + "_markdup_q" + QC + ".bam",shell=True)
 
-			cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_rmdup_q" + QC + ".bam --omitDepthOutputAtEachBase --omitIntervalStatistics"
+			cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_markdup_q" + QC + ".bam --omitDepthOutputAtEachBase --omitIntervalStatistics"
 			print cmd
 			call(cmd, shell=True)
 
-			print "samtools idxstats " +  bam_root + "_rmdup_q" + QC + ".bam >" + bam_root + "_rmdup_q" + QC + ".idx"
-			call("samtools idxstats " +  bam_root + "_rmdup_q" + QC + ".bam >" + bam_root + "_rmdup_q" + QC + ".idx",shell=True)
+			print "samtools idxstats " +  bam_root + "_markdup_q" + QC + ".bam >" + bam_root + "_markdup_q" + QC + ".idx"
+			call("samtools idxstats " +  bam_root + "_markdup_q" + QC + ".bam >" + bam_root + "_markdup_q" + QC + ".idx",shell=True)
 
 			for minD in ["1", "2", "3"]:
 
-				print "angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 20 minMapQ " + QC
-				call("angsd -doFasta 2 -i " + bam_root + "_rmdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 20 -minMapQ " + QC,shell=True)
+				print "angsd -doFasta 2 -i " + bam_root + "_markdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 20 minMapQ " + QC
+				call("angsd -doFasta 2 -i " + bam_root + "_markdup_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 20 -minMapQ " + QC,shell=True)
 
 				call("gunzip " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa.gz; python ~/programs/scripts_for_goat_project/decircularize.py "  + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa > " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + "_decirc.fa",shell=True)
 
@@ -443,7 +449,7 @@ def align_bam(sample, RG_file, alignment_option, reference, trim, species):
 	#used to do mate-discard, but I think it's best if it's removed and not included
 	#for sample_split in ["_".join(sample.split("_")[:-1]) + "_mate-discard", "_".join(sample.split("_")[:-1])]:
 
-	for sample_split in ["_".join(sample.split("_")[:-1])]
+	for sample_split in ["_".join(sample.split("_")[:-1])]:
 
 		trimmed_fastq = sample_split + "_trimmed.fastq.gz"
 
@@ -564,8 +570,14 @@ def process_bam(sample_name,species):
 		call("samtools flagstat -@ 24 " + sample_name + ".bam > " + sample_name + ".flagstat",shell=True)
 
 		#sort this bam
-		print "samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
-		call("samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
+		if not "_pe_" in sample_name:
+			print "samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
+			call("samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
+
+		else:
+
+			print "samtools sort -@ 24 -n " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
+			call("samtools sort -@ 24 -n " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=T)
 
 		print "samtools view -@ 24 -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam"
 		call("samtools view -@ 24  -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam" ,shell=True)
@@ -575,6 +587,14 @@ def process_bam(sample_name,species):
 
 		print "samtools flagstat -@ 24 " + sample_name + "_sort_q20.bam > " + sample_name + "_sort_q20.flagstat"
 		call("samtools flagstat -@ 24 " + sample_name + "_sort_q20.bam > " + sample_name + "_sort_q20.flagstat",shell=True)
+
+		if "_pe_" in sample_name:
+
+			print "samtools fixmate -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam"
+			call("samtools fixmate -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam",shell=T)
+
+			print "samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam"
+			call("samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam",shell=T)
 
 		#gzip the original bam
 		call("gzip " + sample_name + ".bam",shell=True)
@@ -617,7 +637,7 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 		sample.append(lane_list)
 
-	#create a list of final merged,rmdup bams that will be returned
+	#create a list of final merged,markdup bams that will be returned
 	merged_bam_list = []
 
 	#Merge each bam for each sample
@@ -643,21 +663,21 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 							if (trim=="no"):
 
-								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","")  + mit_reference +  "_mit_F4_rmdup.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","")  + mit_reference +  "_mit_F4_markdup.bam")
 
-								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","") +  "_pe_mit_F4_rmdup.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","") +  "_pe_mit_F4_markdup.bam")
 
 							else:
 
-								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","") +  "_mit_F4_rmdup.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","") +  "_mit_F4_markdup.bam")
 
-								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","") +  "_pe_mit_F4_rmdup.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","") +  "_pe_mit_F4_markdup.bam")
 
 
 						#may have to deal with trimmed files here
 						else:
 
-							sample_files.append(line.split("\t")[0].split(".")[0] + "_" + species + "_q20_rmdup.bam")
+							sample_files.append(line.split("\t")[0].split(".")[0] + "_" + species + "_q20_markdup.bam")
 
 
 			#create a "sample name" variable to apply to final bams
@@ -694,36 +714,36 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 		call("samtools view -b -q 30 -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_merged_q30.bam",shell=True)
 
-		#call("samtools rmdup -s " + sample_name + "_merged_q30.bam " + sample_name + "_merged_q30_rmdup.bam 2> " + sample_name + "_merged_q30_rmdup.log",shell=True)
+		#call("samtools markdups -r " + sample_name + "_merged_q30.bam " + sample_name + "_merged_q30_markdup.bam 2> " + sample_name + "_merged_q30_markdup.log",shell=True)
 
 		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_q20_merged.flagstat",shell=True)
 
 		call("samtools flagstat -@ 20 " + sample_name + "_merged_q30.bam > " + sample_name + "_merged_q30.flagstat",shell=True)
 
-		#call("samtools flagstat -@ 20 " + sample_name + "_merged_q30_rmdup.bam > " + sample_name + "_merged_q30_rmdup.flagstat",shell=True)
+		#call("samtools flagstat -@ 20 " + sample_name + "_merged_q30_markdup.bam > " + sample_name + "_merged_q30_markdup.flagstat",shell=True)
 
 		merged_bam_list.append(sample_name + "_merged_q30.bam")
 
 	return merged_bam_list
 
-def indel_realignment(rmdup_bam, reference_genome):
+def indel_realignment(markdup_bam, reference_genome):
 
-	print "starting realignment for sample "+rmdup_bam
+	print "starting realignment for sample "+markdup_bam
 
-	call("samtools index -@ 24 " + rmdup_bam,shell=True)
+	call("samtools index -@ 24 " + markdup_bam,shell=True)
 
-	cmd = "java -Xmx20g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 24 -R " + reference_genome + " -I " + rmdup_bam + " -o forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals 2> " + rmdup_bam.split(".")[0] + "_intervals.log"
+	cmd = "java -Xmx20g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 24 -R " + reference_genome + " -I " + markdup_bam + " -o forIndelRealigner_" + markdup_bam.split(".")[0] + ".intervals 2> " + markdup_bam.split(".")[0] + "_intervals.log"
 
 	print cmd
 	call(cmd, shell=True)
 
-	cmd = "java -Xmx100g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + rmdup_bam + " -targetIntervals forIndelRealigner_" + rmdup_bam.split(".")[0] + ".intervals -o " +  rmdup_bam.split(".")[0] + "_realigned.bam 2> " + rmdup_bam.split(".")[0] + "_realignment.log"
+	cmd = "java -Xmx100g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + markdup_bam + " -targetIntervals forIndelRealigner_" + markdup_bam.split(".")[0] + ".intervals -o " +  markdup_bam.split(".")[0] + "_realigned.bam 2> " + markdup_bam.split(".")[0] + "_realignment.log"
 
 	print cmd
 
 	call(cmd,shell=True)
 
-	return rmdup_bam.split(".")[0] + "_realigned.bam"
+	return markdup_bam.split(".")[0] + "_realigned.bam"
 
 
 def softclip_bam(bam,reference_genome, out_dir, to_clip = "4"):
@@ -750,7 +770,7 @@ def process_realigned_bams(realigned_bam, reference_genome, clip, output_dir, sp
 
 	#call("samtools view -b -F4 " + realigned_bam.split(".")[0] + ".bam > " + realigned_bam.split(".")[0] + "_F4.bam && samtools view -q30 -b " + realigned_bam.split(".")[0] + "_F4.bam > " + realigned_bam.split(".")[0] + "_F4_q30.bam",shell=True)
 
-	#gzip the rmdup bam
+	#gzip the markdup bam
 	#call("gzip " + realigned_bam ,shell=True)
 	call("samtools flagstat -@ 24 "  + realigned_bam + " > " + realigned_bam.split(".")[0] + ".flagstat",shell=True)
 	#call("samtools flagstat " + realigned_bam.split(".")[0] + "_F4_q30.bam > " + realigned_bam.split(".")[0] + "_F4_q30.flagstat",shell=True)
