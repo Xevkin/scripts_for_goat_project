@@ -124,7 +124,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all rmdup at same time
 		call("echo Removing duplicates",shell=True)
 
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | rev | cut -f3- -d'_' | rev ); do echo samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log;  samtools rmdup -s \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | rev | cut -f3- -d'_' | rev ); do echo samtools markdup -r \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam \"2>\" \"$i\"_q20_rmdup.log;  samtools markdup -r \"$i\"_sort_q20.bam \"$i\"_q20_rmdup.bam 2> \"$i\"_q20_rmdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
 		call("for i in $(ls *rmdup.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
@@ -154,7 +154,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		sample =  bam.split(".")[0]
 
-		call("echo samtools rmdup -s " + bam + " " + sample + "_rmdup.bam \">\"  " + sample + "_rmdup.log >> rmdup.sh",shell=True)
+		call("echo samtools markdup -r " + bam + " " + sample + "_rmdup.bam \">\"  " + sample + "_rmdup.log >> rmdup.sh",shell=True)
 
 		merged_rmdup_bam_list.append(sample + "_rmdup.bam")
 
@@ -340,8 +340,8 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	print "samtools sort -@ 24 "  + sample_and_ref +"_mit_F4.bam -O BAM -o " + sample_and_ref + "_mit_F4_sort.bam 2>>" + sample_and_ref + "_mit_alignment.log"
 	call("samtools sort -@ 24 "  + sample_and_ref +"_mit_F4.bam -O BAM -o " + sample_and_ref + "_mit_F4_sort.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
-	print "samtools rmdup -s "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
-	call("samtools rmdup -s "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
+	print "samtools markdup -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
+	call("samtools markdup -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_rmdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
 	call("rm " + sample_and_ref + "_mit_F4_sort.bam",shell=True)
 
@@ -365,8 +365,8 @@ def merge_and_process_mit(RG_file, reference, trim):
 		print "samtools flagstat " + bam + "  > " + bam_root + ".flagstat"
 		call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
-		print "samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam "
-		call("samtools rmdup -s " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
+		print "samtools markdup -r " + bam_root + ".bam " + bam_root + "_rmdup.bam "
+		call("samtools markdup -r " + bam_root + ".bam " + bam_root + "_rmdup.bam ",shell=True)
 
 		print "samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat"
 		call("samtools flagstat " + bam_root + "_rmdup.bam > " + bam_root + "_rmdup.flagstat",shell=True)
@@ -490,10 +490,10 @@ def process_bam(sample_name,species):
 	#gzip the original bam
 	call("gzip " + sample_name + ".bam",shell=True)
 
-	#print "samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam 2>" + sample_name + "_alignment.log"
+	#print "samtools markdup -r " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam 2>" + sample_name + "_alignment.log"
 
 	#remove duplicates from the sorted bam
-	#call("samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam 2> "  + sample_name + "_alignment.log", shell=True)
+	#call("samtools markdup -r " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam 2> "  + sample_name + "_alignment.log", shell=True)
 
 	#remove the "sorted with duplicates" bam
 	#call("rm " + sample_name + "_sort.bam",shell=True)
@@ -613,7 +613,7 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 		call("samtools view -b -q 30 -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_merged_q30.bam",shell=True)
 
-		#call("samtools rmdup -s " + sample_name + "_merged_q30.bam " + sample_name + "_merged_q30_rmdup.bam 2> " + sample_name + "_merged_q30_rmdup.log",shell=True)
+		#call("samtools markdup -r " + sample_name + "_merged_q30.bam " + sample_name + "_merged_q30_rmdup.bam 2> " + sample_name + "_merged_q30_rmdup.log",shell=True)
 
 		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_q20_merged.flagstat",shell=True)
 
