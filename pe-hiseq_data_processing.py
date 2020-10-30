@@ -370,8 +370,8 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	print "samtools sort -n -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log"
 	call("samtools sort -n -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log",shell=True)
 
-	print "samtools fixmate -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam"
-	call("samtools fixmate -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam",shell=T)
+	print "samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam"
+	call("samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam",shell=T)
 
 	print "samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam"
 	call("samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam",shell=T)
@@ -590,8 +590,8 @@ def process_bam(sample_name,species):
 
 		if "_pe_" in sample_name:
 
-			print "samtools fixmate -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam"
-			call("samtools fixmate -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam",shell=T)
+			print "samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam"
+			call("samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam",shell=T)
 
 			print "samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam"
 			call("samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam",shell=T)
