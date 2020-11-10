@@ -6,8 +6,8 @@ s/ERR470102/French3/g
 s/ERR470105/French4/g 
 s/ERR405774/Italian1/g 
 s/ERR405775/Italian2/g 
-s/ERR405776/Italian3/g 
-s/ERR405777/Italian4/g 
+s/ERR405777/Italian3/g 
+s/ERR405776/Italian4/g 
 s/ERR405778/Italian5/g 
 s/ERR313200/Iranian1/g 
 s/ERR313209/Iranian2/g 
