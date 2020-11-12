@@ -16,7 +16,7 @@ with open(sys.argv[1]) as file:
 
 		else:
 			
-			dump = dump + line.rstrip("\n")
+			dump = dump + line.rstrip()
 
 	head = dump[0:15]
 
