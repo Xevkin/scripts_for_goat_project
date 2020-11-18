@@ -1,8 +1,12 @@
+WINDOW=`echo $2`
+
+WINDOW_MINUS=`expr $WINDOW - 1`
+
 START=1
 
 LENGTH=`tail -n1 ${1}.haplo | cut -f2`
 
-rm ${1}_${START}-1000000.haplo
+rm ${1}_${START}-${WINDOW}.haplo
 
 rm split_parallel.sh
 
@@ -10,7 +14,7 @@ while [ $START -le $LENGTH ]
 
 do
 
-	END=`expr $START + 999999`
+	END=`expr $START + $WINDOW_MINUS`
 
 	rm ${1}_${START}-${END}.haplo
 
