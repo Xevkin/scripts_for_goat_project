@@ -24,7 +24,7 @@ with open(sys.argv[1]) as FILE:
 
 			for CURRENT_SAMPLE in range(3, SAMPLE_NUM+3):
 
-				call ("echo -e \"\\\\n>\""  + str(SPLINE[CURRENT_SAMPLE]) + " >> " + TEMP_FILE, shell=True)
+				call ("echo \"\\\\n>\""  + str(SPLINE[CURRENT_SAMPLE]) + " >> " + TEMP_FILE, shell=True)
 
 				call("cut -f " + str(CURRENT_SAMPLE + 1) + " " + sys.argv[1] + " | tail -n +2 | tr \'\n\' \' \' | sed -e \"s/ //g\" >> " + TEMP_FILE,shell=True)
 
