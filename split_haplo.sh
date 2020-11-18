@@ -2,7 +2,7 @@ START=1
 
 LENGTH=`tail -n1 ${1}.haplo | cut -f2`
 
-rm ${1}_${START}-1000001.haplo
+rm ${1}_${START}-1000000.haplo
 
 rm split_parallel.sh
 
@@ -10,7 +10,7 @@ while [ $START -le $LENGTH ]
 
 do
 
-	END=`expr $START + 1000000`
+	END=`expr $START + 999999`
 
 	rm ${1}_${START}-${END}.haplo
 
