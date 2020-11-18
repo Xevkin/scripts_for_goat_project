@@ -18,6 +18,8 @@ do
 
 	echo awk  \'{if '($2 >=' $START '&& $2 <' $END')' print}\' ${1}.haplo ">>" ${1}_${START}-${END}.haplo >> split_parallel.sh
 
+	END=`expr $END + 1`
+
 	START=`echo $END`
 
 done
