@@ -11,14 +11,20 @@ def main():
 	#H1,H2,H3
 	SAMPLES = sys.argv[2].rstrip("\n").split(",")
 
-	#print out the samples in Q for 3 pop test
+	#check if we are doing a 4/5 pop test
+	TEST=len(SAMPLES)+1
+
+	#print out the samples
 	H1 = int(SAMPLES[0])+2
 	H2 = int(SAMPLES[1])+2
 	H3 = int(SAMPLES[2])+2
+	if TEST == 5: H4 = int(SAMPLES[3])+2
 
 	#lists to store the ABBA BABA sites
 	ABBA = []
 	BABA = []
+	ABABA = []
+	BAABA = []
 
 	#jackknifing
 	#Going with  5Mb JKs
@@ -46,6 +52,10 @@ def main():
 
 			BABA.append(0)
 
+			ABABA.append(0)
+
+			BAABA.append(0)
+
 	#go through each position in the haplo file
 	with open(sys.argv[1]) as FILE:
 
@@ -63,6 +73,8 @@ def main():
 				print "H2 is " + SPLINE[H2]
 
 				print "H3 is " + SPLINE[H3]
+
+				if TEST == 5: print "H4 is " + SPLINE[H4]
 
 				continue
 
@@ -87,13 +99,25 @@ def main():
 				#if the position matches the current jk region
 				if CHR == IND_JACKKNIFE[0] and POS >= IND_JACKKNIFE[1] and POS <= IND_JACKKNIFE[2]:
 
-					#add to the current ABBA BABA count for the current jk region
-					JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4] = GET_ABBA_BABA(SPLINE,H1,H2,H3,JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4])
+					#if we are doing a 4 pop test:
+					if TEST == 4:
 
-					#also add to the ABBA BABA lists
-					ABBA[COUNTER] = ABBA[COUNTER] + JACKKNIFES[COUNTER][3]
+						#add to the current ABBA BABA count for the current jk region
+						JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4] = GET_ABBA_BABA(SPLINE,H1,H2,H3,JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4])
 
-					BABA[COUNTER] = BABA[COUNTER] + JACKKNIFES[COUNTER][4]
+						#also add to the ABBA BABA lists
+						ABBA[COUNTER] = ABBA[COUNTER] + JACKKNIFES[COUNTER][3]
+
+						BABA[COUNTER] = BABA[COUNTER] + JACKKNIFES[COUNTER][4]
+
+					else:
+
+						#add to ABABA BAABA counter
+						JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4] = GET_ABBA_BABA(SPLINE,H1,H2,H3,JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4],H4)
+
+						ABABA[COUNTER] = ABABA[COUNTER] + JACKKNIFES[COUNTER][3]
+
+						BAABA[COUNTER] = BAABA[COUNTER] + JACKKNIFES[COUNTER][4]
 
 					continue
 
@@ -125,53 +149,101 @@ def main():
 
 	BABA_TO_INCLUDE_SUM = sum(BABA_TO_INCLUDE)
 
+	#if we are doing a 5 pop test, do the same for ABABA BAABA
+	if TEST == 5:
+
+		ABABA_TO_INCLUDE = list(map(ABABA.__getitem__,TO_INCLUDE))
+
+		ABABA_TO_INCLUDE_SUM = sum(ABABA_TO_INCLUDE)
+
+		BAABA_TO_INCLUDE = list(map(BAABA.__getitem__,TO_INCLUDE))
+
+		BAABA_TO_INCLUDE_SUM = sum(BAABA_TO_INCLUDE)
+
 	#new counter for jk regions we are keeping
 	COUNTER = 0
 
 	#list for each jk estimate of D
 	JACK_D = []
 
-	#for each jk block
-	for BLOCK in ABBA_TO_INCLUDE:
+	#if we are doing a four pop test
+	if TEST == 4:
 
-		#"remove" a given region by adding its negative to the list, which will be summed
-		ABBA_SUBSET = ABBA_TO_INCLUDE + [-ABBA_TO_INCLUDE[COUNTER]]
+		#for each jk block
+		for BLOCK in ABBA_TO_INCLUDE:
 
-		BABA_SUBSET = BABA_TO_INCLUDE + [-BABA_TO_INCLUDE[COUNTER]]
+			#"remove" a given region by adding its negative to the list, which will be summed
+			ABBA_SUBSET = ABBA_TO_INCLUDE + [-ABBA_TO_INCLUDE[COUNTER]]
 
-		#add the jk D estimate to the jk D list
-		JACK_D.append(D(sum(ABBA_SUBSET), sum(BABA_SUBSET) ))
+			BABA_SUBSET = BABA_TO_INCLUDE + [-BABA_TO_INCLUDE[COUNTER]]
 
-		#update counter for each jk region
-		COUNTER += 1
+			#add the jk D estimate to the jk D list
+			JACK_D.append(D(sum(ABBA_SUBSET), sum(BABA_SUBSET) ))
 
-	#get the total D estimate
-	D_EST = D(ABBA_TO_INCLUDE_SUM, BABA_TO_INCLUDE_SUM)
+			#update counter for each jk region
+			COUNTER += 1
 
-	#calculate the sd of the jk D estimates
-	JACK_ERR = np.std(JACK_D)
+		#get the total D estimate
+		D_EST = D(ABBA_TO_INCLUDE_SUM, BABA_TO_INCLUDE_SUM)
 
-	#calculate Z score of the D estimate
-	Z = D_EST / JACK_ERR
+		#calculate the sd of the jk D estimates
+		JACK_ERR = np.std(JACK_D)
 
-	#print out the total ABBA, BABA sites, D estimates, jk error, and the Z score
-	print " ".join(str(e) for e in [ABBA_TO_INCLUDE_SUM, BABA_TO_INCLUDE_SUM, D_EST, JACK_ERR, Z])
+		#calculate Z score of the D estimate
+		Z = D_EST / JACK_ERR
 
-def GET_ABBA_BABA(SPLINE_IN,H1_IN,H2_IN,H3_IN,NABBA_IN, NBABA_IN):
+		#print out the total ABBA, BABA sites, D estimates, jk error, and the Z score
+		print " ".join(str(e) for e in [ABBA_TO_INCLUDE_SUM, BABA_TO_INCLUDE_SUM, D_EST, JACK_ERR, Z])
+
+	if TEST == 5:
+
+		for BLOCK in ABBA_TO_INCLUDE:
+
+			ABABA_SUBSET = ABABA_TO_INCLUDE + [-ABABA_TO_INCLUDE[COUNTER]]
+
+			BAABA_SUBSET = BAABA_TO_INCLUDE + [-BAABA_TO_INCLUDE[COUNTER]]
+
+			JACK_D.append(D(sum(ABABA_SUBSET), sum(BAABA_SUBSET) ))
+
+			COUNTER += 1
+
+		D_EST = D(ABABA_TO_INCLUDE_SUM, BAABA_TO_INCLUDE_SUM)
+
+		JACK_ERR = np.std(JACK_D)
+
+		Z = D_EST / JACK_ERR
+
+		print " ".join(str(e) for e in [ABABA_TO_INCLUDE_SUM, BAABA_TO_INCLUDE_SUM, D_EST, JACK_ERR, Z])
+
+def GET_ABBA_BABA(SPLINE_IN,H1_IN,H2_IN,H3_IN,NABBA_IN, NBABA_IN,H4_IN="none"):
 
 	" Function for taking in a .haplo row and determining if ABBA/BABA count should be added to"
 	ANCESTRAL_IN = SPLINE_IN[3]
 
 	DERIVED_IN = "".join(SPLINE_IN[4:]).replace(ANCESTRAL_IN,"").replace("N","")[0]
 
-	#add to the current ABBA/BABA count when appropriate
-	if SPLINE_IN[H1_IN] == ANCESTRAL_IN and SPLINE_IN[H2_IN] == DERIVED_IN and SPLINE_IN[H2_IN] == SPLINE_IN[H3_IN]:
+	if H4_IN == "none":
 
-		NABBA_IN += 1
+		#add to the current ABBA/BABA count when appropriate
+		if SPLINE_IN[H1_IN] == ANCESTRAL_IN and SPLINE_IN[H2_IN] == DERIVED_IN and SPLINE_IN[H2_IN] == SPLINE_IN[H3_IN]:
 
-	if SPLINE_IN[H2_IN] == ANCESTRAL_IN and SPLINE_IN[H1_IN] == DERIVED_IN and SPLINE_IN[H1_IN] == SPLINE_IN[H3_IN]:
+			NABBA_IN += 1
 
-		NBABA_IN += 1
+		if SPLINE_IN[H2_IN] == ANCESTRAL_IN and SPLINE_IN[H1_IN] == DERIVED_IN and SPLINE_IN[H1_IN] == SPLINE_IN[H3_IN]:
+
+			NBABA_IN += 1
+
+	else:
+
+		if SPLINE_IN[H1_IN] == ANCESTRAL_IN and SPLINE_IN[H2_IN] == DERIVED_IN and SPLINE_IN[H1_IN] == SPLINE_IN[H3_IN] and SPLINE_IN[H2_IN] == SPLINE_IN[H4_IN]:
+
+			#NABBA is a stand in for ABABA
+			NABBA_IN += 1
+
+		if SPLINE_IN[H2_IN] == ANCESTRAL_IN and SPLINE_IN[H1_IN] == DERIVED_IN and SPLINE_IN[H2_IN] == SPLINE_IN[H3_IN] and SPLINE_IN[H1_IN] == SPLINE_IN[H4_IN]:
+
+			#again, NBABA is a stand in for BAABA
+			NBABA_IN += 1
 
 	return(NABBA_IN, NBABA_IN)
 
