@@ -106,18 +106,18 @@ def main():
 						JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4] = GET_ABBA_BABA(SPLINE,H1,H2,H3,JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4])
 
 						#also add to the ABBA BABA lists
-						ABBA[COUNTER] = ABBA[COUNTER] + JACKKNIFES[COUNTER][3]
+						ABBA[COUNTER] =  JACKKNIFES[COUNTER][3]
 
-						BABA[COUNTER] = BABA[COUNTER] + JACKKNIFES[COUNTER][4]
+						BABA[COUNTER] =  JACKKNIFES[COUNTER][4]
 
-					else:
+					elif TEST == 5:
 
 						#add to ABABA BAABA counter
 						JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4] = GET_ABBA_BABA(SPLINE,H1,H2,H3,JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4],H4)
 
-						ABABA[COUNTER] = ABABA[COUNTER] + JACKKNIFES[COUNTER][3]
+						ABABA[COUNTER] = JACKKNIFES[COUNTER][3]
 
-						BAABA[COUNTER] = BAABA[COUNTER] + JACKKNIFES[COUNTER][4]
+						BAABA[COUNTER] = JACKKNIFES[COUNTER][4]
 
 					continue
 
@@ -141,6 +141,7 @@ def main():
 		COUNTER += 1
 
 	#strip out ABBA / BABA information from jk regions we are keeping; also sum
+
 	ABBA_TO_INCLUDE = list(map(ABBA.__getitem__,TO_INCLUDE))
 
 	ABBA_TO_INCLUDE_SUM = sum(ABBA_TO_INCLUDE)
@@ -184,6 +185,10 @@ def main():
 			COUNTER += 1
 
 		#get the total D estimate
+		#print ABBA_TO_INCLUDE_SUM
+
+		#print BABA_TO_INCLUDE_SUM
+
 		D_EST = D(ABBA_TO_INCLUDE_SUM, BABA_TO_INCLUDE_SUM)
 
 		#calculate the sd of the jk D estimates
@@ -217,6 +222,8 @@ def main():
 
 def GET_ABBA_BABA(SPLINE_IN,H1_IN,H2_IN,H3_IN,NABBA_IN, NBABA_IN,H4_IN="none"):
 
+	#print [SPLINE_IN,H1_IN,H2_IN,H3_IN,NABBA_IN, NBABA_IN,H4_IN]
+
 	" Function for taking in a .haplo row and determining if ABBA/BABA count should be added to"
 	ANCESTRAL_IN = SPLINE_IN[3]
 
@@ -229,7 +236,7 @@ def GET_ABBA_BABA(SPLINE_IN,H1_IN,H2_IN,H3_IN,NABBA_IN, NBABA_IN,H4_IN="none"):
 
 			NABBA_IN += 1
 
-		if SPLINE_IN[H2_IN] == ANCESTRAL_IN and SPLINE_IN[H1_IN] == DERIVED_IN and SPLINE_IN[H1_IN] == SPLINE_IN[H3_IN]:
+		elif SPLINE_IN[H2_IN] == ANCESTRAL_IN and SPLINE_IN[H1_IN] == DERIVED_IN and SPLINE_IN[H1_IN] == SPLINE_IN[H3_IN]:
 
 			NBABA_IN += 1
 
