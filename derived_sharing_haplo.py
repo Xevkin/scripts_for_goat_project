@@ -182,7 +182,8 @@ def main():
 			BABA_SUBSET = []
 
 			#generate a new set of regions by sampling with replacement
-			for I in range(0,BOOT_NUM):
+			#1000 bootstrap replicates
+			for I in range(0,1000):
 
 				RANDOM_INDEX = random.randrange(0,BOOT_NUM)
 
@@ -217,7 +218,8 @@ def main():
 
 			BAABA_SUBSET = []
 
-			for I in range(0,BOOT_NUM):
+			#1000 bootstrap replicates
+			for I in range(0,1000):
 
 				RANDOM_INDEX = random.randrange(0,BOOT_NUM)
 
