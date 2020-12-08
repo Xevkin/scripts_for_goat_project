@@ -4,6 +4,8 @@ import sys
 
 import numpy as np
 
+import random
+
 def main():
 
 	#take samples to test
@@ -26,12 +28,12 @@ def main():
 	ABABA = []
 	BAABA = []
 
-	#jackknifing
-	#Going with  5Mb JKs
+	#bootstrapping
+	#Going with 5Mb regions
 	#assuming bootstrap regions are found at /home/kdaly/bootstrap.list
 	#create a list storing the bootstrap region information
 
-	JACKKNIFES = []
+	BOOTSTRAPS = []
 	with open("/home/kdaly/bootstrap.list") as FILE:
 
 		for LINE in FILE:
@@ -46,7 +48,7 @@ def main():
 
 			REGION[2] = int(LINE.split(":")[1].split("-")[1])
 
-			JACKKNIFES.append(REGION)
+			BOOTSTRAPS.append(REGION)
 
 			ABBA.append(0)
 
@@ -89,58 +91,58 @@ def main():
 
 			POS = int(SPLINE[1])
 
-			#keep jack-knifes estimates
+			#keep bootstrap estimates
 			#create a counter to loop through each block
 			COUNTER = 0
 
-			#for each line, interate over the jackknife regions
-			for IND_JACKKNIFE in JACKKNIFES:
+			#for each line, interate over the bs regions
+			for BOOTSTRAP in BOOTSTRAPS:
 
-				#if the position matches the current jk region
-				if CHR == IND_JACKKNIFE[0] and POS >= IND_JACKKNIFE[1] and POS <= IND_JACKKNIFE[2]:
+				#if the position matches the current bs region
+				if CHR == BOOTSTRAP[0] and POS >= BOOTSTRAP[1] and POS <= BOOTSTRAP[2]:
 
 					#if we are doing a 4 pop test:
 					if TEST == 4:
 
-						#add to the current ABBA BABA count for the current jk region
-						JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4] = GET_ABBA_BABA(SPLINE,H1,H2,H3,JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4])
+						#add to the current ABBA BABA count for the current bs region
+						BOOTSTRAPS[COUNTER][3],BOOTSTRAPS[COUNTER][4] = GET_ABBA_BABA(SPLINE,H1,H2,H3,BOOTSTRAPS[COUNTER][3],BOOTSTRAPS[COUNTER][4])
 
 						#also add to the ABBA BABA lists
-						ABBA[COUNTER] =  JACKKNIFES[COUNTER][3]
+						ABBA[COUNTER] =  BOOTSTRAPS[COUNTER][3]
 
-						BABA[COUNTER] =  JACKKNIFES[COUNTER][4]
+						BABA[COUNTER] =  BOOTSTRAPS[COUNTER][4]
 
 					elif TEST == 5:
 
 						#add to ABABA BAABA counter
-						JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4] = GET_ABBA_BABA(SPLINE,H1,H2,H3,JACKKNIFES[COUNTER][3],JACKKNIFES[COUNTER][4],H4)
+						BOOTSTRAPS[COUNTER][3],BOOTSTRAPS[COUNTER][4] = GET_ABBA_BABA(SPLINE,H1,H2,H3,BOOTSTRAPS[COUNTER][3],BOOTSTRAPS[COUNTER][4],H4)
 
-						ABABA[COUNTER] = JACKKNIFES[COUNTER][3]
+						ABABA[COUNTER] = BOOTSTRAPS[COUNTER][3]
 
-						BAABA[COUNTER] = JACKKNIFES[COUNTER][4]
+						BAABA[COUNTER] = BOOTSTRAPS[COUNTER][4]
 
 					continue
 
-				#update the counter to keep track of the current jk region
+				#update the counter to keep track of the current bs region
 				COUNTER += 1
 
-	#new counter, for tracking jk regions as we filter out those with no data
+	#new counter, for tracking bs regions as we filter out those with no data
 	COUNTER = 0
 
-	#we want to exclude jk regions with no information
+	#we want to exclude bs regions with no information
 	TO_INCLUDE = []
 
-	for BLOCK in JACKKNIFES:
+	for BLOCK in BOOTSTRAPS:
 
 		#if missing both ABBA or BABA information, skip
 		if BLOCK[3] != 0 or BLOCK[4] != 0:
 
 			TO_INCLUDE.append(COUNTER)
 
-		#update counter for new jk region
+		#update counter for new bs region
 		COUNTER += 1
 
-	#strip out ABBA / BABA information from jk regions we are keeping; also sum
+	#strip out ABBA / BABA information from bs regions we are keeping; also sum
 
 	ABBA_TO_INCLUDE = list(map(ABBA.__getitem__,TO_INCLUDE))
 
@@ -149,6 +151,8 @@ def main():
 	BABA_TO_INCLUDE = list(map(BABA.__getitem__,TO_INCLUDE))
 
 	BABA_TO_INCLUDE_SUM = sum(BABA_TO_INCLUDE)
+
+	BOOT_NUM = len(TO_INCLUDE)
 
 	#if we are doing a 5 pop test, do the same for ABABA BAABA
 	if TEST == 5:
@@ -164,65 +168,76 @@ def main():
 	#new counter for jk regions we are keeping
 	COUNTER = 0
 
-	#list for each jk estimate of D
-	JACK_D = []
+	#list for each bs estimate of D
+	BOOT_D = []
 
 	#if we are doing a four pop test
 	if TEST == 4:
 
-		#for each jk block
+		#for each bs block
 		for BLOCK in ABBA_TO_INCLUDE:
 
-			#"remove" a given region by adding its negative to the list, which will be summed
-			ABBA_SUBSET = ABBA_TO_INCLUDE + [-ABBA_TO_INCLUDE[COUNTER]]
+			ABBA_SUBSET = []
 
-			BABA_SUBSET = BABA_TO_INCLUDE + [-BABA_TO_INCLUDE[COUNTER]]
+			BABA_SUBSET = []
 
-			#add the jk D estimate to the jk D list
-			JACK_D.append(D(sum(ABBA_SUBSET), sum(BABA_SUBSET) ))
+			#generate a new set of regions by sampling with replacement
+			for I in range(0,BOOT_NUM):
 
-			#update counter for each jk region
+				RANDOM_INDEX = random.randrange(0,BOOT_NUM)
+
+				ABBA_SUBSET.append(ABBA_TO_INCLUDE[RANDOM_INDEX])
+
+				BABA_SUBSET.append(BABA_TO_INCLUDE[RANDOM_INDEX])
+
+			#add the bs D estimate to the bs D list
+			BOOT_D.append(D(sum(ABBA_SUBSET), sum(BABA_SUBSET) ))
+
+			#update counter for each bs region
 			COUNTER += 1
 
 		#get the total D estimate
-		#print ABBA_TO_INCLUDE_SUM
-
-		#print BABA_TO_INCLUDE_SUM
 
 		D_EST = D(ABBA_TO_INCLUDE_SUM, BABA_TO_INCLUDE_SUM)
 
 		#calculate the sd of the jk D estimates
-		JACK_ERR = np.std(JACK_D)
+		BOOT_ERR = np.std(BOOT_D)
 
 		#calculate Z score of the D estimate
-		Z = D_EST / JACK_ERR
+		Z = D_EST / BOOT_ERR
 
 		#print out the total ABBA, BABA sites, D estimates, jk error, and the Z score
-		print " ".join(str(e) for e in [ABBA_TO_INCLUDE_SUM, BABA_TO_INCLUDE_SUM, D_EST, JACK_ERR, Z])
+		print " ".join(str(e) for e in [ABBA_TO_INCLUDE_SUM, BABA_TO_INCLUDE_SUM, D_EST, BOOT_ERR, Z])
 
 	if TEST == 5:
 
 		for BLOCK in ABBA_TO_INCLUDE:
 
-			ABABA_SUBSET = ABABA_TO_INCLUDE + [-ABABA_TO_INCLUDE[COUNTER]]
+			ABABA_SUBSET = []
 
-			BAABA_SUBSET = BAABA_TO_INCLUDE + [-BAABA_TO_INCLUDE[COUNTER]]
+			BAABA_SUBSET = []
 
-			JACK_D.append(D(sum(ABABA_SUBSET), sum(BAABA_SUBSET) ))
+			for I in range(0,BOOT_NUM):
+
+				RANDOM_INDEX = random.randrange(0,BOOT_NUM)
+
+				ABABA_SUBSET.append(ABABA_TO_INCLUDE[RANDOM_INDEX])
+
+				BAABA_SUBSET.append(BAABA_TO_INCLUDE[RANDOM_INDEX])
+
+			BOOT_D.append(D(sum(ABABA_SUBSET), sum(BAABA_SUBSET) ))
 
 			COUNTER += 1
 
 		D_EST = D(ABABA_TO_INCLUDE_SUM, BAABA_TO_INCLUDE_SUM)
 
-		JACK_ERR = np.std(JACK_D)
+		BOOT_ERR = np.std(BOOT_D)
 
-		Z = D_EST / JACK_ERR
+		Z = D_EST / BOOT_ERR
 
-		print " ".join(str(e) for e in [ABABA_TO_INCLUDE_SUM, BAABA_TO_INCLUDE_SUM, D_EST, JACK_ERR, Z])
+		print " ".join(str(e) for e in [ABABA_TO_INCLUDE_SUM, BAABA_TO_INCLUDE_SUM, D_EST, BOOT_ERR, Z])
 
 def GET_ABBA_BABA(SPLINE_IN,H1_IN,H2_IN,H3_IN,NABBA_IN, NBABA_IN,H4_IN="none"):
-
-	#print [SPLINE_IN,H1_IN,H2_IN,H3_IN,NABBA_IN, NBABA_IN,H4_IN]
 
 	" Function for taking in a .haplo row and determining if ABBA/BABA count should be added to"
 	ANCESTRAL_IN = SPLINE_IN[3]
