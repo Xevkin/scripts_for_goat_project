@@ -116,4 +116,4 @@ for IND in range(0,IND_NUM):
 
 for IND in OUTPUT_LIST:
 
-	print IND
+	print " ".join(IND)
