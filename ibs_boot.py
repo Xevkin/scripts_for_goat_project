@@ -67,7 +67,7 @@ with gzip.open(IBS_FILE, "r") as FILE:
 					PAIR2 = PAIR[1]
 
 					# if both samples have data
-					if (SPLINE[PAIR1 + 4] != "N") or ( SPLINE[PAIR2 + 4] != "N"):
+					if (SPLINE[PAIR1 + 4] != "-1") or ( SPLINE[PAIR2 + 4] != "-1"):
 
 						# add to the site count
 						PAIRS[COUNTER1][2]  +=  int(BOOT[3])
