@@ -72,6 +72,8 @@ with gzip.open(IBS_FILE, "r") as FILE:
 						# add to the site count
 						PAIRS[COUNTER1][2]  +=  int(BOOT[3])
 
+						PAIRS[COUNTER1][2]
+
 						#add to the match count if they are matching
 						if (SPLINE[PAIR1 + 4] == SPLINE[PAIR2 + 4] ):
 
@@ -116,4 +118,4 @@ for IND in range(0,IND_NUM):
 
 for IND in OUTPUT_LIST:
 
-	print " ".join(IND)
+	print " ".join([str(int) for int in IND])
