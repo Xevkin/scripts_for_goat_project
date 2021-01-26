@@ -87,7 +87,8 @@ PAIRWISE_LIST = []
 
 for PAIRWISE in PAIRS:
 
-	PAIRWISE_LIST.append(PAIRWISE[3] / PAIRWISE[2])
+	#the statistic ANGSD reports is ibs distance - value 0 if same allele is observed
+	PAIRWISE_LIST.append(1.0 - (PAIRWISE[3] / PAIRWISE[2]))
 
 #print all the uniq pairs
 OUTPUT_LIST = []
