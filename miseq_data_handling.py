@@ -260,18 +260,21 @@ def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc, adaptor_removal, pair
 	#cut raw fastq files
 	if (pair == "pair") or (pair == "yes"):
 
-		call(adaptor_removal + " --file1 " + fastq + " --file2 "  + fastq.replace("_R1","_R2") + " --basename " + fastq.split("-")[0] + " 2> " + fastq.split("-")[0] + ".trim.log && mv " +  fastq.split(".")[0] + "_trimmed.pair1.truncated.gz " + fastq.split(".")[0] + "_r1_trimmed.fastq.gz && mv " +  fastq.split(".")[0] + "_trimmed.pair2.truncated.gz " +  fastq.split(".")[0] + "_r2_trimmed.fastq.gz && mv " +  fastq.split(".")[0] + "_trimmed.singleton.truncated.gz " +  fastq.split(".")[0] + "_mate-discard_trimmed.fastq.gz && mv " +  fastq.split(".")[0] + "_trimmed.collapsed.gz " + fastq.split(".")[0] + "_trimmed.fastq.gz ", shell=True)
+		call(adaptor_removal + " --file1 " + fastq + " --file2 "  + fastq.replace("_R1","_R2") + " --basename " + current_sample + " 2> " + current_sample + ".trim.log && mv " +  current_sample + "_trimmed.pair1.truncated.gz " + current_sample + "_r1_trimmed.fastq.gz && mv " + current_sample + "_trimmed.pair2.truncated.gz " +  current_sample + "_r2_trimmed.fastq.gz && mv " +  current_sample + "_trimmed.singleton.truncated.gz " + current_sample + "_mate-discard_trimmed.fastq.gz && mv " + current_sample + "_trimmed.collapsed.gz " + current_sample + "_trimmed.fastq.gz ", shell=True)
 
 	else:
 
-		call(cut_adapt + fastq + " -o " + trimmed_fastq + " > " + trimmed_fastq + ".log", shell=True)
+		call(cut_adapt + fastq + " -o " + current_sample + "_ > " + trimmed_fastq + ".log", shell=True)
 
        	#run fastqc on both the un/trimmed fastq files
 	#first we want to create an output directory if there is none to begin with
 	if (fastqc == "yes"):
 
 		call("~/programs/FastQC/fastqc " + fastq + " -o " + out_dir + "fastqc/", shell=True)
-		call("~/programs/FastQC/fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
+
+		if  (pair == "pair") or (pair == "yes"):
+
+			call("~/programs/FastQC/fastqc " + current_sample  + "_trimmed.collapsed.gz -o " + out_dir + "fastqc/", shell=True)
 
 
 def run_fastq_screen(current_sample, out_dir, fastq_screen_option,pair):
