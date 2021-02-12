@@ -48,12 +48,12 @@ mitochondrial_genomes = {
 
 }
 
-def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fastqc):
+def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fastqc, pair):
 
 	#run the set up function.#set up will create some output directories
 	#and return variables that will be used in the rest of the script
 
-	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option = set_up(date_of_miseq, meyer, species, mit, output_dir, trim)
+	files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen_option,adaptor_removal = set_up(date_of_miseq, meyer, species, mit, output_dir, trim, pair)
 
 	#sample is the file root
 	#trim fastq files and produce fastqc files
@@ -66,22 +66,22 @@ def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fa
 
 		for sample in sample_list:
 
-			trim_fastq(sample, cut_adapt, out_dir, fastqc)
+			trim_fastq(sample, cut_adapt, out_dir, fastqc,adaptor_removal, pair)
 
 	#run fastq screen on the samples if input variable for fastq_screen is "yes"
 	if (fastq_screen.lower() == "yes"):
 
-		map(lambda sample: run_fastq_screen(sample, out_dir, fastq_screen_option), sample_list)
+		map(lambda sample: run_fastq_screen(sample, out_dir, fastq_screen_option, pair), sample_list)
 
 	#at this stage we have our fastq files with adaptors trimmed, fastqc and fastq screen run
 	#we can now move on to the next step: alignment
 
 	#going to align to ARS1
 
-	map(lambda sample : align(sample,  alignment_option, reference), sample_list)
+	map(lambda sample : align(sample,  alignment_option, reference, pair), sample_list)
 
 	#testing a function here, to process a bam to a q30 version
-	map(process_bam, sample_list)
+	map(process_bam, sample_list)\
 
 	for sample in sample_list:
 
@@ -124,13 +124,24 @@ def main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fa
 	call("mv " + output_summary + " " + out_dir,shell=True)
 
 
-def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
+def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim, pair):
+
+	adaptor_removal = ""
+
+	#clean up some file names
+	call("for i in $(ls *fastq.gz); do I=`echo $i | sed -e \"s/_001././g\" | sed -e \"s/_/-/g\"`; mv $i $I; done",shell=True)
 
 	files = []
 	#if not trim, take all "trimmed.fastq" files:
 	if (trim == "no"):
 
-		files = [file for file in os.listdir(".") if file.endswith("trimmed.fastq.gz")]
+		if  (pair == "pair") or (pair == "yes"):
+
+			 files = [file for file in os.listdir(".") if file.endswith("R1.trimmed.fastq.gz")]
+
+		else:
+
+			files = [file for file in os.listdir(".") if file.endswith("trimmed.fastq.gz")]
 		#print the trimmed fastq files in current directory
 		print "Trimmed fastq files in the curent directory:"
 		print map(lambda x : x ,files)
@@ -138,7 +149,13 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 	else:
 		#take all .fastq.gz files in current directory; print them
 
-		files = [file for file in os.listdir(".") if file.endswith(".fastq.gz")]
+		if  (pair == "pair") or (pair == "yes"):
+
+			files = [file for file in os.listdir(".") if file.endswith("R1.fastq.gz")]
+
+		else:
+
+			files = [file for file in os.listdir(".") if file.endswith(".fastq.gz")]
 
 		print "fastq.gz files in current directory:"
 
@@ -157,6 +174,8 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 	        cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
 
         	fastq_screen = "/Software/fastq_screen --aligner bowtie --outdir ./"
+
+		adaptor_removal = "/home/kdaly/programs/adapterremoval-2.3.1/build/AdapterRemoval --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip --trimns --trimqualities "
 
 	else:
 
@@ -224,10 +243,10 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim):
 
 		master_list.append([i])
 
-	return files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen
+	return files, reference, out_dir, cut_adapt, alignment_option, master_list, sample_list, fastq_screen, adaptor_removal
 
 
-def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc):
+def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc, adaptor_removal, pair):
 
 	print "Current sample is: " + current_sample
 
@@ -239,7 +258,13 @@ def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc):
 	cmd = "gunzip -c " + fastq + " | wc -l |cut -f1 -d' '"
 
 	#cut raw fastq files
-	call(cut_adapt + fastq + " -o " + trimmed_fastq + " > " + trimmed_fastq + ".log", shell=True)
+	if (pair == "pair") or (pair == "yes"):
+
+		call(adaptor_removal + " --file1 " + fastq + " --file2 "  + fastq.replace("_R1","_R2") + " --basename " + fastq.split("-")[0] + " 2> " + fastq.split("-")[0] + ".trim.log && mv " +  fastq.split(".")[0] + "_trimmed.pair1.truncated.gz " + fastq.split(".")[0] + "_r1_trimmed.fastq.gz && mv " +  fastq.split(".")[0] + "_trimmed.pair2.truncated.gz " +  fastq.split(".")[0] + "_r2_trimmed.fastq.gz && mv " +  fastq.split(".")[0] + "_trimmed.singleton.truncated.gz " +  fastq.split(".")[0] + "_mate-discard_trimmed.fastq.gz && mv " +  fastq.split(".")[0] + "_trimmed.collapsed.gz " + fastq.split(".")[0] + "_trimmed.fastq.gz ", shell=True)
+
+	else:
+
+		call(cut_adapt + fastq + " -o " + trimmed_fastq + " > " + trimmed_fastq + ".log", shell=True)
 
        	#run fastqc on both the un/trimmed fastq files
 	#first we want to create an output directory if there is none to begin with
@@ -249,27 +274,38 @@ def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc):
 		call("~/programs/FastQC/fastqc " + trimmed_fastq + " -o " + out_dir + "fastqc/", shell=True)
 
 
-def run_fastq_screen(current_sample, out_dir, fastq_screen_option):
+def run_fastq_screen(current_sample, out_dir, fastq_screen_option,pair):
 
 	call("mkdir " + out_dir + "fastq_screen/",shell=True)
 
 	call("mkdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
 
-	call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.fastq.gz --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
+	if (pair == "pair") or (pair == "yes"):
+
+		 call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.collapsed.gz --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
+
+	else:
+
+		call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.fastq.gz --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
 
 
-def align(sample, alignment_option, reference):
+def align(sample, alignment_option, reference, pair):
 
-    trimmed_fastq = sample + "_trimmed.fastq.gz"
+	if (pair == "pair") or (pair == "yes"):
 
-    print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
-    call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)
+		trimmed_fastq = sample + "_trimmed.collapsed.gz"
 
-    print sample
-    call("bwa samse "  + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
+	else:
 
-    call("samtools flagstat " + sample + ".bam > " +  sample + ".flagstat",shell=True)
+		trimmed_fastq = sample + "_trimmed.fastq.gz"
 
+	print(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai")
+	call(alignment_option + reference + " " + trimmed_fastq + " > " + sample + ".sai",shell=True)
+
+	print sample
+	call("bwa samse "  + reference + " " + sample + ".sai " + trimmed_fastq + " | samtools view -Sb - > " + sample + ".bam",shell=True)
+
+	call("samtools flagstat " + sample + ".bam > " +  sample + ".flagstat",shell=True)
 
 
 def process_bam(sample_name):
@@ -370,12 +406,13 @@ try:
 	fastqc = sys.argv[6]
 	fastq_screen = sys.argv[7]
 	output_dir = sys.argv[8]
+	pair = sys.argv[9]
 
 except IndexError:
 	print "Incorrect number of variables have been provided"
-	print "Input variables are date_of_miseq, meyer, species, mit, trim, fastqc, fastq_screen, and output directory"
+	print "Input variab\es are date_of_miseq, meyer, species, mit, trim, fastqc, fastq_screen, output directory, and paired"
 	print "Exiting program..."
 	sys.exit()
 
 
-main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fastqc)
+main(date_of_miseq, meyer, species, mit, fastq_screen,  output_dir, trim, fastqc, pair)
