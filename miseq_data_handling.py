@@ -260,7 +260,7 @@ def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc, adaptor_removal, pair
 	#cut raw fastq files
 	if (pair == "pair") or (pair == "yes"):
 
-		call(adaptor_removal + " --file1 " + fastq + " --file2 "  + fastq.replace("_R1","_R2") + " --basename " + current_sample + " 2> " + current_sample + ".trim.log && mv " +  current_sample + "_trimmed.pair1.truncated.gz " + current_sample + "_r1_trimmed.fastq.gz && mv " + current_sample + "_trimmed.pair2.truncated.gz " +  current_sample + "_r2_trimmed.fastq.gz && mv " +  current_sample + "_trimmed.singleton.truncated.gz " + current_sample + "_mate-discard_trimmed.fastq.gz && mv " + current_sample + "_trimmed.collapsed.gz " + current_sample + "_trimmed.fastq.gz ", shell=True)
+		call(adaptor_removal + " --file1 " + fastq + " --file2 "  + fastq.replace("_R1","_R2").replace("-R1","-R2") + " --basename " + current_sample.replace("-R1","").replace("_R1","") + " 2> " + current_sample + ".trim.log && mv " +  current_sample + "_trimmed.pair1.truncated.gz " + current_sample + "_r1_trimmed.fastq.gz ; mv " + current_sample + "_trimmed.pair2.truncated.gz " +  current_sample + "_r2_trimmed.fastq.gz ; mv " +  current_sample + "_trimmed.singleton.truncated.gz " + current_sample + "_mate-discard_trimmed.fastq.gz ; mv " + current_sample + ".collapsed.gz " + current_sample + "_trimmed.collapsed.fastq.gz ", shell=True)
 
 	else:
 
@@ -296,7 +296,7 @@ def align(sample, alignment_option, reference, pair):
 
 	if (pair == "pair") or (pair == "yes"):
 
-		trimmed_fastq = sample + "_trimmed.collapsed.gz"
+		trimmed_fastq = sample.replace("-r1","").replace("-R1","") + "_trimmed.collapsed.fastq.gz"
 
 	else:
 
