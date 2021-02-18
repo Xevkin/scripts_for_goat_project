@@ -173,7 +173,7 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim, pair):
 
 	        cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
 
-        	fastq_screen = "/Software/fastq_screen --aligner bowtie --outdir ./"
+        	fastq_screen = "/Software/fastq_screen --aligner bowtie --force --outdir ./"
 
 		adaptor_removal = "/home/kdaly/programs/adapterremoval-2.3.1/build/AdapterRemoval --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip --trimns --trimqualities "
 
