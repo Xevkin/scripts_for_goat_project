@@ -371,10 +371,10 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	call("samtools sort -n -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log",shell=True)
 
 	print "samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam"
-	call("samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam",shell=T)
+	call("samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam",shell=True)
 
 	print "samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam"
-	call("samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam",shell=T)
+	call("samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam",shell=True)
 
 	print "samtools markdups -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_markdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
 	call("samtools markdups -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_markdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
