@@ -577,7 +577,7 @@ def process_bam(sample_name,species):
 		else:
 
 			print "samtools sort -@ 24 -n " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
-			call("samtools sort -@ 24 -n " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=T)
+			call("samtools sort -@ 24 -n " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
 
 		print "samtools view -@ 24 -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam"
 		call("samtools view -@ 24  -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam" ,shell=True)
@@ -591,10 +591,10 @@ def process_bam(sample_name,species):
 		if "_pe_" in sample_name:
 
 			print "samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam"
-			call("samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam",shell=T)
+			call("samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam",shell=True)
 
 			print "samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam"
-			call("samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam",shell=T)
+			call("samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam",shell=True)
 
 		#gzip the original bam
 		call("gzip " + sample_name + ".bam",shell=True)
