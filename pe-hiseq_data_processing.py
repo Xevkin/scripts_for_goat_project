@@ -134,13 +134,13 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all markdup at same time
 		call("echo Removing duplicates",shell=True)
 
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools markdups -r \"$i\"_sort_q20.bam \"$i\"_q20_markdup.bam \"2>\" \"$i\"_q20_markdup.log;  samtools markdups -r \"$i\"_sort_q20.bam \"$i\"_q20_markdup.bam 2> \"$i\"_q20_markdup.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *resort.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools markdup -r -@ 6 \"$i\"_sort_q20_fix_resort.bam \"$i\"_q20_markdup.bam \"2>\" \"$i\"_q20_markdup.log; samtools markdup  \"$i\"_sort_q20_fix_resort.bam \"$i\"_q20_markdup.bam 2> \"$i\"_q20_markdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools markdup -r \"$i\"_sort_q20.bam \"$i\"_q20_markdup.bam \"2>\" \"$i\"_q20_markdup.log;  samtools markdup -r \"$i\"_sort_q20.bam \"$i\"_q20_markdup.bam 2> \"$i\"_q20_markdup.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *resort.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo samtools markdup -r -@ 6 \"$i\"_sort_q20_fix_resort.bam \"$i\"_q20_markdup.bam \"2>\" \"$i\"_q20_markdup.log; samtools markdup  \"$i\"_sort_q20_fix_resort.bam \"$i\"_q20_markdup.bam 2> \"$i\"_q20_markdup.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
 		call("for i in $(ls *markdup.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
 		call("for i in $(ls *markdup.bam | cut -f 1 -d'.'); do samtools flagstat $i.bam > $i.flagstat; done",shell=True)
 
-		call("for i in $(ls *_pe_*markdup.bam | cut -f 1 -d'.'); do samtools view -@ 12 -f 2 -b $i.bam > ${i}_ppair.bam && samtools flagstat -@ 12 ${i}_ppair.bam > ${i}_ppair.flagstat ; done",)
+		call("for i in $(ls *_pe_*markdup.bam | cut -f 1 -d'.'); do samtools view -@ 12 -f 2 -b $i.bam > ${i}_ppair.bam && samtools flagstat -@ 12 ${i}_ppair.bam > ${i}_ppair.flagstat ; done",shell=True)
 
 	#add an option here to kill the script if you do not want merging to occur
 	if (merge == "no"):
@@ -167,7 +167,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		sample =  bam.split(".")[0]
 
-		call("echo samtools markdups -r " + bam + " " + sample + "_markdup.bam \">\"  " + sample + "_markdup.log >> markdup.sh",shell=True)
+		call("echo samtools markdup -r " + bam + " " + sample + "_markdup.bam \">\"  " + sample + "_markdup.log >> markdup.sh",shell=True)
 
 		merged_markdup_bam_list.append(sample + "_markdup.bam")
 
@@ -370,8 +370,8 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	print "samtools sort -n -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log"
 	call("samtools sort -n -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log",shell=True)
 
-	print "samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam"
-	call("samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam",shell=True)
+	print "/home/kdaly/programs/samtools-1.11/samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam"
+	call("/home/kdaly/programs/samtools-1.11/samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam",shell=True)
 
 	print "samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam"
 	call("samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam",shell=True)
@@ -379,8 +379,8 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	print "samtools markdups -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_markdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
 	call("samtools markdups -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_markdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
-	print "samtools markdups -r "  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam " + sample_and_ref + "_pe_mit_F4_markdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log"
-	call("samtools markdups -r "  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam " + sample_and_ref + "_pe_mit_F4_markdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log",shell=True)
+	print "samtools markdup -r "  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam " + sample_and_ref + "_pe_mit_F4_markdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log"
+	call("samtools markdup -r "  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam " + sample_and_ref + "_pe_mit_F4_markdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log",shell=True)
 
 	call("rm " + sample_and_ref + "*_mit_F4_sort.bam",shell=True)
 
@@ -406,8 +406,8 @@ def merge_and_process_mit(RG_file, reference, trim):
 		print "samtools flagstat " + bam + "  > " + bam_root + ".flagstat"
 		call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
-		print "samtools markdups -r " + bam_root + ".bam " + bam_root + "_markdup.bam "
-		call("samtools markdups -r " + bam_root + ".bam " + bam_root + "_markdup.bam ",shell=True)
+		print "samtools markdup -r " + bam_root + ".bam " + bam_root + "_markdup.bam "
+		call("samtools markdup -r " + bam_root + ".bam " + bam_root + "_markdup.bam ",shell=True)
 
 		print "samtools flagstat " + bam_root + "_markdup.bam > " + bam_root + "_markdup.flagstat"
 		call("samtools flagstat " + bam_root + "_markdup.bam > " + bam_root + "_markdup.flagstat",shell=True)
@@ -590,8 +590,8 @@ def process_bam(sample_name,species):
 
 		if "_pe_" in sample_name:
 
-			print "samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam"
-			call("samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam",shell=True)
+			print "/home/kdaly/programs/samtools-1.11/samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam"
+			call("/home/kdaly/programs/samtools-1.11/samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam",shell=True)
 
 			print "samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam"
 			call("samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam",shell=True)
@@ -714,7 +714,7 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 		call("samtools view -b -q 30 -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_merged_q30.bam",shell=True)
 
-		#call("samtools markdups -r " + sample_name + "_merged_q30.bam " + sample_name + "_merged_q30_markdup.bam 2> " + sample_name + "_merged_q30_markdup.log",shell=True)
+		#call("samtools markdup -r " + sample_name + "_merged_q30.bam " + sample_name + "_merged_q30_markdup.bam 2> " + sample_name + "_merged_q30_markdup.log",shell=True)
 
 		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_q20_merged.flagstat",shell=True)
 
