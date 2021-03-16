@@ -373,11 +373,11 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	print "/home/kdaly/programs/samtools-1.11/samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam"
 	call("/home/kdaly/programs/samtools-1.11/samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam",shell=True)
 
-	print "samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam"
-	call("samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam",shell=True)
+	print "samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam -o " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam"
+	call("samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam -o " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam",shell=True)
 
-	print "samtools markdups -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_markdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
-	call("samtools markdups -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_markdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
+	print "samtools markdup -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_markdup.bam 2>>" + sample_and_ref + "_mit_alignment.log"
+	call("samtools markdup -r "  + sample_and_ref +"_mit_F4_sort.bam " + sample_and_ref + "_mit_F4_markdup.bam 2>> " + sample_and_ref + "_mit_alignment.log",shell=True)
 
 	print "samtools markdup -r "  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam " + sample_and_ref + "_pe_mit_F4_markdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log"
 	call("samtools markdup -r "  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam " + sample_and_ref + "_pe_mit_F4_markdup.bam 2>>" + sample_and_ref + "_pe_mit_alignment.log",shell=True)
@@ -677,7 +677,7 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 						#may have to deal with trimmed files here
 						else:
 
-							sample_files.append(line.split("\t")[0].split(".")[0] + "_" + species + "_q20_markdup.bam")
+							sample_files.append(line.split("\t")[0].split(".")[0].replace("_r1","") + "_" + species + "_q20_markdup.bam")
 
 
 			#create a "sample name" variable to apply to final bams
