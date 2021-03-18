@@ -3,7 +3,7 @@
 
 
 for i in $(ls *1.fastq.gz | cut -f1 -d'_');
-do bwa mem -t $1 -R "@RG\tID:$i\tSM:$i\tLB:$i" $3 ${i}_1.fastq.gz ${i}_2.fastq.gz | samtools fixmate -r -@ $1 -O bam - ${i}_${4}_fixmate.bam &&
+do /home/kdaly/programs/bwa-mem2-2/bwa-mem2 -t $1 -R "@RG\tID:$i\tSM:$i\tLB:$i" $3 ${i}_1.fastq.gz ${i}_2.fastq.gz | samtools fixmate -r -@ $1 -O bam - ${i}_${4}_fixmate.bam &&
 samtools sort -@ $1 ${i}_${4}_fixmate.bam -o ${i}_${4}_sorted.bam -T temp &&
 rm ${i}_${4}_fixmate.bam &&
 samtools view -@ 24 -q ${2} -b  ${i}_${4}_sorted.bam > ${i}_${4}_q${2}.bam &&
