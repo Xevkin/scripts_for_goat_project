@@ -124,7 +124,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all picard dups at same time
 		call("echo Removing duplicates",shell=True)
 
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | rev | cut -f3- -d'_' | rev ); do echo java -jar /Software/picard.jar MarkDuplicates I=${i}_sort_q20.bam O=${i}_q20_dups.bam M=${i}_q20_dups_metrics.txt REMOVE_DUPLICATE=true  \"2>\" ${i}_q20_dups.log;  java -jar /Software/picard.jar  MarkDuplicates I=${i}_sort_q20.bam O=${i}_q20_dups.bam M=${i}_q20_dups_metrics.txt REMOVE_DUPLICATE=true 2> \"$i\"_q20_dupw.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | rev | cut -f3- -d'_' | rev ); do echo java -jar /Software/picard.jar MarkDuplicates I=${i}_sort_q20.bam O=${i}_q20_dups.bam M=${i}_q20_dups_metrics.txt REMOVE_DUPLICATES=true  \"2>\" ${i}_q20_dups.log;  java -jar /Software/picard.jar  MarkDuplicates I=${i}_sort_q20.bam O=${i}_q20_dups.bam M=${i}_q20_dups_metrics.txt REMOVE_DUPLICATES=true 2> \"$i\"_q20_dupw.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
 		call("for i in $(ls *dups.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
@@ -154,7 +154,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		sample =  bam.split(".")[0]
 
-		call("echo java -jar /Software/picard.jar MarkDuplicates I=" + bam + " O=" + sample + "_dups.bam  M=" +  sample + "_dups_metrics.txt  REMOVE_DUPLICATE=true  \">\"  " + sample + "_dups.log >> dups.sh",shell=True)\
+		call("echo java -jar /Software/picard.jar MarkDuplicates I=" + bam + " O=" + sample + "_dups.bam  M=" +  sample + "_dups_metrics.txt  REMOVE_DUPLICATES=true  \">\"  " + sample + "_dups.log >> dups.sh",shell=True)\
 
 		merged_dups_bam_list.append(sample + "_dups.bam")
 
