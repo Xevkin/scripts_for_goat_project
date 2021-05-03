@@ -167,7 +167,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		sample =  bam.split(".")[0]
 
-		call("echo  java -jar /Software/picard.jar MarkDuplicates REMOVE_DUPLICATES=true I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt \">\"  " + sample + "_dups.log >> dups.sh",shell=True)
+		call("echo java -jar /Software/picard.jar MarkDuplicates REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=true I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt \">\"  " + sample + "_dups.log >> dups.sh",shell=True)
 
 		merged_dups_bam_list.append(sample + "_dups.bam")
 
@@ -406,8 +406,8 @@ def merge_and_process_mit(RG_file, reference, trim):
 		print "samtools flagstat " + bam + "  > " + bam_root + ".flagstat"
 		call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
-		print "java -jar /Software/picard.jar REMOVE_DUPLICATES=true I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt "
-		call("java -jar /Software/picard.jar REMOVE_DUPLICATES=true I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt",shell=True)
+		print "java -jar /Software/picard.jar REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=true I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt "
+		call("java -jar /Software/picard.jar REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=true I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt",shell=True)
 
 		print "samtools flagstat " + bam_root + "_dups.bam > " + bam_root + "_dups.flagstat"
 		call("samtools flagstat " + bam_root + "_dups.bam > " + bam_root + "_dups.flagstat",shell=True)
