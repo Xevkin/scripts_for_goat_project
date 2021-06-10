@@ -348,6 +348,12 @@ TO_PRINT = [sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]]
 
 for CUTOFF in range(0, 11):
 
+	if DE_FINAL[CUTOFF][0] == "NA":
+
+		TO_PRINT.extend(["NA_" + str(CUTOFF)])
+
+		continue
+
 	DE_FINAL_VALUE = DE_FINAL[CUTOFF][0]
 
 	DE_TRANSV_FINAL_VALUE = DE_FINAL[CUTOFF][1]
