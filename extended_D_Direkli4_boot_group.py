@@ -334,6 +334,10 @@ for REPLICATE in range(0,1000):
 
 			EXTENDED_D_TRANSV = "NA"
 
+			OUTPUT[CUTOFF].append(EXTENDED_D)
+
+			OUTPUT[CUTOFF].append(EXTENDED_D_TRANSV)
+
 		else:
 
 			EXTENDED_D = (AB_TOTAL[CUTOFF] - BA_TOTAL[CUTOFF]) / (AB_TOTAL[CUTOFF] + BA_TOTAL[CUTOFF])
@@ -347,6 +351,12 @@ for REPLICATE in range(0,1000):
 TO_PRINT = [sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]]
 
 for CUTOFF in range(0, 11):
+
+	if DE_FINAL[CUTOFF][0] == "NA":
+
+		TO_PRINT.extend(["NA_" + str(CUTOFF)])
+
+		continue
 
 	DE_FINAL_VALUE = DE_FINAL[CUTOFF][0]
 
