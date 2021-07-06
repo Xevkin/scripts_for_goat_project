@@ -39,9 +39,15 @@ nuclear_genomes = {
 
 	"CHIR1" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
-	"oviAri3" : "/Reference_Genomes/For_Fastq_Screen/oviAri3.fa",
+	"oviAri3" : "/Reference_Genomes/sheep/oviAri3_mod.fa",
 
-	"Deer" : "/home/kdaly/st1/deer/deer_genome/CerEla1-0_mod.fa"
+	"oviAri4" : "/Reference_Genomes/sheep/OvisAries4_mod.fa",
+
+	"Deer" : "/home/kdaly/st1/deer/deer_genome/CerEla1-0_mod.fa",
+
+	"Cow" : "/Reference_Genomes/bos_2019/ARS-UCD1.2_Btau5.0.1Y.fa",
+
+	"Horse" : "/Reference_Genomes/horse/EquCab3.fa"
 }
 
 
@@ -666,7 +672,13 @@ def process_realigned_bams(realigned_bam, reference_genome, clip, output_dir, sp
 	cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam + "  --omitDepthOutputAtEachBase 2>  DoC_" + realigned_bam.split(".")[0] + ".log"
 	#cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_F4_q30.bam --omitDepthOutputAtEachBase"
 
-	call("sh /home/kdaly/programs/scripts_for_goat_project/run_DoC_autosomes.sh " + reference_genome + " " + realigned_bam,shell=True)
+	if species == "ARS1":
+
+		call("sh /home/kdaly/programs/scripts_for_goat_project/run_DoC_autosomes.sh " + reference_genome + " " + realigned_bam,shell=True)
+
+	else:
+
+		call(cmd,shell=True)
 
 
 def clean_up(out_dir):
@@ -713,7 +725,7 @@ def clean_up_mit(mitochondrial_references_file,out_dir):
 
 	call("bgzip *mit*bam.gz; mkdir final_mit_bams; mv *mit*q30.bam* -t final_mit_bams; mkdir intermediate_mit_bam_files; mv *_mit*.bam.gz -t intermediate_mit_bam_files ",shell=True)
 
-	call("mv trimmed_fastq_files_and_logs mit_DoC mit_logs flagstat_files mit_idx_files final_mit_bams intermediate_mit_bam_files angsd_consensus -t " + out_dir,shell=True)
+	call("mv trimmed_fastq_files_and_logs flagstat_files mit_DoC mit_logs flagstat_files mit_idx_files final_mit_bams intermediate_mit_bam_files angsd_consensus -t " + out_dir,shell=True)
 
 try:
 	date_of_hiseq  = sys.argv[1]
