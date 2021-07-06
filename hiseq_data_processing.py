@@ -365,8 +365,8 @@ def merge_and_process_mit(RG_file, reference, trim):
 		print "samtools flagstat " + bam + "  > " + bam_root + ".flagstat"
 		call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
-		print "/Software/picard.jar MarkDuplicates ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt REMOVE_DUPLICATES=true"
-		call("/Software/picard.jar MarkDuplicates ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt REMOVE_DUPLICATES=true",shell=True)
+		print "java -jar /Software/picard.jar MarkDuplicates ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt REMOVE_DUPLICATES=true"
+		call("java -jar /Software/picard.jar MarkDuplicates ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt REMOVE_DUPLICATES=true",shell=True)
 
 		print "samtools flagstat " + bam_root + "_dups.bam > " + bam_root + "_dups.flagstat"
 		call("samtools flagstat " + bam_root + "_dups.bam > " + bam_root + "_dups.flagstat",shell=True)
