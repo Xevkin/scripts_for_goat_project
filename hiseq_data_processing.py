@@ -380,8 +380,8 @@ def merge_and_process_mit(RG_file, reference, trim):
 		#filter for just q30
 		for QC in ["30"]:
 
-			print "samtools view -b -q" + QC + " " +  bam_root + "_dups.bam > " + bam_root + "_dups_q" + QC + ".bam"
-			call("samtools view -b -q" + QC + " " +  bam_root + "_dups.bam > " + bam_root + "_dups_q" + QC + ".bam",shell=True)
+			print "samtools view -b -F4 -q" + QC + " " +  bam_root + "_dups.bam > " + bam_root + "_dups_q" + QC + ".bam"
+			call("samtools view -b -F4 -q" + QC + " " +  bam_root + "_dups.bam > " + bam_root + "_dups_q" + QC + ".bam",shell=True)
 
 			print "samtools index -@ 24 " + bam_root + "_dups_q" + QC + ".bam"
 			call("samtools index -@ 24 " + bam_root + "_dups_q" + QC + ".bam",shell=True)
@@ -484,8 +484,8 @@ def process_bam(sample_name,species):
 	print "samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam"
 	call("samtools sort -@ 24 " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
 
-	print "samtools view -@ 24 -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam"
-	call("samtools view -@ 24  -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam" ,shell=True)
+	print "samtools view -@ 24 -F4 -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam"
+	call("samtools view -@ 24 -F4 -q20 -b "  + sample_name + "_sort.bam > "  + sample_name + "_sort_q20.bam" ,shell=True)
 
 	print "rm " + sample_name + "_sort.ba*"
 	call("rm " + sample_name + "_sort.ba*" ,shell=True)
@@ -606,7 +606,7 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 		#flagstat the merged bam
 		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name+ "_q20_merged.flagstat",shell=True)
 
-		call("samtools view -b -q 30 -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_merged_q30.bam",shell=True)
+		call("samtools view -b -F 4 -q 30 -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_merged_q30.bam",shell=True)
 
 		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_q20_merged.flagstat",shell=True)
 
@@ -696,7 +696,7 @@ def clean_up(out_dir):
 
 	call("mv *trimmed*  -t trimmed_fastq_files_and_logs/",shell=True)
 
-	call("mkdir idx_files; mv *idx* -t idx_files; mkdir auxillary_files; mv *txt *interval* RG* *md5sum* -t auxillary_files",shell=True)
+	call("mkdir idx_files; mv *idx* -t idx_files; mkdir auxillary_files; mv *.sh *txt *interval* RG* *md5sum* -t auxillary_files",shell=True)
 
 	call("gzip *bam",shell=True)
 
@@ -709,6 +709,8 @@ def clean_up(out_dir):
 	call("mv mit_idx_files mit_logs flagstat_files log_files angsd_consensus_sequences trimmed_fastq_files_and_logs idx_files auxillary_files intermediate_bams mapDamage DoC fastq_files -t " + out_dir,shell=True)
 
 	call("gzip intermediate_bams/*bam",shell=True)
+
+	call("mv flagstat_files/* " + out_dir + " ; rm -r flagstat_files" ,shell=True)
 
 def clean_up_mit(mitochondrial_references_file,out_dir):
 
