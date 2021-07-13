@@ -20,9 +20,9 @@ PILEUPS_PATH=/st1/hdd/pg/kdaly/sheep/ancient_Sheep_Bams/pileups/
 
 for DATASET in andrew andrew_trans
 do
-python /home/kdaly/programs/LASER-2.04/pileup2seq/pileup2seq.py -f ${REF} -m ${DATASET_PATH}${DATASET}.site -b ${DATASET_PATH}${DATASET}.bed -o ${DATASET}_${OUTNAME} *_${DATASET}.pileup ${PILEUPS_PATH}/*_${DATASET}.pileup
+python /home/kdaly/programs/LASER-2.04/pileup2seq/pileup2seq.py -f ${REF} -m ${DATASET_PATH}${DATASET}.site -b ${DATASET_PATH}${DATASET}.bed -o ${DATASET}_${OUTNAME} *_${DATASET}.pileup ${PILEUPS_PATH}*_${DATASET}.pileup
 
-echo -e GENO_FILE ${DATASET_PATH}${DATASET}.geno\\nSEQ_FILE ${DATASET}_${OUTNAME}.seq\\nCOORD_FILE\\nOUT_PREFIX ${DATASET}_${OUTNAME}\nDIM 6\\nDIM_HIGH\\nMIN_LOCI 10000 > ${DATASET}_${OUTNAME}.par
+echo -e GENO_FILE ${DATASET_PATH}${DATASET}.geno\\nSEQ_FILE ${DATASET}_${OUTNAME}.seq\\nOUT_PREFIX ${DATASET}_${OUTNAME}\nDIM 6\\nMIN_LOCI 10000 > ${DATASET}_${OUTNAME}.par
 
 ${LASER} -p ${DATASET}_${OUTNAME}.par -r 10
 
