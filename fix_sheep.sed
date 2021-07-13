@@ -239,3 +239,9 @@ s/^yoqneam1/PostNeoLevant/g
 s/^yoqneam3/PostNeoLevant/g
 s/^zagros3/PostNeoIran/g
 s/^zagros4/PostNeoIran/g
+s/^KO181312/Zhanbobek/g
+s/^KO181433/Myrzhik MBA/g
+s/^KO201399/Berezhzvoya Luka EBA/g
+s/^KO20140[012457]/Berezhzvoya Luka EBA/g
+s/^KO181434/Nomgom Uul LBA/g
+s/&KO201480/Akimek BA?/g

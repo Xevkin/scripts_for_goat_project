@@ -20,10 +20,15 @@ PILEUPS_PATH=/st1/hdd/pg/kdaly/sheep/ancient_Sheep_Bams/pileups/
 
 for DATASET in andrew andrew_trans
 do
-#python /home/kdaly/programs/LASER-2.04/pileup2seq/pileup2seq.py -f ${REF} -m ${DATASET_PATH}${DATASET}.site -b ${DATASET_PATH}${DATASET}.bed -o ${DATASET}_${OUTNAME} *_${DATASET}.pileup ${PILEUPS_PATH}*_${DATASET}.pileup
+python /home/kdaly/programs/LASER-2.04/pileup2seq/pileup2seq.py -f ${REF} -m ${DATASET_PATH}${DATASET}.site -b ${DATASET_PATH}${DATASET}.bed -o ${DATASET}_${OUTNAME} *_${DATASET}.pileup ${PILEUPS_PATH}*_${DATASET}.pileup
 
-echo -e GENO_FILE ${DATASET_PATH}${DATASET}.geno\\nNUMTHREADS 8\\nSEQ_FILE ${DATASET}_${OUTNAME}.seq\\nOUT_PREFIX ${DATASET}_${OUTNAME}\\nDIM 6\\nMIN_LOCI 10000 > ${DATASET}_${OUTNAME}.par
+echo -e GENO_FILE ${DATASET_PATH}${DATASET}.geno\\nNUMTHREADS 8\\nSEQ_FILE ${DATASET}_${OUTNAME}.seq\\nOUT_PREFIX ${DATASET}_${OUTNAME}\\nDIM 6\\nMIN_LOCI 8000 > ${DATASET}_${OUTNAME}.par
 
 ${LASER} -p ${DATASET}_${OUTNAME}.par -r 10
+
+sed -f /home/kdaly/programs/scripts_for_goat_project/fix_sheep.sed ${DATASET}_${OUTNAME}.RefPC.coord > tmp1 && mv tmp1 ${DATASET}_${OUTNAME}.RefPC.coord
+
+sed -f /home/kdaly/programs/scripts_for_goat_project/fix_sheep.sed ${DATASET}_${OUTNAME}.SeqPC.coord > tmp1 && mv tmp1  ${DATASET}_${OUTNAME}.SeqPC.coord
+
 
 done
