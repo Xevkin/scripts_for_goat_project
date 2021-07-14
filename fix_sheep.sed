@@ -116,130 +116,131 @@ s/^IROO-M12-9997/AsiaticMouflon/g
 s/_andrew_trans//g
 s/_andrew//g
 s/^aliabad3/Unknown/g
-s/^alzey1/PostNeoCEurope/g
-s/^asikli1/NeoCAnatolia/g
-s/^asikli2/NeoCAnatolia/g
-s/^asikli3/NeoCAnatolia/g
-s/^asikli4/NeoCAnatolia/g
-s/^asikli5/NeoCAnatolia/g
-s/^asikli6/NeoCAnatolia/g
-s/^asikli7/NeoCAnatolia/g
-s/^asikli8/NeoCAnatolia/g
-s/^asikli9/NeoCAnatolia/g
-s/^azer12/PostNeoCaucasus/g
-s/^azer13/PostNeoCaucasus/g
-s/^azer2/PostNeoCaucasus/g
+s/^alzey1/Post-Neo C Europe/g
+s/^asikli1/Neo C Anatolia/g
+s/^asikli2/Neo C Anatolia/g
+s/^asikli3/Neo C Anatolia/g
+s/^asikli4/Neo C Anatolia/g
+s/^asikli5/Neo C Anatolia/g
+s/^asikli6/Neo C Anatolia/g
+s/^asikli7/Neo C Anatolia/g
+s/^asikli8/Neo C Anatolia/g
+s/^asikli9/Neo C Anatolia/g
+s/^azer12/Post-Neo Caucasus/g
+s/^azer13/Post-Neo Caucasus/g
+s/^azer2/Post-Neo Caucasus/g
 s/^bakhtaran1/Unknown/g
-s/^blagotin10/NeoSEur/g
-s/^blagotin11/NeoSEur/g
-s/^blagotin13/NeoSEur/g
-s/^blagotin17/NeoSEur/g
-s/^blagotin18/NeoSEur/g
-s/^blagotin20/NeoSEur/g
-s/^blagotin4/NeoSEur/g
-s/^blagotin6/NeoSEur/g
-s/^blagotin7/NeoSEur/g
-s/^blagotin9/NeoSEur/g
-s/^bornais1/PostNeoBritIre/g
-s/^brodgar1/NeoBritIre/g
-s/^brodgar2/NeoBritIre/g
-s/^bubanj1/PostNeoSEur/g
-s/^danebury1/PostNeoBritIre/g
-s/^danebury2/PostNeoBritIre/g
-s/^danebury3/PostNeoBritIre/g
-s/^david1/PostNeoLevant/g
-s/^dublin1/PostNeoBritIre/g
-s/^dublin2/PostNeoBritIre/g
-s/^dublin3/PostNeoBritIre/g
-s/^dzharkutan1/PostNeoCAsia/g
-s/^dzharkutan2/PostNeoCAsia/g
-s/^dzharkutan3/PostNeoCAsia/g
-s/^dzhulyunitsa1/PostNeoCAsia/g
-s/^dzhulyunitsa2/PostNeoCAsia/g
-s/^fars3/PostNeoIran/g
-s/^frankfurt1/PostNeoCEurope/g
-s/^ganj1/NeoIran/g
-s/^geor10/PostNeoCaucasus/g
-s/^geor11/PostNeoCaucasus/g
-s/^geor1/PostNeoCaucasus/g
-s/^geor5/PostNeoCaucasus/g
-s/^geor6/PostNeoCaucasus/g
-s/^geor7/PostNeoCaucasus/g
-s/^geor8/PostNeoCaucasus/g
-s/^georgia1/PostNeoCaucasus/g
-s/^georgia2/PostNeoCaucasus/g
-s/^georgia3/PostNeoCaucasus/g
-s/^georgia4/PostNeoCaucasus/g
-s/^guver10/PostNeoAnatolia/g
-s/^guver11/PostNeoAnatolia/g
-s/^guver1/PostNeoAnatolia/g
-s/^guver2/PostNeoAnatolia/g
-s/^guver3/PostNeoAnatolia/g
-s/^guver4/PostNeoAnatolia/g
-s/^guver5/PostNeoAnatolia/g
-s/^guver6/PostNeoAnatolia/g
-s/^guver7/PostNeoAnatolia/g
-s/^guver8/PostNeoAnatolia/g
-s/^guver9/PostNeoAnatolia/g
-s/^hallan1/PostNeoBritIre/g
-s/^hallan2/PostNeoBritIre/g
-s/^hallan3/PostNeoBritIre/g
-s/^hallan4/PostNeoBritIre/g
-s/^hallan5/PostNeoBritIre/g
-s/^hamedan1/PostNeoIran/g
+s/^blagotin10/Neo S Europe/g
+s/^blagotin11/Neo S Europe/g
+s/^blagotin13/Neo S Europe/g
+s/^blagotin17/Neo S Europe/g
+s/^blagotin18/Neo S Europe/g
+s/^blagotin20/Neo S Europe/g
+s/^blagotin4/Neo S Europe/g
+s/^blagotin6/Neo S Europe/g
+s/^blagotin7/Neo S Europe/g
+s/^blagotin9/Neo S Europe/g
+s/^bornais1/Post-Neo Britain/Ireland/g
+s/^brodgar1/Neo Britain/Ireland/g
+s/^brodgar2/Neo Britain/Ireland/g
+s/^bubanj1/PostNeo S Europe/g
+s/^danebury1/Post-Neo Britain/Ireland/g
+s/^danebury2/Post-Neo Britain/Ireland/g
+s/^danebury3/Post-Neo Britain/Ireland/g
+s/^david1/Post-Neo Levant/g
+s/^dublin1/Post-Neo Britain/Ireland/g
+s/^dublin2/Post-Neo Britain/Ireland/g
+s/^dublin3/Post-Neo Britain/Ireland/g
+s/^dzharkutan1/Post-Neo C Asia/g
+s/^dzharkutan2/Post-Neo C Asia/g
+s/^dzharkutan3/Post-Neo C Asia/g
+s/^dzhulyunitsa1/Neo S Europe/g
+s/^dzhulyunitsa2/Neo S Europe/g
+s/^fars3/Post-Neo Iran/g
+s/^frankfurt1/Post-Neo C Europe/g
+s/^ganj1/Neo Iran/g
+s/^geor10/Post-Neo Caucasus/g
+s/^geor11/Post-Neo Caucasus/g
+s/^geor1/Post-Neo Caucasus/g
+s/^geor5/Post-Neo Caucasus/g
+s/^geor6/Post-Neo Caucasus/g
+s/^geor7/Post-Neo Caucasus/g
+s/^geor8/Post-Neo Caucasus/g
+s/^georgia1/Post-Neo Caucasus/g
+s/^georgia2/Post-Neo Caucasus/g
+s/^georgia3/Post-Neo Caucasus/g
+s/^georgia4/Post-Neo Caucasus/g
+s/^guver10/Post-Neo Anatolia/g
+s/^guver11/Post-Neo Anatolia/g
+s/^guver1/Post-Neo Anatolia/g
+s/^guver2/Post-Neo Anatolia/g
+s/^guver3/Post-Neo Anatolia/g
+s/^guver4/Post-Neo Anatolia/g
+s/^guver5/Post-Neo Anatolia/g
+s/^guver6/Post-Neo Anatolia/g
+s/^guver7/Post-Neo Anatolia/g
+s/^guver8/Post-Neo Anatolia/g
+s/^guver9/Post-Neo Anatolia/g
+s/^hallan1/Post-Neo Britain/Ireland/g
+s/^hallan2/Post-Neo Britain/Ireland/g
+s/^hallan3/Post-Neo Britain/Ireland/g
+s/^hallan4/Post-Neo Britain/Ireland/g
+s/^hallan5/Post-Neo Britain/Ireland/g
+s/^hamedan1/Post-Neo Iran/g
 s/^herxheim3/Unknown/g
-s/^herxheim7/NeoCEurope/g
-s/^herxheim8/NeoCEurope/g
-s/^hungate1/PostNeoBritIre/g
-s/^kazbeg10/PostNeoCaucasus/g
-s/^kazbeg11/PostNeoCaucasus/g
-s/^kazbeg2/PostNeoCaucasus/g
-s/^khor1/PostNeoIran/g
-s/^kilpheder2/PostNeoBritIre/g
-s/^kilpheder3/PostNeoBritIre/g
-s/^kur1/PostNeoIran/g
-s/^lur10/PostNeoIran/g
-s/^lur11/PostNeoIran/g
-s/^lur16/PostNeoIran/g
-s/^mainz1/PostNeoCEurope/g
-s/^mainz2/PostNeoCEurope/g
-s/^mainz3/PostNeoCEurope/g
-s/^mainz4/PostNeoCEurope/g
-s/^marmara1/NeoWAnatolia/g
-s/^marmara3/NeoWAnatolia/g
-s/^marmara4/NeoWAnatolia/g
-s/^marmara5/NeoWAnatolia/g
-s/^marmara6/NeoWAnatolia/g
-s/^marmara7/NeoWAnatolia/g
-s/^marmara8/NeoWAnatolia/g
-s/^masos2/PostNeoLevant/g
-s/^mentese11/NeoWAnatolia/g
-s/^mentese6/NeoWAnatolia/g
-s/^mentese7/NeoWAnatolia/g
-s/^mentese9/NeoWAnatolia/g
-s/^mongolia1/PostNeoCAsia/g
-s/^nach1/EpiLevant/g
-s/^nach2/EpiLevant/g
-s/^orkney1/PostNeoBritIre/g
-s/^orkney2/PostNeoBritIre/g
-s/^padayatak1/PostNeoIran/g
-s/^potterne2/PostNeoBritIre/g
-s/^qazvin1/PostNeoIran/g
-s/^qom1/PostNeoIran/g
-s/^sangir1/PostNeoCAsia/g
-s/^semnan11/NeoIran/g
-s/^semnan15/NeoIran/g
-s/^semnan4/NeoIran/g
-s/^semnan5/NeoIran/g
-s/^silge1/PostNeoBritIre/g
-s/^suberde1/NeoAnatolia/g
-s/^suberde3/NeoAnatolia/g
-s/^tarxein3/NeoSEurope/g
-s/^yoqneam1/PostNeoLevant/g
-s/^yoqneam3/PostNeoLevant/g
-s/^zagros3/PostNeoIran/g
-s/^zagros4/PostNeoIran/g
+s/^herxheim7/Neo C Europe/g
+s/^herxheim8/Neo C Europe/g
+s/^hungate1/Post-Neo Britain/Ireland/g
+s/^kazbeg10/Post-Neo Caucasus/g
+s/^kazbeg11/Post-Neo Caucasus/g
+s/^kazbeg2/Post-Neo Caucasus/g
+s/^khor1/Post-Neo Iran/g
+s/^kilpheder2/Post-Neo Britain/Ireland/g
+s/^kilpheder3/Post-Neo Britain/Ireland/g
+s/^kur1/Post-Neo Iran/g
+s/^lur10/Post-Neo Iran/g
+s/^lur11/Post-Neo Iran/g
+s/^lur16/Post-Neo Iran/g
+s/^mainz1/Post-Neo C Europe/g
+s/^mainz2/Post-Neo C Europe/g
+s/^mainz3/Post-Neo C Europe/g
+s/^mainz4/Post-Neo C Europe/g
+s/^marmara1/Neo W Anatolia/g
+s/^marmara3/Neo W Anatolia/g
+s/^marmara4/Neo W Anatolia/g
+s/^marmara5/Neo W Anatolia/g
+s/^marmara6/Neo W Anatolia/g
+s/^marmara7/Neo W Anatolia/g
+s/^marmara8/Neo W Anatolia/g
+s/^masos2/Post-Neo Levant/g
+s/^mentese11/Neo W Anatolia/g
+s/^mentese6/Neo W Anatolia/g
+s/^mentese7/Neo W Anatolia/g
+s/^mentese9/Neo W Anatolia/g
+s/^mongolia1/Post-Neo C Asia/g
+s/^nach1/Epipaleolithic Levant/g
+s/^nach2/Epipaleolithic Levant/g
+s/^orkney1/Post-Neo Britain/Ireland/g
+s/^orkney2/Post-Neo Britain/Ireland/g
+s/^padayatak1/Post-Neo Iran/g
+s/^potterne2/Post-Neo Britain/Ireland/g
+s/^qazvin1/Post-Neo Iran/g
+s/^qom1/Post-Neo Iran/g
+s/^sangir1/Post-Neo C Asia/g
+s/^semnan11/Neo Iran/g
+s/^semnan15/Neo Iran/g
+s/^semnan4/Neo Iran/g
+s/^semnan5/Neo Iran/g
+s/^silge1/Post-Neo Britain/Ireland/g
+s/^suberde1/Neo C Anatolia/g
+s/^suberde3/Neo C Anatolia/g
+s/^tarxein3/Neo S Europe/g
+s/^yoqneam1/Post-Neo Levant/g
+s/^yoqneam3/Post-Neo Levant/g
+s/^zagros3/Post-Neo Iran/g
+s/^zagros4/Post-Neo Iran/g
 s/^KO181312/Zhanbobek/g
+s/^KO180913/Tasbas/g
 s/^KO181433/Myrzhik MBA/g
 s/^KO201399/Berezhzvoya Luka EBA/g
 s/^KO20140[012457]/Berezhzvoya Luka EBA/g
