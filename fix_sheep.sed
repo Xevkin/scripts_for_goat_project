@@ -1,3 +1,4 @@
+s/Gadacharili/Gadachrili/g
 s/^AsiaticMouflon6/AsiaticMouflon/g
 s/^AsiaticMouflon7/AsiaticMouflon/g
 s/^AsiaticMouflon9/AsiaticMouflon/g
@@ -140,17 +141,17 @@ s/^blagotin4/Neo S Europe/g
 s/^blagotin6/Neo S Europe/g
 s/^blagotin7/Neo S Europe/g
 s/^blagotin9/Neo S Europe/g
-s/^bornais1/Post-Neo Britain/Ireland/g
-s/^brodgar1/Neo Britain/Ireland/g
-s/^brodgar2/Neo Britain/Ireland/g
-s/^bubanj1/PostNeo S Europe/g
-s/^danebury1/Post-Neo Britain/Ireland/g
-s/^danebury2/Post-Neo Britain/Ireland/g
-s/^danebury3/Post-Neo Britain/Ireland/g
+s/^bornais1/Post-Neo Britain\/Ireland/g
+s/^brodgar1/Neo Britain\/Ireland/g
+s/^brodgar2/Neo Britain\/Ireland/g
+s/^bubanj1/Post-Neo S Europe/g
+s/^danebury1/Post-Neo Britain\/Ireland/g
+s/^danebury2/Post-Neo Britain\/Ireland/g
+s/^danebury3/Post-Neo Britain\/Ireland/g
 s/^david1/Post-Neo Levant/g
-s/^dublin1/Post-Neo Britain/Ireland/g
-s/^dublin2/Post-Neo Britain/Ireland/g
-s/^dublin3/Post-Neo Britain/Ireland/g
+s/^dublin1/Post-Neo Britain\/Ireland/g
+s/^dublin2/Post-Neo Britain\/Ireland/g
+s/^dublin3/Post-Neo Britain\/Ireland/g
 s/^dzharkutan1/Post-Neo C Asia/g
 s/^dzharkutan2/Post-Neo C Asia/g
 s/^dzharkutan3/Post-Neo C Asia/g
@@ -181,22 +182,22 @@ s/^guver6/Post-Neo Anatolia/g
 s/^guver7/Post-Neo Anatolia/g
 s/^guver8/Post-Neo Anatolia/g
 s/^guver9/Post-Neo Anatolia/g
-s/^hallan1/Post-Neo Britain/Ireland/g
-s/^hallan2/Post-Neo Britain/Ireland/g
-s/^hallan3/Post-Neo Britain/Ireland/g
-s/^hallan4/Post-Neo Britain/Ireland/g
-s/^hallan5/Post-Neo Britain/Ireland/g
+s/^hallan1/Post-Neo Britain\/Ireland/g
+s/^hallan2/Post-Neo Britain\/Ireland/g
+s/^hallan3/Post-Neo Britain\/Ireland/g
+s/^hallan4/Post-Neo Britain\/Ireland/g
+s/^hallan5/Post-Neo Britain\/Ireland/g
 s/^hamedan1/Post-Neo Iran/g
 s/^herxheim3/Unknown/g
 s/^herxheim7/Neo C Europe/g
 s/^herxheim8/Neo C Europe/g
-s/^hungate1/Post-Neo Britain/Ireland/g
+s/^hungate1/Post-Neo Britain\/Ireland/g
 s/^kazbeg10/Post-Neo Caucasus/g
 s/^kazbeg11/Post-Neo Caucasus/g
 s/^kazbeg2/Post-Neo Caucasus/g
 s/^khor1/Post-Neo Iran/g
-s/^kilpheder2/Post-Neo Britain/Ireland/g
-s/^kilpheder3/Post-Neo Britain/Ireland/g
+s/^kilpheder2/Post-Neo Britain\/Ireland/g
+s/^kilpheder3/Post-Neo Britain\/Ireland/g
 s/^kur1/Post-Neo Iran/g
 s/^lur10/Post-Neo Iran/g
 s/^lur11/Post-Neo Iran/g
@@ -220,10 +221,10 @@ s/^mentese9/Neo W Anatolia/g
 s/^mongolia1/Post-Neo C Asia/g
 s/^nach1/Epipaleolithic Levant/g
 s/^nach2/Epipaleolithic Levant/g
-s/^orkney1/Post-Neo Britain/Ireland/g
-s/^orkney2/Post-Neo Britain/Ireland/g
+s/^orkney1/Post-Neo Britain\/Ireland/g
+s/^orkney2/Post-Neo Britain\/Ireland/g
 s/^padayatak1/Post-Neo Iran/g
-s/^potterne2/Post-Neo Britain/Ireland/g
+s/^potterne2/Post-Neo Britain\/Ireland/g
 s/^qazvin1/Post-Neo Iran/g
 s/^qom1/Post-Neo Iran/g
 s/^sangir1/Post-Neo C Asia/g
@@ -231,7 +232,7 @@ s/^semnan11/Neo Iran/g
 s/^semnan15/Neo Iran/g
 s/^semnan4/Neo Iran/g
 s/^semnan5/Neo Iran/g
-s/^silge1/Post-Neo Britain/Ireland/g
+s/^silge1/Post-Neo Britain\/Ireland/g
 s/^suberde1/Neo C Anatolia/g
 s/^suberde3/Neo C Anatolia/g
 s/^tarxein3/Neo S Europe/g
@@ -243,6 +244,15 @@ s/^KO181312/Zhanbobek/g
 s/^KO180913/Tasbas/g
 s/^KO181433/Myrzhik MBA/g
 s/^KO201399/Berezhzvoya Luka EBA/g
-s/^KO20140[012457]/Berezhzvoya Luka EBA/g
+s/^KO20140[0123456789]/Berezhzvoya Luka EBA/g
 s/^KO181434/Nomgom Uul LBA/g
-s/&KO201480/Akimek BA?/g
+s/^KO201480/Akimek BA?/g
+s/^Shulaveris[123456789]/Neo Caucasus/g
+s/^Gadachrili[123456789]/Neo Caucasus/g
+s/^Rus0[127]/1-10th cent. AD Russia/g
+s/^Rus0[38]/Neo Russia/g
+s/^Rus0[456]/Russia BA/g
+s/^Rus09/10-15th cent. AD Russia/g
+s/^Rus10/10-15th cent. AD Russia/g
+s/^KO182009/Nizhnyaya Sooru Afansievo/g
+s/^KO18201[023]/Nizhnyaya Sooru Afansievo/g
