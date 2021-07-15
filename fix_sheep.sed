@@ -256,3 +256,6 @@ s/^Rus09/10-15th cent. AD Russia/g
 s/^Rus10/10-15th cent. AD Russia/g
 s/^KO182009/Nizhnyaya Sooru Afansievo/g
 s/^KO18201[023]/Nizhnyaya Sooru Afansievo/g
+s/^MUM2/Post-Neo Iran/g
+s/^AH054/Post-Neo Iran/g
+s/^KD175/Post-Neo Iran/g
