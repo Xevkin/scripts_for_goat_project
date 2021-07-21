@@ -21,7 +21,7 @@ with open(sys.argv[1]) as FILE:
 
 		TO_PRINT = SPLINE[0] +  " " + SPLINE[0] + "_" + SPLINE[1] + " 0 " + SPLINE[1]
 
-		for SAMPLE in range(1,(len(SPLINE[4:])/5)+1):
+		for SAMPLE in range(1,(len(SPLINE[3:])/5)+1):
 
 			BASE_COUNT_POS = 3 + (5*(SAMPLE-1))
 
@@ -60,10 +60,6 @@ with open(sys.argv[1]) as FILE:
 				else:
 
 					TO_PRINT = TO_PRINT + " error"
-
-					print BASES
-
-					print BASES_COUNT
 
 			else:
 
