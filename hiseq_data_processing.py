@@ -47,7 +47,9 @@ nuclear_genomes = {
 
 	"Cow" : "/Reference_Genomes/bos_2019/ARS-UCD1.2_Btau5.0.1Y.fa",
 
-	"Horse" : "/Reference_Genomes/horse/EquCab3.fa"
+	"Horse" : "/Reference_Genomes/horse/EquCab3.fa",
+
+	"Ram" : "/home/kdaly/sheep_OarRambouillet/copy/OarRambouillet.fa"
 }
 
 
