@@ -115,7 +115,7 @@ with open(SAMPLE_FILE) as FILE:
 
 	for LINE in FILE:
 
-		LINE = LINE.rstrip("n")
+		LINE = LINE.rstrip("\n")
 
 		if COUNT == 0:
 
@@ -125,7 +125,7 @@ with open(SAMPLE_FILE) as FILE:
 
 			f = open(SAMPLE_FILE.split(".")[0] + ".tfam", "a")
 
-		f.write(LINE + " " + LINE + " 0 0 0 0")
+		f.write(LINE + " " + LINE + " 0 0 0 0\n")
 
 		f.close()
 
