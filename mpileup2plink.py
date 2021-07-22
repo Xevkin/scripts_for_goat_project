@@ -77,8 +77,6 @@ with open(sys.argv[1]) as FILE:
 
 						if SWITCH == "ON":
 
-							TO_REMOVE.append(INDEX)
-
 							for INDEL_BASES in range(1,(int(CHAR)+2)):
 
 								TO_REMOVE.append(INDEX - 1 + INDEL_BASES)
@@ -89,9 +87,15 @@ with open(sys.argv[1]) as FILE:
 
 							TO_REMOVE.append(INDEX)
 
-					NEW_BASES = [BASES for BASE in BASES]
+							SWITCH = "ON"
+
+					NEW_BASES = list(BASES)
+
+					print sorted(TO_REMOVE, reverse=True)
 
 					for POS in sorted(TO_REMOVE, reverse=True):
+
+						print POS
 
 						del(NEW_BASES[POS])
 
@@ -103,7 +107,14 @@ with open(sys.argv[1]) as FILE:
 
 				TO_PRINT = TO_PRINT + " " + RANDOM_BASE + " " + RANDOM_BASE
 
-		print TO_PRINT
+		#keep only biallelics
+		if ("G" in TO_PRINT and "A" in TO_PRINT and "T" in TO_PRINT) or  ("G" in TO_PRINT and "A" in TO_PRINT and "C" in TO_PRINT) or  ("G" in TO_PRINT and "C" in TO_PRINT and "T" in TO_PRINT) or  ("C" in TO_PRINT and "A" in TO_PRINT and "T" in TO_PRINT):
+
+			continue
+
+		else:
+
+			print TO_PRINT
 
 COUNT = 0
 
