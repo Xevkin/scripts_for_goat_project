@@ -91,8 +91,6 @@ with open(sys.argv[1]) as FILE:
 
 					NEW_BASES = list(BASES)
 
-					print sorted(TO_REMOVE, reverse=True)
-
 					for POS in sorted(TO_REMOVE, reverse=True):
 
 						print POS
