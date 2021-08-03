@@ -14,8 +14,8 @@ P7=$2
 
 P5=$3
 
-INDEX=`echo ${2}+${3}`
+INDEX=`echo ${2}+`
 
-FINAL_OUT=`echo ${OUT}_exact.fastq.gz | sed -e "s/_R1_exact/-exact_R1/g" | sed -e "s/_R2_exact/-exact_R2/g"`
+FINAL_OUT=`echo ${OUT}-P7-exact.fastq.gz | sed -e "s/_R1-P7-exact/-P7-exact_R1/g" | sed -e "s/_R2-P7-exact/-P7-exact_R2/g"`
 
 zcat ${INPUT} | grep -A 3 $INDEX | grep -v "^--$" | gzip -c - > ${FINAL_OUT}
