@@ -4,7 +4,7 @@ Script is run in a directory with bam files to be aligned to the goat genome
 Bams will be trimmed, quality metrics obtained, screened using fastq screen
 
 Also need to supply a date for the Miseq run - will automatically make results file
-python script <date_of_miseq> <meyer> <species> <mit> <trim> <fastqc> <fastq_screen>  <directory in which to place output dir/>
+python script <date_of_miseq> <meyer> <species> <mit> <trim> <fastqc> <fastq_screen> <directory in which to place output dir/> <PE>
 
 
 '''
@@ -33,9 +33,11 @@ nuclear_genomes = {
 
 	"dog" : "/eno/reference_genomes/dog_canFam3/canFam3.fa",
 
-	"horse" : "/eno/reference_genomes/horse_equCab2/horse.fa",
+	"horse" : "/Reference_Genomes/For_Fastq_Screen/horse.fa",
 
-	"tur" : " "
+	"tur" : " ",
+
+	"deer" : "/home/kdaly/st1/deer/deer_genome/CerEla1-0_mod.fa"
 }
 
 mitochondrial_genomes = {
