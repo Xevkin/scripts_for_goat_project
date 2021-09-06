@@ -291,7 +291,7 @@ def run_fastq_screen(current_sample, out_dir, fastq_screen_option,pair):
 
 	if (pair == "pair") or (pair == "yes"):
 
-		 call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.collapsed.gz --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
+		 call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.collapsed.fastq.gz --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
 
 	else:
 
