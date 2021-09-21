@@ -78,6 +78,7 @@ s/^Gorgan.\t/Iron Medieval Iran\t/g
 s/^Guvercin.\t/Chalcolithic Turkey\t/g
 s/^Semnan..\t/Neolithic East Iran\t/g
 s/^Semnan.\t/Neolithic East Iran\t/g
+s/^Komishan.\t/Neolithic East Iran\t/g
 s/^Yoqneam.\t/Bronze Levant\t/g
 s/^Yarmut.\t/Bronze Levant\t/g
 s/^Ulucak.\t/Neolithic West Turkey\t/g
@@ -92,8 +93,8 @@ s/^CL-200\t/Medieval Africa\t/g
 s/^Safi.\t/Bronze Levant\t/g
 s/^Ghosh5\t/Neolithic Levant\t/g
 s/^Ulugh.\t/Bronze Turkmenistan\t/g
-s/^Cov[69]\t/Neolithic Cova\t/g
-s/^Szaz1\t/Bronze Age Hungary\t/g
+s/^Cov[69]\t/Neolithic Spain\t/g
+s/^Szaz1\t/Bronze Hungary\t/g
 s/^Qumis1\t/Unknown Iran\t/g
 s/^Gadachrili./Neolithic Georgia/g
 s/^Sarakenos./Neolithic Greece/g
