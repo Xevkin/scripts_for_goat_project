@@ -142,7 +142,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all dups at same time
 		call("echo Removing duplicates",shell=True)
 
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo java -jar /Software/picard.jar  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=\"$i\"_sort_q20.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt REMOVE_DUPLICATES=true \"2>\" \"$i\"_q20_dups.log; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=${i}_sort_q20.bam O=${i}_q20_dups.bam M=${i}_q20_dups_metrics.txt REMOVE_DUPLICATES=true 2> ${i}_q20_dups.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *resort.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam \"2>\" \"$i\"_q20_dups.log; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true  I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt 2> \"$i\"_q20_dups.log & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo java -jar /Software/picard.jar  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=\"$i\"_sort_q20.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt REMOVE_DUPLICATES=true \"2>\" \"$i\"_q20_dups.log; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=${i}_sort_q20.bam O=${i}_q20_dups.bam M=${i}_q20_dups_metrics.txt REMOVE_DUPLICATES=true 2> ${i}_q20_dups.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *resort.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam \"2>\" \"$i\"_q20_dups.log; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true  I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
 		call("for i in $(ls *dups.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
@@ -175,7 +175,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		sample =  bam.split(".")[0]
 
-		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt \">\"  " + sample + "_dups.log >> dups.sh",shell=True)
+		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt  && samtools flagstat " + sample + "_dups.bam > " + sample + "_dups.flagstat >> dups.sh",shell=True)
 
 		merged_dups_bam_list.append(sample + "_dups.bam")
 
@@ -384,11 +384,11 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	print "samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam -o " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam"
 	call("samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam -o " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam",shell=True)
 
-	print "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref + "_mit_F4_sort.bam O=" + sample_and_ref + "_mit_F4_dups.bam M=" + sample_and_ref + "_mit_F4_dups_metrics.txt 2>>" + sample_and_ref + "_mit_alignment.log"
-	call( "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref + "_mit_F4_sort.bam O=" + sample_and_ref + "_mit_F4_dups.bam M=" + sample_and_ref + "_mit_F4_dups_metrics.txt 2>>" + sample_and_ref + "_mit_alignment.log" ,shell=True)
+	print "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref + "_mit_F4_sort.bam O=" + sample_and_ref + "_mit_F4_dups.bam M=" + sample_and_ref + "_mit_F4_dups_metrics.txt "
+	call( "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref + "_mit_F4_sort.bam O=" + sample_and_ref + "_mit_F4_dups.bam M=" + sample_and_ref + "_mit_F4_dups_metrics.txt" ,shell=True)
 
-	print "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam O=" + sample_and_ref + "_pe_mit_F4_dups.bam M=" + sample_and_ref + "_pe_mit_F4_dups_metrics.txt 2>>" + sample_and_ref + "_pe_mit_alignment.log"
-	call("java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam O=" + sample_and_ref + "_pe_mit_F4_dups.bam M="  + sample_and_ref + "_pe_mit_F4_dups_metrics.txt 2>>" + sample_and_ref + "_pe_mit_alignment.log",shell=True)
+	print "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam O=" + sample_and_ref + "_pe_mit_F4_dups.bam M=" + sample_and_ref + "_pe_mit_F4_dups_metrics.txt "
+	call("java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam O=" + sample_and_ref + "_pe_mit_F4_dups.bam M="  + sample_and_ref + "_pe_mit_F4_dups_metrics.txt ",shell=True)
 
 	call("rm " + sample_and_ref + "*_mit_F4_sort.bam",shell=True)
 
@@ -415,7 +415,7 @@ def merge_and_process_mit(RG_file, reference, trim):
 		call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
 		print "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt "
-		call("java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt",shell=True)
+		call("java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt ",shell=True)
 
 		print "samtools flagstat " + bam_root + "_dups.bam > " + bam_root + "_dups.flagstat"
 		call("samtools flagstat " + bam_root + "_dups.bam > " + bam_root + "_dups.flagstat",shell=True)

@@ -260,3 +260,5 @@ s/^MUM2/Post-Neo Iran/g
 s/^AH054/Post-Neo Iran/g
 s/^KD175/Post-Neo Iran/g
 s/OB2[01]-0[146]/Obishir V/g
+s/^KO201399/Berezhzvoya Luka/g
+s/^KO20140[012345678]/Berezhzvoya Luka/g
