@@ -142,7 +142,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all dups at same time
 		call("echo Removing duplicates",shell=True)
 
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo java -jar /Software/picard.jar  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=\"$i\"_sort_q20.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt REMOVE_DUPLICATES=true \"2>\" \"$i\"_q20_dups.log; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=${i}_sort_q20.bam O=${i}_q20_dups.bam M=${i}_q20_dups_metrics.txt REMOVE_DUPLICATES=true 2> ${i}_q20_dups.log & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *resort.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam \"2>\" \"$i\"_q20_dups.log; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true  I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo java -jar /Software/picard.jar  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=\"$i\"_sort_q20.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt REMOVE_DUPLICATES=true ; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=${i}_sort_q20.bam O=${i}_q20_dups.bam M=${i}_q20_dups_metrics.txt REMOVE_DUPLICATES=true  & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *resort.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam ; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true  I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
 		call("for i in $(ls *dups.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
@@ -175,7 +175,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		sample =  bam.split(".")[0]
 
-		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt  && samtools flagstat " + sample + "_dups.bam > " + sample + "_dups.flagstat >> dups.sh",shell=True)
+		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt  && samtools flagstat " + sample + "_dups.bam \">\" " + sample + "_dups.flagstat >> dups.sh",shell=True)
 
 		merged_dups_bam_list.append(sample + "_dups.bam")
 
@@ -671,7 +671,9 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 							if (trim=="no"):
 
-								sample_files.append(line.split("\t")[0].split(".")[0].replace("_R1","") + "_"  + mit_reference +  "_mit_F4_dups.bam")
+								#sample_files.append(line.split("\t")[0].split(".")[0].replace("_R1","") + "_" + mit_reference + "_mit_F4_dups.bam")
+
+								sample_files.append(line.split("\t")[0].split(".")[0].replace("_R1","") + "_mit_F4_dups.bam")
 
 								sample_files.append(line.split("\t")[0].split(".")[0].replace("_R1","") +  "_pe_mit_F4_dups.bam")
 
@@ -708,7 +710,9 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 		if (mit == "yes"):
 
-			sample_name = sample_name + "_" + mit_reference + "_mit"
+			sample_name = sample_name + "_mit"
+
+			#sample_name = sample_name + "_" + mit_reference + "_mit"
 
 		merge_cmd = merge_cmd + "OUTPUT=" + sample_name + "_q20_merged.bam 2>" + sample_name + "_q20_merged.log"
 
