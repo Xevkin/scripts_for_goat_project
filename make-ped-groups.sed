@@ -1,17 +1,15 @@
+s/^KO201479 /Bronze_Kazakh /g
+s/^Komishani1 /Neolithic_East_Iran/g
 s/^Gadachrili. /Neolithic_Georgia /g
 s/^Sarakenos. /Neolithic_Greece /g
 s/^Abd[uo]l4 /Zagros_Outlier /g
 s/^[Gg]anj[Dd]areh35 /Zagros_Outlier /g
-s/^Gadachrili./Neolithic Georgia/g
-s/^Sarakenos./Neolithic Greece/g
-s/^Abd[uo]l4/Zagros Outlier/g
-s/^[Gg]anj[Dd]areh35/Zagros Outlier/g
 s/^Moroccan[12]. /Moroccan /g
 s/^Moroccan. /Moroccan /g
 s/^TOG /Togolese /g
 s/^IOG /Irish /g
-s/^Csibirica0. /Csibirica /g
-s/^Cfalconeri0. /Cfalconeri /g
+s/^Csibirica0. /Siberian_Ibex /g
+s/^Cfalconeri0. /Markhor /g
 s/^Ethiopian. /Ethiopian /g
 s/^Nigerian. /Nigerian /g
 s/^Pakistani. /Pakistani /g
@@ -31,12 +29,14 @@ s/^AzerbaijanBezoar.. /Azerbaijan_Bezoar /g
 s/^AzerbaijanBezoar. /Azerbaijan_Bezoar /g
 s/^MarkaziBezoar. /Markazi_Bezoar /g
 s/^HamedanBezoar. /Hamedan_Bezoar /g
+s/^AlborzBezoar. /Alborz_Bezoar /g
+s/^ZagrosBezoar. /Zagros_Bezoar /g
 s/^Iranian[12]. /Iranian /g
 s/^Iranian. /Iranian /g
-s/^Alashan. /Chinese_Alashan /g
-s/^Aerbasi. /Chinese_Aerbasi /g
-s/^Liaoning. /Chinese_Liaoning /g
-s/^Erlangshan. /Chinese_Erlangshan /g
+s/^Alashan. /Chinese /g
+s/^Aerbasi. /Chinese /g
+s/^Liaoning. /Chinese /g
+s/^Erlangshan. /Chinese /g
 s/^Abdul[126] /Neolithic_Abdul /g
 s/^abdul4 /Abdul4 /g
 s/^Acem. /Bronze_Turkey /g
@@ -98,6 +98,19 @@ s/^CL-200 /Medieval_Africa /g
 s/^Safi. /Bronze_Levant /g
 s/^Ghosh5 /Neolithic_Levant /g
 s/^Ulugh. /Bronze_Turkmenistan /g
-s/^Cov[69] /Neolithic_Cova /g
-s/^Szaz1 /Bronze_Age_Hungary /g 
+s/^Cov[69] /Neolithic_Spain /g
+s/^Szaz1 /Bronze_Hungary /g 
 s/^Qumis1 /Unknown_Iran /g
+s/^Dali1 /Bronze_Uzbek /g
+s/^Sheep[123456789] /Sheep /g
+s/^Sheep1[0123456789] /Sheep /g
+s/^Cpyrenica0[1234] /Pyrenese_Ibex /g
+s/^Cnubiana0[12] /Nubian_Ibex /g
+s/^CIbex0[2345] /Alpine_Ibex /g
+s/^CIbex /Alpine_Ibex /g
+s/^Falconeri[12] /Markhor /g
+s/^Nubiana[12] /Nubian_Ibex /g
+s/^Walie. /Walia_Ibex /g
+s/^Ibex[12] /Alpine_Ibex /g
+s/^Sibirica[12] /Siberian_Ibex /g
+s/^Pyrenica[12] /Pyrenese_Ibex /g
