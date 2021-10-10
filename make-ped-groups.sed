@@ -1,5 +1,5 @@
 s/^KO201479 /Bronze_Kazakh /g
-s/^Komishani1 /Neolithic_East_Iran/g
+s/^Komishani1 /Neolithic_East_Iran /g
 s/^Gadachrili. /Neolithic_Georgia /g
 s/^Sarakenos. /Neolithic_Greece /g
 s/^Abd[uo]l4 /Zagros_Outlier /g
