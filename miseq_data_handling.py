@@ -270,7 +270,7 @@ def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc, adaptor_removal, pair
 
 	else:
 
-		call(cut_adapt + fastq + " -o " + current_sample + "_ > " + trimmed_fastq + ".log", shell=True)
+		call(cut_adapt + fastq + " -o " + current_sample + "_trimmed.fastq.gz  > " + trimmed_fastq + ".log", shell=True)
 
        	#run fastqc on both the un/trimmed fastq files
 	#first we want to create an output directory if there is none to begin with
