@@ -29,7 +29,7 @@ nuclear_genomes = {
 
 	"sheep" : "/home/kdaly/st1/miseq/reference_genomes/oviAri3.fa",
 
-	"cow" : "/eno/reference_genomes/cow_bosTau8/bosTau8.fa",
+	"cow" : "/Reference_Genomes/bos_2019/ARS-UCD1.2_Btau5.0.1Y.fa",
 
 	"dog" : "/eno/reference_genomes/dog_canFam3/canFam3.fa",
 

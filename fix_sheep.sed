@@ -259,6 +259,22 @@ s/^KO18201[023]/Nizhnyaya Sooru Afansievo/g
 s/^MUM2/Post-Neo Iran/g
 s/^AH054/Post-Neo Iran/g
 s/^KD175/Post-Neo Iran/g
-s/OB2[01]-0[146]/Obishir V/g
-s/^KO201399/Berezhzvoya Luka/g
-s/^KO20140[012345678]/Berezhzvoya Luka/g
+s/AH054/Khor1/g
+s/KD175/Azer2/g
+s/^KO201399/Berezhzvoya Luka BA/g
+s/^KO20140[012345678]/Berezhzvoya Luka BA/g
+s/^Cov1[01]/Neo Spain/g
+s/^Cov[0123456789]/Neo Spain/g
+s/^Draga11/Neo Spain/g
+s/^Enkhuizen1/Post-Neo Netherlands/g
+s/^Gadachrili[123456789]/Neo Caucasus/g
+s/^Shulaveris[123456789]/Neo Caucasus/g
+s/^Gorgan1/Post-Neo Iran/g
+s/^Gorgan1/Post-Neo Iran/g
+s/^Jelsum[12]/Post-Neo Netherlands/g
+s/^Nachcharini4/Epipaleolithic Levant/g
+s/^Nizzana[45]/Post-Neo Levant/g
+s/^Schawbmun[12]/Post-Neo Germany/g
+s/^Tai[1234]/Neo France/g
+s/^Tor[0123456789]/Neo Spain/g
+s/^Verna[1234]/Neo Malta/g
