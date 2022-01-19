@@ -177,7 +177,15 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt  && samtools flagstat " + sample + "_dups.bam \">\" " + sample + "_dups.flagstat >> dups.sh",shell=True)
 
+		call("echo Line added to dups.sh is:",shell=True)
+
+		call("tail -n 1 dups.sh",shell=True)
+
 		merged_dups_bam_list.append(sample + "_dups.bam")
+
+	call("echo Here is the content of the dups.sh file:",shell=True)
+
+	call("cat dups.sh",shell=True)
 
 	call("parallel -a dups.sh -j " + threads, shell=True)
 
@@ -671,9 +679,7 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 							if (trim=="no"):
 
-								#sample_files.append(line.split("\t")[0].split(".")[0].replace("_R1","") + "_" + mit_reference + "_mit_F4_dups.bam")
-
-								sample_files.append(line.split("\t")[0].split(".")[0].replace("_R1","") + "_mit_F4_dups.bam")
+								sample_files.append(line.split("\t")[0].split(".")[0].replace("_R1","") + "_" + mit_reference + "_mit_F4_dups.bam")
 
 								sample_files.append(line.split("\t")[0].split(".")[0].replace("_R1","") +  "_pe_mit_F4_dups.bam")
 
