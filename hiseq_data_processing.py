@@ -467,7 +467,7 @@ def process_bam(sample_name,species):
 
 	print "Processing step for: " + sample_name
 
-	sample_name = "_".join(sample_name.split("_")[0:3]) + "_" + species
+	sample_name = sample_name + "_" + species
 
 	print "With species: " + sample_name
 
@@ -578,6 +578,10 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 			#create a "sample name" variable to apply to final bams
 			for bam in sample_files:
+
+				if (mit == "yes"):
+
+					bam = bam.split("_")[0] + "_" + mit_reference + "_" + "_".join(bam.split("_")[1:])
 
 				print "Checking for bam: " + bam
 
