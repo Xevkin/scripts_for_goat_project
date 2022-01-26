@@ -413,6 +413,8 @@ def merge_and_process_mit(RG_file, reference, trim):
 	#merge each lane then each sample
 	#account for the fact that we are aligning to different mitochondrial refereneces
 
+	print "Current mit reference sequence is" + reference_sequence + " found at " + reference_path
+
 	merged_mit_bam_list = merge_lanes_and_sample(RG_file, trim,reference_sequence,"yes",reference_sequence)
 
 	for bam in merged_mit_bam_list:
@@ -676,6 +678,8 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 						#at this stage I have an issue with naming the sample
 						#need to straighten out the name of the sample depending on if I have already trimmed prior to running the script
 						if (mit == "yes"):
+
+							call("echo Current mit reference is " + mit_reference,shell=True)
 
 							if (trim=="no"):
 
