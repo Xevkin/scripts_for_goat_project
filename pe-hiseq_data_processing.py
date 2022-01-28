@@ -856,9 +856,9 @@ def clean_up_mit(mitochondrial_references_file,out_dir):
 
 	call("mkdir angsd_consensus; mv *angsd* -t angsd_consensus",shell=True)
 
-	call("mkdir mit_logs; mv *mit*.log -t mit_logs; mv *flagstat* -t flagstat_files; mkdir mit_idx_files; mv *mit*idx -t mit_idx_files", shell=True)
+	call("mkdir mit_logs; mv *mit*.log -t mit_logs; mv *.flagstat -t flagstat_files; mkdir mit_idx_files; mv *mit*idx -t mit_idx_files", shell=True)
 
-	call("bgzip *mit*bam.gz; mkdir final_mit_bams; mv *mit*q30.bam* -t final_mit_bams; mkdir intermediate_mit_bam_files; mv *_mit*.bam.gz -t intermediate_mit_bam_files ",shell=True)
+	call("bgzip *mit*bam.gz; mkdir final_mit_bams; mv *mit*q30.ba* -t final_mit_bams; mkdir intermediate_mit_bam_files; mv *_mit*.bam.gz -t intermediate_mit_bam_files ",shell=True)
 
 	call("mv flagstat_files trimmed_fastq_files_and_logs mit_DoC mit_logs flagstat_files mit_idx_files final_mit_bams intermediate_mit_bam_files angsd_consensus -t " + out_dir,shell=True)
 
