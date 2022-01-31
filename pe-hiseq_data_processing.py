@@ -173,6 +173,8 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 	for bam in merged_bam_list:
 
+		print "Current merged bam to be processed is:"  + bam
+
 		sample =  bam.split(".")[0]
 
 		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt  && samtools flagstat " + sample + "_dups.bam \">\" " + sample + "_dups.flagstat >> dups.sh",shell=True)
@@ -743,6 +745,8 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_q20_merged.flagstat",shell=True)
 
 		call("samtools flagstat -@ 20 " + sample_name + "_merged_q30.bam > " + sample_name + "_merged_q30.flagstat",shell=True)
+
+		print "Adding the following sample to the merged bam list: " + sample_name
 
 		merged_bam_list.append(sample_name + "_merged_q30.bam")
 
