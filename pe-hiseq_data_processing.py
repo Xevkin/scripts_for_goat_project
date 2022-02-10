@@ -16,6 +16,7 @@ ID should be in the format <sample_name>-<macrogen_index_number>-<lane_number>-<
 LB should refer to PCR: <sample>-<lab index>-<macrogen-index>-<PCR_number>
 
 fastq files should be in the format <sample>-<PCR number and letter, if any>_<underscores and numbers>, followed by "_R1"
+If data is trimmed and collapsed, still put the original R1 file in the first column e.g. Sample1-14-121_R1.fastq.gz
 
 '''
 
@@ -225,7 +226,7 @@ def set_up(date_of_hiseq, meyer, threads ,species, mit, RG_file, output_dir, tri
 	#however, if trim option is not yes, then we use fastq files
 	if (trim != "yes"):
 
-		files = [file for file in os.listdir(".") if file.endswith("R1_trimmed.fastq.gz")]
+		files = [file for file in os.listdir(".") if file.endswith("trimmed.fastq.gz")]
 
         	print "trimmed fastq files in current directory:"
 
