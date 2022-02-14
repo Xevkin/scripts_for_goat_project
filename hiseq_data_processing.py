@@ -648,6 +648,8 @@ def softclip_bam(bam,reference_genome, out_dir, to_clip = "4"):
 
 	call("echo samtools view -h " + bam + " \"|\" python ~/programs/scripts_for_goat_project/softclip_mod.py - " + to_clip + " \"|\" samtools view -Sb - \">\" " + bam.split(".")[0] + "_softclipped.bam",shell=True)
 
+	call("sh /home/kdaly/programs/scripts_for_goat_project/run_DoC_autosomes.sh " + reference_genome + " " + bam.split(".")[0] + "_softclipped.bam",shell=True)
+
 	return (bam.split(".")[0] + "_softclipped.bam")
 
 
@@ -692,7 +694,7 @@ def clean_up(out_dir):
 	#clean up files
 	call("gunzip *flagstat.gz",shell=True)
 
-	call("mkdir flagstat_files; mv *flagstat -t flagstat_files",shell=True)
+	call("mkdir flagstat_files; mv *flagstat -t flagstat_files; for i in $(ls *bam |grep -v \"mit\"| cut -f1 -d\'.\'; do samtools flagstat -@ 4 ${i}.bam > flagstat_files/${i}.flagstat; done",shell=True)
 
 	call("mkdir DoC; mv DoC_* DoC",shell=True)
 
