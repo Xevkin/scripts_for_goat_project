@@ -694,7 +694,7 @@ def clean_up(out_dir):
 	#clean up files
 	call("gunzip *flagstat.gz",shell=True)
 
-	call("mkdir flagstat_files; mv *flagstat -t flagstat_files; for i in $(ls *bam |grep -v \"mit\"| cut -f1 -d\'.\'; do samtools flagstat -@ 4 ${i}.bam > flagstat_files/${i}.flagstat; done",shell=True)
+	call("mkdir flagstat_files; mv *flagstat flagstat_files",shell=True)
 
 	call("mkdir DoC; mv DoC_* DoC",shell=True)
 

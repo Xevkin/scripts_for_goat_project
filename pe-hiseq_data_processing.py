@@ -826,7 +826,7 @@ def clean_up(out_dir):
 	#clean up files
 	call("gunzip *flagstat.gz",shell=True)
 
-	call("mkdir flagstat_files; mv *flagstat -t flagstat_files; for i in $(ls *bam |grep -v \"mit\"| cut -f1 -d\'.\'; do samtools flagstat -@ 4 ${i}.bam > flagstat_files/${i}.flagstat; done)",shell=True)
+	call("mkdir flagstat_files; mv *flagstat flagstat_files",shell=True)
 
 	call("mkdir DoC; mv DoC_* DoC",shell=True)
 
@@ -863,7 +863,7 @@ def clean_up_mit(mitochondrial_references_file,out_dir):
 
 	call("mkdir angsd_consensus; mv *angsd* -t angsd_consensus",shell=True)
 
-	call("mkdir mit_logs; mv *mit*.log -t mit_logs; mv *.flagstat -t flagstat_files; mkdir mit_idx_files; mv *mit*idx -t mit_idx_files", shell=True)
+	call("mkdir mit_logs; mv *mit*.log -t mit_logs; mv *.flagstat flagstat_files; mkdir mit_idx_files; mv *mit*idx -t mit_idx_files", shell=True)
 
 	call("bgzip *mit*bam.gz; mkdir final_mit_bams; mv *mit*q30.ba* -t final_mit_bams; mkdir intermediate_mit_bam_files; mv *_mit*.bam.gz -t intermediate_mit_bam_files ",shell=True)
 
