@@ -315,7 +315,7 @@ def prepare_trim_fastq(current_sample, adapter_removal, out_dir):
 	trimmed_fastq2 = current_sample + "_R2_trimmed" + ".fastq.gz"
 
 	#cut raw fastq files
-	call("echo " + adapter_removal  + "--file1 " + zipped_fastq1 + " --file2 " + zipped_fastq2 + " --basename " + current_sample + "_trimmed \">\" " + current_sample + "_trimmed.log \"&&\" mv " + current_sample + "_trimmed.pair1.truncated.gz " + current_sample + "_R1_trimmed.fastq.gz \"&&\" mv " + current_sample + "_trimmed.pair2.truncated.gz " + current_sample + "_R2_trimmed.fastq.gz \"&&\" mv " + current_sample + "_trimmed.singleton.truncated.gz " + current_sample + "_mate-discard_trimmed.fastq.gz \"&&\" mv " + current_sample + "_trimmed.collapsed.gz " + current_sample + "_trimmed.fastq.gz >> trim.sh" ,shell=True)
+	call("echo " + adapter_removal  + "--file1 " + zipped_fastq1 + " --file2 " + zipped_fastq2 + " --basename " + current_sample + "_trimmed \"2>\" " + current_sample + "_trimmed.log \"&&\" mv " + current_sample + "_trimmed.pair1.truncated.gz " + current_sample + "_R1_trimmed.fastq.gz \"&&\" mv " + current_sample + "_trimmed.pair2.truncated.gz " + current_sample + "_R2_trimmed.fastq.gz \"&&\" mv " + current_sample + "_trimmed.singleton.truncated.gz " + current_sample + "_mate-discard_trimmed.fastq.gz \"&&\" mv " + current_sample + "_trimmed.collapsed.gz " + current_sample + "_trimmed.fastq.gz >> trim.sh" ,shell=True)
 
 
 def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
