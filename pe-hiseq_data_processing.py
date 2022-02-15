@@ -36,7 +36,7 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"ARS1" : "/home/kdaly/ARS1/ARS1.fa",
+	"ARS1" : "/home/kdaly/st1/ARS1/ARS1.fa",
 
 	"CHIR1" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
