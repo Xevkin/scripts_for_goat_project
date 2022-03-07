@@ -50,7 +50,9 @@ nuclear_genomes = {
 
 	"Horse" : "/Reference_Genomes/horse/EquCab3.fa",
 
-	"Ram" : "/home/kdaly/sheep_OarRambouillet/copy/OarRambouillet.fa"
+	"Ram" : "/home/kdaly/sheep_OarRambouillet/copy/OarRambouillet.fa",
+
+	"Ram2" : "/Reference_Genomes/sheep/rambouillet_v2_mod.fa"
 }
 
 
@@ -178,9 +180,11 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		sample =  bam.split(".")[0]
 
-		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt  && samtools flagstat " + sample + "_dups.bam \">\" " + sample + "_dups.flagstat >> dups.sh",shell=True)
+		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt \'&&\' samtools flagstat " + sample + " _dups.bam \">\" " + sample + "_dups.flagstat",shell=True)
 
-		call("echo Line added to dups.sh is:",shell=True)
+		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt \'&&\' samtools flagstat " + sample + "_dups.bam \">\" " + sample + "_dups.flagstat >> dups.sh",shell=True)
+
+		call("echo Line added to dups.sh is: ",shell=True)
 
 		call("tail -n 1 dups.sh",shell=True)
 
@@ -696,6 +700,8 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 								sample_files.append(line.split("\t")[0].split(".")[0].replace("_R1","") +  "_pe_mit_F4_dups.bam")
 
+								print line.split("\t")[0].split(".")[0].replace("_R1","") +  "_pe_mit_F4_dups.bam"
+
 
 						#may have to deal with trimmed files here
 						else:
@@ -741,7 +747,7 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 		#flagstat the merged bam
 		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name+ "_q20_merged.flagstat",shell=True)
 
-		call("samtools view -b -F 4 -q 30 -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_merged_q30.bam",shell=True)
+		call("samtools view -F 4 -q 30 -@ 20 -b " + sample_name + "_q20_merged.bam > " + sample_name + "_merged_q30.bam",shell=True)
 
 		call("samtools flagstat -@ 20 " + sample_name + "_q20_merged.bam > " + sample_name + "_q20_merged.flagstat",shell=True)
 
