@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
 Kevin Daly 2020 - for PE data
+Updated 2022 for pg5
 
 Script is run in a directory with bam files to be aligned to either goat, wild goat or sheep genome
 Reads will be trimmed, aligned, read groups added, duplicates removed, indel realignment performed, and then softclipped
@@ -36,25 +37,25 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"ARS1" : "/home/kdaly/st1/ARS1/ARS1.fa",
+	"ARS1" : "/raid_md0/Reference_Genomes/ARS1.fa",
 
-	"CHIR1" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta",
+	"oviAri3" : "/raid_md0/Reference_Genomes/sheep/oviAri3_mod.fa",
 
-	"oviAri3" : "/Reference_Genomes/sheep/oviAri3_mod.fa",
+	"oviAri4" : "/raid_md0/Reference_Genomes/sheep/OvisAries4_mod.fa",
 
-	"oviAri4" : "/Reference_Genomes/sheep/OvisAries4_mod.fa",
+	"Cow" : "/raid_md0/Reference_Genomes/bos_2019/ARS-UCD1.2_Btau5.0.1Y.fa",
 
-	"Deer" : "/home/kdaly/st1/deer/deer_genome/CerEla1-0_mod.fa",
+	"Horse" : "/raid_md0/Reference_Genomes/horse/EquCab3.fa",
 
-	"Cow" : "/Reference_Genomes/bos_2019/ARS-UCD1.2_Btau5.0.1Y.fa",
+	"Ram" : "/raid_md0/Reference_Genomes/sheep/OarRambouillet.fa",
 
-	"Horse" : "/Reference_Genomes/horse/EquCab3.fa",
-
-	"Ram" : "/home/kdaly/sheep_OarRambouillet/copy/OarRambouillet.fa",
-
-	"Ram2" : "/Reference_Genomes/sheep/rambouillet_v2_mod.fa"
+	"Ram2" : "/raid_md0/Reference_Genomes/sheep/rambouillet_v2_mod.fa"
 }
 
+#define paths to some tools
+picard="java -jar /raid_md0/Software/picard.jar "
+
+gatk="/raid_md0/Software/gatk "
 
 def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, align, process, merge, clip, RG_file, output_dir):
 
@@ -145,7 +146,7 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
         	#do all dups at same time
 		call("echo Removing duplicates",shell=True)
 
-		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo java -jar /Software/picard.jar  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=\"$i\"_sort_q20.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt REMOVE_DUPLICATES=true ; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=${i}_sort_q20.bam O=${i}_q20_dups.bam M=${i}_q20_dups_metrics.txt REMOVE_DUPLICATES=true  & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *resort.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam ; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true  I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
+		call("PIDS_list="";for i in $(ls *sort_q20.bam | grep -v \"_pe_\" | rev | cut -f3- -d'_' | rev ); do echo java -jar /raid_md0/Software/picard.jar  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=\"$i\"_sort_q20.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt REMOVE_DUPLICATES=true ; java -jar /raid_md0/Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 I=${i}_sort_q20.bam O=${i}_q20_dups.bam M=${i}_q20_dups_metrics.txt REMOVE_DUPLICATES=true  & PIDS_list=`echo $PIDS_list $!`; done; for i in $(ls *resort.bam | grep \"_pe_\" | rev | cut -f3- -d'_' | rev ); do java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam ; java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true  I=\"$i\"_sort_q20_fix_resort.bam O=\"$i\"_q20_dups.bam M=\"$i\"_q20_dups_metrics.txt & PIDS_list=`echo $PIDS_list $!`; done; for pid in $PIDS_list; do wait $pid; done",shell=True)
 
 		call("for i in $(ls *dups.bam | cut -f 1 -d'.'); do samtools flagstat -@ 12 ${i}.bam > ${i}.flagstat; samtools view -@ 12 -b -F 4 $i.bam > tmp.bam; mv tmp.bam $i.bam ;done; rm tmp.bam",shell=True)
 
@@ -180,9 +181,9 @@ def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, alig
 
 		sample =  bam.split(".")[0]
 
-		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt \'&&\' samtools flagstat " + sample + " _dups.bam \">\" " + sample + "_dups.flagstat",shell=True)
+		call(picard + " MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt \'&&\' samtools flagstat " + sample + " _dups.bam \">\" " + sample + "_dups.flagstat",shell=True)
 
-		call("echo java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt \'&&\' samtools flagstat " + sample + "_dups.bam \">\" " + sample + "_dups.flagstat >> dups.sh",shell=True)
+		call(picard + " MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam + " O=" + sample + "_dups.bam M=" + sample + "_dups_metrics.txt \'&&\' samtools flagstat " + sample + "_dups.bam \">\" " + sample + "_dups.flagstat >> dups.sh",shell=True)
 
 		call("echo Line added to dups.sh is: ",shell=True)
 
@@ -269,7 +270,7 @@ def set_up(date_of_hiseq, meyer, threads ,species, mit, RG_file, output_dir, tri
 
 	#define default AdapterRemoval
 
-	adapter_removal = "/home/kdaly/programs/adapterremoval-2.3.1/build/AdapterRemoval --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip --trimns --trimqualities "
+	adapter_removal = "AdapterRemoval --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip --trimns --trimqualities "
 
 	#Prepare output directory
 
@@ -393,17 +394,17 @@ def align_process_mit(fastq, RG_file, alignment_option, reference, trim):
 	print "samtools sort -n -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log"
 	call("samtools sort -n -@ 24 "  + sample_and_ref + "_pe_mit_F4.bam -O BAM -o " + sample_and_ref + "_pe_mit_F4_sort.bam 2>> " + sample_and_ref + "_pe_mit_alignment.log",shell=True)
 
-	print "/home/kdaly/programs/samtools-1.11/samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam"
-	call("/home/kdaly/programs/samtools-1.11/samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam",shell=True)
+	print "samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam"
+	call("samtools fixmate -m -@ 24 "  + sample_and_ref + "_pe_mit_F4_sort.bam " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam",shell=True)
 
 	print "samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam -o " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam"
 	call("samtools sort -@ 24 " + sample_and_ref + "_pe_mit_F4_sort_fixmate.bam -o " + sample_and_ref + "_pe_mit_F4_sort_fixmate_resort.bam",shell=True)
 
-	print "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref + "_mit_F4_sort.bam O=" + sample_and_ref + "_mit_F4_dups.bam M=" + sample_and_ref + "_mit_F4_dups_metrics.txt "
-	call( "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref + "_mit_F4_sort.bam O=" + sample_and_ref + "_mit_F4_dups.bam M=" + sample_and_ref + "_mit_F4_dups_metrics.txt" ,shell=True)
+	print picard + " MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref + "_mit_F4_sort.bam O=" + sample_and_ref + "_mit_F4_dups.bam M=" + sample_and_ref + "_mit_F4_dups_metrics.txt "
+	call( picard + "  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref + "_mit_F4_sort.bam O=" + sample_and_ref + "_mit_F4_dups.bam M=" + sample_and_ref + "_mit_F4_dups_metrics.txt" ,shell=True)
 
-	print "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam O=" + sample_and_ref + "_pe_mit_F4_dups.bam M=" + sample_and_ref + "_pe_mit_F4_dups_metrics.txt "
-	call("java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam O=" + sample_and_ref + "_pe_mit_F4_dups.bam M="  + sample_and_ref + "_pe_mit_F4_dups_metrics.txt ",shell=True)
+	print picard + "  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam O=" + sample_and_ref + "_pe_mit_F4_dups.bam M=" + sample_and_ref + "_pe_mit_F4_dups_metrics.txt "
+	call(picard + "  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true I="  + sample_and_ref +"_pe_mit_F4_sort_fixmate_resort.bam O=" + sample_and_ref + "_pe_mit_F4_dups.bam M="  + sample_and_ref + "_pe_mit_F4_dups_metrics.txt ",shell=True)
 
 	call("rm " + sample_and_ref + "*_mit_F4_sort.bam",shell=True)
 
@@ -431,8 +432,8 @@ def merge_and_process_mit(RG_file, reference, trim):
 		print "samtools flagstat " + bam + "  > " + bam_root + ".flagstat"
 		call("samtools flagstat " + bam + "  > " + bam_root + ".flagstat",shell=True)
 
-		print "java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt "
-		call("java -jar /Software/picard.jar MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt ",shell=True)
+		print picard + "  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt "
+		call(picard + "  MarkDuplicates OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 REMOVE_DUPLICATES=true ASSUME_SORT_ORDER=coordinate I=" + bam_root + ".bam O=" + bam_root + "_dups.bam M=" + bam_root + "_dups_metrics.txt ",shell=True)
 
 		print "samtools flagstat " + bam_root + "_dups.bam > " + bam_root + "_dups.flagstat"
 		call("samtools flagstat " + bam_root + "_dups.bam > " + bam_root + "_dups.flagstat",shell=True)
@@ -446,7 +447,7 @@ def merge_and_process_mit(RG_file, reference, trim):
 			print "samtools index -@ 24 " + bam_root + "_dups_q" + QC + ".bam"
 			call("samtools index -@ 24 " + bam_root + "_dups_q" + QC + ".bam",shell=True)
 
-			cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_dups_q" + QC + ".bam --omitDepthOutputAtEachBase --omitIntervalStatistics"
+			cmd="gatk -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_dups_q" + QC + ".bam --omitDepthOutputAtEachBase --omitIntervalStatistics"
 			print cmd
 			call(cmd, shell=True)
 
@@ -615,8 +616,8 @@ def process_bam(sample_name,species):
 
 		if "_pe_" in sample_name:
 
-			print "/home/kdaly/programs/samtools-1.11/samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam"
-			call("/home/kdaly/programs/samtools-1.11/samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam",shell=True)
+			print "samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam"
+			call("samtools fixmate -m -@ 24 " + sample_name + "_sort_q20.bam " +  sample_name + "_sort_q20_fix.bam",shell=True)
 
 			print "samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam"
 			call("samtools sort -@ 24 " +  sample_name + "_sort_q20_fix.bam -O BAM -o " +  sample_name + "_sort_q20_fix_resort.bam",shell=True)
@@ -674,7 +675,7 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 
 			sample_files = []
 
-			merge_cmd = "java -Xmx100g -jar /home/kdaly/programs/picard/picard.jar MergeSamFiles VALIDATION_STRINGENCY=SILENT "
+			merge_cmd = picard + "  MergeSamFiles VALIDATION_STRINGENCY=SILENT "
 
 			with open(RG_file) as r:
 
@@ -723,7 +724,7 @@ def merge_lanes_and_sample(RG_file, trim, species,mit="no", mit_reference="no"):
 					merged_sample_list.append(bam)
 		#now, merge each lane for a given sample
 
-		merge_cmd = "java -Xmx100g -jar /home/kdaly/programs/picard/picard.jar  MergeSamFiles VALIDATION_STRINGENCY=SILENT "
+		merge_cmd = picard + "   MergeSamFiles VALIDATION_STRINGENCY=SILENT "
 
 		for bam in merged_sample_list:
 
@@ -765,12 +766,12 @@ def indel_realignment(dups_bam, reference_genome):
 
 	call("samtools index -@ 24 " + dups_bam,shell=True)
 
-	cmd = "java -Xmx20g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 24 -R " + reference_genome + " -I " + dups_bam + " -o forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals 2> " + dups_bam.split(".")[0] + "_intervals.log"
+	cmd = gatk + " -T RealignerTargetCreator -nt 24 -R " + reference_genome + " -I " + dups_bam + " -o forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals 2> " + dups_bam.split(".")[0] + "_intervals.log"
 
 	print cmd
 	call(cmd, shell=True)
 
-	cmd = "java -Xmx100g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + dups_bam + " -targetIntervals forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals -o " +  dups_bam.split(".")[0] + "_realigned.bam 2> " + dups_bam.split(".")[0] + "_realignment.log"
+	cmd = gatk + " -T IndelRealigner -R " + reference_genome + " -I " + dups_bam + " -targetIntervals forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals -o " +  dups_bam.split(".")[0] + "_realigned.bam 2> " + dups_bam.split(".")[0] + "_realignment.log"
 
 	print cmd
 
@@ -815,7 +816,7 @@ def process_realigned_bams(realigned_bam, reference_genome, clip, output_dir, sp
 
 	#call("samtools idxstats " + realigned_bam.split(".")[0] + "_F4_q30.bam > " + realigned_bam.split(".")[0].split("_")[0] + ".idx",shell=True)
 
-	cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam + "  --omitDepthOutputAtEachBase 2>  DoC_" + realigned_bam.split(".")[0] + ".log"
+	cmd= gatk + " -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam + "  --omitDepthOutputAtEachBase 2>  DoC_" + realigned_bam.split(".")[0] + ".log"
 	#cmd="java -Xmx10g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T DepthOfCoverage -nt 24 --omitIntervalStatistics -R " + reference_genome + " -o DoC_" + realigned_bam.split(".")[0] + " -I " + realigned_bam.split(".")[0] + "_F4_q30.bam --omitDepthOutputAtEachBase"
 
 	if species == "ARS1":

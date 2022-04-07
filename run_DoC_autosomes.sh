@@ -16,7 +16,7 @@ if [ -f ${root}.bam.bai ]; then
 fi
 
 
-java -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar \
+/raid_md0/Software/gatk \
 -T DepthOfCoverage \
 -R $1 \
 --omitDepthOutputAtEachBase \
