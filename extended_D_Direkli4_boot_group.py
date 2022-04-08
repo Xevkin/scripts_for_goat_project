@@ -1,5 +1,43 @@
 #!/usr/bin/python
+"""
+I apologize for the current state of this script, it was not envisioned as being shared but in hindsight that was very unwise. It is very much not-optimized, and can be slow to run given the
+size of input files
 
+The script is currently hardcoded for my own study organism and current reference genome i.e. goat, ARS1. I will be working on making it
+compliant with user-defined files and improving comments in the coming weeks - please contact me @ the email below if I have not down this or if you have questions.
+
+This script takes a haplo.gz file as its main input, as output by ANGSD -doHaploCall.
+
+The next five inputs define the H1, H2, H3, H4, and "true" outgroup groups/genomes.
+
+Within each group, sample names (as in the haplo.gz header) are comma-seperated.
+
+Within H4 I allow multiple groups to be defined; sites must be covered at least once by each H4 group and also be fixed for ancestral before a H3 derived allele is examined
+
+H4 groups are delimited by the underscore _ character. Within each H4 group, genomes are comma seperated.
+
+A final variable is required to turn on "single" mode. All analyses reported in the Direkli paper did not use this option, so should be set to "no"
+
+Two example inputs are provided below:
+
+
+python extended_D_Direkli4_boot_group.py H1-Genome1,H1-Genome2 H2-Genome H3-Genome H4-Group1-Genome1,H4-Group1-Genome2_H4-Group2-Genome1_H4-Group3-Genome1 Outgroup-Genome1,Outgroup-Genome2 no
+
+
+python extended_D_Direkli4_boot_group.py Ganjdareh3,Ganjdareh22 Blagotin3 Direkli4 Direkli1-2,Direkli5_Ibex1,Falconeri1,Sibirica1,Tur1,Tur2_IranBezoar1,ZagrosBezoar1 Sheep1,Sheep2,Sheep3 no
+
+
+Typically I will run a parallelized loop across H2-Genomes.
+
+The regions used for bootstrap analyses are currently hardcoded into the script. The bootstrap region file is space seperated: chr block_start block_end
+
+Note that the 11 "cutoff" thresholds refer to the frequency of the H3 derived allele among all H4 groups: <= 0%, <= 10%, <= 20%.
+The calculated statistics for each of these cutoffs are outputted from the script. If only interested in those at <=0%, examine the first row of the output.
+
+The output columns are the extended D value, standard error, Z score, number of ABBAA sites,  number of nBABAA sites, and the same statistics but transversions only.
+
+Kevin G. Daly, dalyk1@tcd.ie
+"""
 from __future__ import division
 
 import sys
