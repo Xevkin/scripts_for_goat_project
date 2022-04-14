@@ -56,7 +56,7 @@ nuclear_genomes = {
 picard="java -jar /raid_md0/Software/picard.jar "
 
 gatk="/raid_md0/Software/gatk "
-gatk3="java -jar /home/kdaly/programs/GenomeAnalysisTK-3.8-1-0.jar "
+gatk_old="java -jar /home/kdaly/programs/GenomeAnalysisTK.jar "
 
 def main(date_of_hiseq, meyer, threads, species, mit, skip_mit_align, trim, align, process, merge, clip, RG_file, output_dir):
 
@@ -767,12 +767,12 @@ def indel_realignment(dups_bam, reference_genome):
 
 	call("samtools index -@ 24 " + dups_bam,shell=True)
 
-	cmd = gatk3 + " -T RealignerTargetCreator -nt 24 -R " + reference_genome + " -I " + dups_bam + " -o forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals 2> " + dups_bam.split(".")[0] + "_intervals.log"
+	cmd = gatk_old + " -T RealignerTargetCreator -nt 24 -R " + reference_genome + " -I " + dups_bam + " -o forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals 2> " + dups_bam.split(".")[0] + "_intervals.log"
 
 	print cmd
 	call(cmd, shell=True)
 
-	cmd = gatk3 + " -T IndelRealigner -R " + reference_genome + " -I " + dups_bam + " -targetIntervals forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals -o " +  dups_bam.split(".")[0] + "_realigned.bam 2> " + dups_bam.split(".")[0] + "_realignment.log"
+	cmd = gatk_old + " -T IndelRealigner -R " + reference_genome + " -I " + dups_bam + " -targetIntervals forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals -o " +  dups_bam.split(".")[0] + "_realigned.bam 2> " + dups_bam.split(".")[0] + "_realignment.log"
 
 	print cmd
 
