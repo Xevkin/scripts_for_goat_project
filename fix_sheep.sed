@@ -278,16 +278,17 @@ s/^Schawbmun[12]/Post-Neo Germany/g
 s/^Tai[1234]/Neo France/g
 s/^Tor[0123456789]/Neo Spain/g
 s/^Verna[1234]/Neo Malta/g
-s/^AKI.../Akimbek LBA/g
-s/^BOZ.../Bozshakol LBA/g
+s/^AKI[0123456789][0123456789][0123456789]/Akimbek LBA/g
+s/^AKI[0123456789][0123456789]/Akimbek LBA/g
+s/^BOZ[0123456789][0123456789][0123456789]/Bozshakol LBA/g
+s/^BOZ[0123456789][0123456789]/Bozshakol LBA/g
 s/^CHI2/Chineta-2 IA/g
 s/^DON085/Dongal LFBA/g
 s/^INS2/Inskoy Dol IA/g
-s/^KOL../Kolyvanskoe EBA/g
 s/^KOL[123456789][0123456789]/Kolyvanskoe EBA/g
 s/^KOL[123456789]/Kolyvanskoe EBA/g
-s/^MYR00./Myrzhik LBA/g
-s/^NIZ00./Nizhznaya Soruu ENEO/g
+s/^MYR0[0123456789][0123456789]/Myrzhik LBA/g
+s/^NIZ0[0123456789][0123456789]/Nizhznaya Soruu ENEO/g
 s/^OB..−../ObishirV PN/g
-s/^RUB00./Rublevo-6 LBA
+s/^RUB00[0123456789]/Rublevo-6 LBA/g
 s/^SEN36/Senkibay2 MLNA/g
