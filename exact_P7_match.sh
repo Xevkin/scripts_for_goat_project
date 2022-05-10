@@ -4,15 +4,11 @@
 
 # input 2 is P7 to match
 
-# input 3 is P5
-
 INPUT=$1
 
 OUT=`echo $INPUT | rev | cut -f1 -d'/' | rev | cut -f1 -d'.'`
 
 P7=$2
-
-P5=$3
 
 INDEX=`echo ${2}+`
 

@@ -6,6 +6,9 @@ s/^asikli3$/Asikli3\tNeo Asikli/g
 s/^asikli4$/Asikli4\tNeo Asikli/g
 s/^asikli5$/Asikli5\tNeo Asikli/g
 s/^asikli6$/Asikli6\tNeo Asikli/g
+s/^asikli7$/Asikli7\tNeo Asikli/g
+s/^asikli8$/Asikli8\tNeo Asikli/g
+s/^asikli9$/Asikli9\tNeo Asikli/g
 s/^azer12$/Azer12\tIA\/Med Cauc/g
 s/^azer13$/Azer13\tBA Cauc/g
 s/^azer2$/Azer2\tIA\/Med Cauc/g
@@ -22,7 +25,7 @@ s/^blagotin9$/Blagotin9\tNeo C\/SE Eur/g
 s/^bornais1$/Bornais1\tIA\/Med BrtIre/g
 s/^brodgar1/Brodgar1\tNeo Rem BrtIreFra/g
 s/^brodgar2/Brodgar2\tNeo Rem BrtIreFra/g
-s/^bubanj1/Bubanj1\tChal SW Eur/g
+s/^bubanj1/Bubanj1\tChal SE Eur/g
 s/^cov10$/Cov10\tNeo Spain/g
 s/^cov11$/Cov11\tNeo Spain/g
 s/^cov1$/Cov1\tNeo Spain/g
@@ -88,6 +91,7 @@ s/^kilpheder2$/Kilpheder2\tIA\/Med BrtIre/g
 s/^kilpheder3$/Kilpheder3\tIA\/Med BrtIre/g
 s/^kur1$/Kur1\tC\/BA Iran/g
 s/^lur10$/Lur10\tC\/BA Iran/g
+s/^lur11$/Lur11\tC\/BA Iran/g
 s/^lur16$/Lur16\tC\/BA Iran/g
 s/^mainz1$/Mainz1\tBA\/IA C Eur/g
 s/^mainz2$/Mainz2\tBA\/IA C Eur/g
@@ -103,6 +107,7 @@ s/^mentese11$/Mentese11\tNeo SW Turkey/g
 s/^mentese6$/Mentese6\tNeo SW Turkey/g
 s/^mentese7$/Mentese7\tNeo SW Turkey/g
 s/^mentese9$/Mentese9\tNeo SW Turkey/g
+s/^mentese10/Mentese10\tNeo SW Turkey/g
 s/^mongolia1$/Mongolia1\tIA C Asia/g
 s/^nach1$/Nach1\tWild/g
 s/^nach2$/Nach2\tWild/g
@@ -131,15 +136,15 @@ s/^tarxein3$/Tarxein3\tNeo C\/SE Eur/g
 s/^tor1$/Tor1\tNeo Spain/g
 s/^tor8$/Tor8\tNeo Spain/g
 s/^verna1$/Verna1\tNeo C\/SE Eur/g
-s/^yanik1$/Yanik1\tAssorted/g
-s/^yanik2$/Yanik2\tAssorted/g
-s/^yanik3$/Yanik3\tAssorted/g
-s/^yanik4$/Yanik4\tAssorted/g
+s/^yanik1$/Yanik1\tYanik/g
+s/^yanik2$/Yanik2\tYanik/g
+s/^yanik3$/Yanik3\tYanik/g
+s/^yanik4$/Yanik4\tYanik/g
 s/^yoqneam1$/Yoqneam1\tIA\/Med Levant/g
 s/^yoqneam3$/Yoqneam3\tIA\/Med Levant/g
 s/^zagros3$/Zagros3\tIA\/Med Iran/g
 s/^zagros4$/Zagros4\tIA\/Med Iran/g
 s/^goat$/IOG\tOut/g
 s/^IOG$/IOG\tOut/g
-s/^kultepe1/Kultepe1\tAssorted/g
-s/^kultepe2/Kultepe2\tAssorted/g
+s/^kultepe1/Kultepe1\tKultepe/g
+s/^kultepe2/Kultepe2\tKultepe/g

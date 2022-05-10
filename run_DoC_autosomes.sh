@@ -17,13 +17,12 @@ fi
 
 
 /raid_md0/Software/gatk \
--T DepthOfCoverage \
+ DepthOfCoverage \
 -R $1 \
---omitDepthOutputAtEachBase \
---omitIntervalStatistics \
+--omit-depth-output-at-each-base \
+--omit-interval-statistics \
 -I $2 \
--o "DoC-autosomes_"$out \
--nt 24 \
--L /home/kdaly/angsd/autosomes_ARS1.list
+-O "DoC-autosomes_"$out \
+-L /home/kdaly/raid/angsd/autosomes_ARS1.list
 
 for i in $(ls DoC* | grep -v "sample_summary"); do rm $i; done

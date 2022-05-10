@@ -116,7 +116,7 @@ s/^IROO-K7-0639/AsiaticMouflon/g
 s/^IROO-M12-9997/AsiaticMouflon/g
 s/_andrew_trans//g
 s/_andrew//g
-s/^aliabad3/Unknown/g
+s/^aliabad3/Post-Neo Iran/g
 s/^alzey1/Post-Neo C Europe/g
 s/^asikli1/Neo C Anatolia/g
 s/^asikli2/Neo C Anatolia/g
@@ -250,8 +250,8 @@ s/^KO201480/Akimek BA?/g
 s/^Shulaveris[123456789]/Neo Caucasus/g
 s/^Gadachrili[123456789]/Neo Caucasus/g
 s/^Rus0[127]/1-10th cent. AD Russia/g
-s/^Rus0[38]/Neo Russia/g
-s/^Rus0[456]/Russia BA/g
+s/^Rus0[3]/Neo Russia/g
+s/^Rus0[4568]/Russia BA/g
 s/^Rus09/10-15th cent. AD Russia/g
 s/^Rus10/10-15th cent. AD Russia/g
 s/^KO182009/Nizhnyaya Sooru Afansievo/g
@@ -284,11 +284,16 @@ s/^BOZ[0123456789][0123456789][0123456789]/Bozshakol LBA/g
 s/^BOZ[0123456789][0123456789]/Bozshakol LBA/g
 s/^CHI2/Chineta-2 IA/g
 s/^DON085/Dongal LFBA/g
-s/^INS2/Inskoy Dol IA/g
+s/^INS2/Inskoy Dol EBA?/g
 s/^KOL[123456789][0123456789]/Kolyvanskoe EBA/g
 s/^KOL[123456789]/Kolyvanskoe EBA/g
 s/^MYR0[0123456789][0123456789]/Myrzhik LBA/g
 s/^NIZ0[0123456789][0123456789]/Nizhznaya Soruu ENEO/g
-s/^OB..−../ObishirV PN/g
+s/^OB2[01]−0[123456789]/ObishirV PN/g
 s/^RUB00[0123456789]/Rublevo-6 LBA/g
-s/^SEN36/Senkibay2 MLNA/g
+s/^SEN36/Senkibay2 EBA?/g
+s/^KHA002/Khankarinsky IA/g
+s/^KO181289/Chaglinka LBA/g
+s/^NUR001/Nurataldy LBA/g
+s/^kortik4/PPNA E Turkey/g
+s/AH040/PPNA E Turke/g

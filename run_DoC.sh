@@ -6,13 +6,13 @@ out=$(ls $2 |  cut -f1 -d'_')
 
 samtools index -@ 24 $2
 
-java -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar \
--T DepthOfCoverage \
+/raid_md0/Software/gatk \
+ DepthOfCoverage \
 -R $1 \
---omitDepthOutputAtEachBase \
---omitIntervalStatistics \
+--omit-depth-output-at-each-base \
+--omit-interval-statistics \
 -I $2 \
--o "DoC_"$out \
--nt 24
+-O "DoC-autosomes_"$out \
+-L /home/kdaly/raid/angsd/autosomes_ARS1.list
 
 for i in $(ls DoC* | grep -v "sample_summary"); do rm $i; done
