@@ -35,7 +35,7 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"ARS1" : "/home/kdaly/st1/ARS1/ARS1.fa",
+	"ARS1" : "/raid_md0/Reference_Genomes/goat/ARS1.fa",
 
 	"CHIR1" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
@@ -49,7 +49,7 @@ nuclear_genomes = {
 
 	"Horse" : "/Reference_Genomes/horse/EquCab3.fa",
 
-	"Ram" : "/home/kdaly/sheep_OarRambouillet/copy/OarRambouillet.fa"
+	"Ram" : "/Reference_Genomes/sheep/OarRambouillet.fa"
 }
 
 

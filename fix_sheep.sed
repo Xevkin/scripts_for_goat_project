@@ -118,15 +118,15 @@ s/_andrew_trans//g
 s/_andrew//g
 s/^aliabad3/Post-Neo Iran/g
 s/^alzey1/Post-Neo C Europe/g
-s/^asikli1/Neo C Anatolia/g
-s/^asikli2/Neo C Anatolia/g
-s/^asikli3/Neo C Anatolia/g
-s/^asikli4/Neo C Anatolia/g
-s/^asikli5/Neo C Anatolia/g
-s/^asikli6/Neo C Anatolia/g
-s/^asikli7/Neo C Anatolia/g
-s/^asikli8/Neo C Anatolia/g
-s/^asikli9/Neo C Anatolia/g
+s/^asikli1/PPN Anatolia/g
+s/^asikli2/PPN Anatolia/g
+s/^asikli3/PPN Anatolia/g
+s/^asikli4/PPN Anatolia/g
+s/^asikli5/PPN Anatolia/g
+s/^asikli6/PPN Anatolia/g
+s/^asikli7/PPN Anatolia/g
+s/^asikli8/PPN Anatolia/g
+s/^asikli9/PPN Anatolia/g
 s/^azer12/Post-Neo Caucasus/g
 s/^azer13/Post-Neo Caucasus/g
 s/^azer2/Post-Neo Caucasus/g
@@ -152,6 +152,7 @@ s/^david1/Post-Neo Levant/g
 s/^dublin1/Post-Neo Britain\/Ireland/g
 s/^dublin2/Post-Neo Britain\/Ireland/g
 s/^dublin3/Post-Neo Britain\/Ireland/g
+s/^draga11/Neo Spain/g
 s/^dzharkutan1/Post-Neo C Asia/g
 s/^dzharkutan2/Post-Neo C Asia/g
 s/^dzharkutan3/Post-Neo C Asia/g
@@ -159,7 +160,7 @@ s/^dzhulyunitsa1/Neo S Europe/g
 s/^dzhulyunitsa2/Neo S Europe/g
 s/^fars3/Post-Neo Iran/g
 s/^frankfurt1/Post-Neo C Europe/g
-s/^ganj1/Neo Iran/g
+s/^ganj1/Neo Iran-Zagros Wild/g
 s/^geor10/Post-Neo Caucasus/g
 s/^geor11/Post-Neo Caucasus/g
 s/^geor1/Post-Neo Caucasus/g
@@ -199,6 +200,7 @@ s/^khor1/Post-Neo Iran/g
 s/^kilpheder2/Post-Neo Britain\/Ireland/g
 s/^kilpheder3/Post-Neo Britain\/Ireland/g
 s/^kur1/Post-Neo Iran/g
+s/^kultepe[12]/Post-Neo Caucasus/g
 s/^lur10/Post-Neo Iran/g
 s/^lur11/Post-Neo Iran/g
 s/^lur16/Post-Neo Iran/g
@@ -206,18 +208,18 @@ s/^mainz1/Post-Neo C Europe/g
 s/^mainz2/Post-Neo C Europe/g
 s/^mainz3/Post-Neo C Europe/g
 s/^mainz4/Post-Neo C Europe/g
-s/^marmara1/Neo W Anatolia/g
-s/^marmara3/Neo W Anatolia/g
-s/^marmara4/Neo W Anatolia/g
-s/^marmara5/Neo W Anatolia/g
-s/^marmara6/Neo W Anatolia/g
-s/^marmara7/Neo W Anatolia/g
-s/^marmara8/Neo W Anatolia/g
+s/^marmara1/PN Anatolia/g
+s/^marmara3/PN Anatolia/g
+s/^marmara4/PN Anatolia/g
+s/^marmara5/PN Anatolia/g
+s/^marmara6/PN Anatolia/g
+s/^marmara7/PN Anatolia/g
+s/^marmara8/PN Anatolia/g
 s/^masos2/Post-Neo Levant/g
-s/^mentese11/Neo W Anatolia/g
-s/^mentese6/Neo W Anatolia/g
-s/^mentese7/Neo W Anatolia/g
-s/^mentese9/Neo W Anatolia/g
+s/^mentese1[01]/PN Anatolia/g
+s/^mentese6/PN Anatolia/g
+s/^mentese7/PN Anatolia/g
+s/^mentese9/PN Anatolia/g
 s/^mongolia1/Post-Neo C Asia/g
 s/^nach1/Epipaleolithic Levant/g
 s/^nach2/Epipaleolithic Levant/g
@@ -228,13 +230,13 @@ s/^potterne2/Post-Neo Britain\/Ireland/g
 s/^qazvin1/Post-Neo Iran/g
 s/^qom1/Post-Neo Iran/g
 s/^sangir1/Post-Neo C Asia/g
-s/^semnan11/Neo Iran/g
-s/^semnan15/Neo Iran/g
-s/^semnan4/Neo Iran/g
-s/^semnan5/Neo Iran/g
+s/^semnan11/Neo Iran - Urial/g
+s/^semnan15/Neo Iran - Urial/g
+s/^semnan4/Neo Iran\/Caucasus/g
+s/^semnan5/Neo Iran - Urial/g
 s/^silge1/Post-Neo Britain\/Ireland/g
-s/^suberde1/Neo C Anatolia/g
-s/^suberde3/Neo C Anatolia/g
+s/^suberde1/PN Anatolia/g
+s/^suberde3/PN Anatolia/g
 s/^tarxein3/Neo S Europe/g
 s/^yoqneam1/Post-Neo Levant/g
 s/^yoqneam3/Post-Neo Levant/g
@@ -252,6 +254,8 @@ s/^Gadachrili[123456789]/Neo Caucasus/g
 s/^Rus0[127]/1-10th cent. AD Russia/g
 s/^Rus0[3]/Neo Russia/g
 s/^Rus0[4568]/Russia BA/g
+s/^ivanovo1/Russia BA/g
+s/^chishma1/Russia BA/g
 s/^Rus09/10-15th cent. AD Russia/g
 s/^Rus10/10-15th cent. AD Russia/g
 s/^KO182009/Nizhnyaya Sooru Afansievo/g
@@ -259,25 +263,25 @@ s/^KO18201[023]/Nizhnyaya Sooru Afansievo/g
 s/^MUM2/Post-Neo Iran/g
 s/^AH054/Post-Neo Iran/g
 s/^KD175/Post-Neo Iran/g
-s/AH054/Khor1/g
-s/KD175/Azer2/g
+s/^AH054/Khor1/g
+s/^KD175/Azer2/g
 s/^KO201399/Berezhzvoya Luka BA/g
 s/^KO20140[012345678]/Berezhzvoya Luka BA/g
-s/^Cov1[01]/Neo Spain/g
-s/^Cov[0123456789]/Neo Spain/g
+s/^[Cc]ov1[01]/Neo Spain/g
+s/^[Cc]ov[0123456789]/Neo Spain/g
 s/^Draga11/Neo Spain/g
-s/^Enkhuizen1/Post-Neo Netherlands/g
-s/^Gadachrili[123456789]/Neo Caucasus/g
-s/^Shulaveris[123456789]/Neo Caucasus/g
-s/^Gorgan1/Post-Neo Iran/g
-s/^Gorgan1/Post-Neo Iran/g
-s/^Jelsum[12]/Post-Neo Netherlands/g
-s/^Nachcharini4/Epipaleolithic Levant/g
-s/^Nizzana[45]/Post-Neo Levant/g
-s/^Schawbmun[12]/Post-Neo Germany/g
-s/^Tai[1234]/Neo France/g
-s/^Tor[0123456789]/Neo Spain/g
-s/^Verna[1234]/Neo Malta/g
+s/^[eE]nkhuizen1/Post-Neo Netherlands/g
+s/^[Gg]adachrili[123456789]/Neo Iran\/Caucasus/g
+s/^[Gg]ada[123456789]/Neo Iran\/Caucasus/g
+s/^Shulaveris[123456789]/Neo Iran\/Caucasus/g
+s/^[gG]organ1/Post-Neo Iran/g
+s/^[jJ]elsum[12]/Post-Neo Netherlands/g
+s/^[nN]achcharini4/Epipaleolithic Levant/g
+s/^[nN]izzana[45]/Post-Neo Levant/g
+s/^[sS]chawbmun[12]/Post-Neo Germany/g
+s/^[Tt]ai[1234]/Neo France/g
+s/^[Tt]or[0123456789]/Neo Spain/g
+s/^[Vv]erna[1234]/Neo Malta/g
 s/^AKI[0123456789][0123456789][0123456789]/Akimbek LBA/g
 s/^AKI[0123456789][0123456789]/Akimbek LBA/g
 s/^BOZ[0123456789][0123456789][0123456789]/Bozshakol LBA/g
@@ -295,5 +299,8 @@ s/^SEN36/Senkibay2 EBA?/g
 s/^KHA002/Khankarinsky IA/g
 s/^KO181289/Chaglinka LBA/g
 s/^NUR001/Nurataldy LBA/g
-s/^kortik4/PPNA E Turkey/g
-s/AH040/PPNA E Turke/g
+s/^kortik4/PPNA SE Turkey/g
+s/^AH040/PPNA SE Turkey/g
+s/^shul[12]/Neo Iran\/Caucasus/g
+s/^yanik[1234]/Post-Neo Caucasus/g
+s/^ovcular[123]/Post-Neo Caucasus/g

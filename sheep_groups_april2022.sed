@@ -136,10 +136,10 @@ s/^tarxein3$/Tarxein3\tNeo C\/SE Eur/g
 s/^tor1$/Tor1\tNeo Spain/g
 s/^tor8$/Tor8\tNeo Spain/g
 s/^verna1$/Verna1\tNeo C\/SE Eur/g
-s/^yanik1$/Yanik1\tYanik/g
-s/^yanik2$/Yanik2\tYanik/g
-s/^yanik3$/Yanik3\tYanik/g
-s/^yanik4$/Yanik4\tYanik/g
+s/^yanik1$/Yanik1\tBA Cauc/g
+s/^yanik2$/Yanik2\tBA Cauc/g
+s/^yanik3$/Yanik3\tBA Cauc/g
+s/^yanik4$/Yanik4\tBA Cauc/g
 s/^yoqneam1$/Yoqneam1\tIA\/Med Levant/g
 s/^yoqneam3$/Yoqneam3\tIA\/Med Levant/g
 s/^zagros3$/Zagros3\tIA\/Med Iran/g
@@ -148,3 +148,5 @@ s/^goat$/IOG\tOut/g
 s/^IOG$/IOG\tOut/g
 s/^kultepe1/Kultepe1\tKultepe/g
 s/^kultepe2/Kultepe2\tKultepe/g
+s/^AH040/Kortik4\tPPNA SE Turkey/g
+

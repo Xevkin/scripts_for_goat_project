@@ -16,6 +16,10 @@ HET_MATCH_TRANS = [0, 0, 0, 0, 0, 0, 0]
 
 HET_MATCH_TRNV = [0, 0, 0, 0, 0, 0, 0]
 
+HET_MISMATCH_TRANS = [0, 0, 0, 0, 0, 0, 0]
+
+HET_MISMATCH_TRNV = [0, 0, 0, 0, 0, 0, 0]
+
 HOMO_ALT_MATCH_TRANS = [0, 0, 0, 0, 0, 0, 0]
 
 HOMO_ALT_MATCH_TRNV = [0, 0, 0, 0, 0, 0, 0]
@@ -75,7 +79,7 @@ with gzip.open(sys.argv[1]) as TRUTH_GVCF:
 
 					n = -1
 
-					for MAF_LIMIT in [0, 0.001, 0.005, 0.001, 0.025, 0.05, 0.10]:
+					for MAF_LIMIT in [0, 0.001, 0.005, 0.01, 0.025, 0.05, 0.10]:
 
 						n += 1
 
@@ -91,7 +95,17 @@ with gzip.open(sys.argv[1]) as TRUTH_GVCF:
 
 							TRUTH_CALL = TRUTH_SPLINE[9].split(":")[0]
 
-							if [SAMPLE_CALL,TRUTH_CALL] == ["0/1","0/1"]:
+							if [SAMPLE_CALL,TRUTH_CALL] == ["0/0","0/1"] or [SAMPLE_CALL,TRUTH_CALL] == ["1/1","0/1"] :
+
+								if (REF,ALT) in TRANSITION_SET:
+
+									HET_MISMATCH_TRANS[n] += 1
+
+								else:
+
+									HET_MISMATCH_TRNV[n] += 1
+
+							if [SAMPLE_CALL,TRUTH_CALL] == ["0/1","0/1"] :
 
 								if (REF,ALT) in TRANSITION_SET:
 
@@ -142,7 +156,9 @@ F = B.replace("_ref_","_alt_")
 G = C.replace("_ref_","_alt_")
 H = D.replace("het_", "mis")
 I = E.replace("het_", "mis")
+J = D.replace("match","mismatch")
+K = J.replace("trans","trvn")
 
-print "downsampled " +  " ".join([A, B, C, D, E, F, G, H, I])
+print "downsampled " +  " ".join([A, B, C, D, E, F, G, H, I, J, K])
 
-print sys.argv[2] + " " + " ".join([str(x) for x in [TRUTH_VARIANT_COUNT, SAMPLE_VARIANT_COUNT, " ".join(HOMO_REF_MATCH_TRANS), " ".join(HOMO_REF_MATCH_TRNV), " ".join(HET_MATCH_TRANS), " ".join(HET_MATCH_TRNV), " ".join(HOMO_ALT_MATCH_TRANS), " ".join(HOMO_ALT_MATCH_TRNV), " ".join(MISMATCH_TRANS), " ".join(MISMATCH_TRNV)] ])
+print sys.argv[2] + " " + " ".join([str(x) for x in [TRUTH_VARIANT_COUNT, SAMPLE_VARIANT_COUNT, " ".join([str(x) for x in HOMO_REF_MATCH_TRANS]), " ".join([str(x) for x in HOMO_REF_MATCH_TRNV]), " ".join([str(x) for x in HET_MATCH_TRANS]), " ".join([str(x) for x in HET_MATCH_TRNV]), " ".join([str(x) for x in HOMO_ALT_MATCH_TRANS]), " ".join([str(x) for x in HOMO_ALT_MATCH_TRNV]), " ".join([str(x) for x in MISMATCH_TRANS]) , " ".join([str(x) for x in MISMATCH_TRNV]), " ".join([str(x) for x in HET_MISMATCH_TRANS]), " ".join([str(x) for x in HET_MISMATCH_TRNV]) ] ] )
