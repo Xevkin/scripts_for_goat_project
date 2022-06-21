@@ -37,19 +37,19 @@ nuclear_genomes = {
 
 	"ARS1" : "/raid_md0/Reference_Genomes/goat/ARS1.fa",
 
-	"CHIR1" : "/home/kdaly/goat_CHIR1_0/goat_CHIR1_0.fasta",
+	"CHIR1" : "/raid_md0/Reference_Genomes/goat/goat_CHIR1_0/goat_CHIR1_0.fasta",
 
-	"oviAri3" : "/Reference_Genomes/sheep/oviAri3_mod.fa",
+	"oviAri3" : "/raid_md0/Reference_Genomes/sheep/oviAri3_mod.fa",
 
-	"oviAri4" : "/Reference_Genomes/sheep/OvisAries4_mod.fa",
+	"oviAri4" : "/raid_md0/Reference_Genomes/sheep/OvisAries4_mod.fa",
 
 	"Deer" : "/home/kdaly/st1/deer/deer_genome/CerEla1-0_mod.fa",
 
-	"Cow" : "/Reference_Genomes/bos_2019/ARS-UCD1.2_Btau5.0.1Y.fa",
+	"Cow" : "/raid_md0/Reference_Genomes/bos_2019/ARS-UCD1.2_Btau5.0.1Y.fa",
 
-	"Horse" : "/Reference_Genomes/horse/EquCab3.fa",
+	"Horse" : "/raid_md0/Reference_Genomes/horse/EquCab3.fa",
 
-	"Ram" : "/Reference_Genomes/sheep/OarRambouillet.fa"
+	"Ram" : "/raid_md0/Reference_Genomes/sheep/OarRambouillet.fa"
 }
 
 
@@ -628,12 +628,12 @@ def indel_realignment(dups_bam, reference_genome):
 
 	call("samtools index -@ 24 " + dups_bam,shell=True)
 
-	cmd = "java -Xmx20g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 24 -R " + reference_genome + " -I " + dups_bam + " -o forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals 2> " + dups_bam.split(".")[0] + "_intervals.log"
+	cmd = "/raid_md0/Software/java8/bin/java -Xmx20g -jar /home/kdaly/programs/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 24 -R " + reference_genome + " -I " + dups_bam + " -o forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals 2> " + dups_bam.split(".")[0] + "_intervals.log"
 
 	print cmd
 	call(cmd, shell=True)
 
-	cmd = "java -Xmx100g -jar /home/kdaly/programs/GATK/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + dups_bam + " -targetIntervals forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals -o " + dups_bam.split(".")[0] + "_realigned.bam 2> " + dups_bam.split(".")[0] + "_realignment.log"
+	cmd = "/raid_md0/Software/java8/bin/java -Xmx100g -jar /home/kdaly/programs/GenomeAnalysisTK.jar -T IndelRealigner -R " + reference_genome + " -I " + dups_bam + " -targetIntervals forIndelRealigner_" + dups_bam.split(".")[0] + ".intervals -o " + dups_bam.split(".")[0] + "_realigned.bam 2> " + dups_bam.split(".")[0] + "_realignment.log"
 
 	print cmd
 
