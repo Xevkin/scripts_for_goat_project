@@ -1,6 +1,8 @@
 import sys
+import gzip
 
-with open(sys.argv[1]) as file:
+#now works only with gzip input
+with gzip.open(sys.argv[1]) as file:
 
 	for line in file:
 

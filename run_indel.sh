@@ -6,6 +6,6 @@ THREADS=$3
 
 samtools index -@ $THREADS "$BAMROOT".bam
 
-java -Xmx20g -jar /home/kdaly/programs/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt $THREADS -R $REF -I "$BAMROOT".bam -o forIndelRealigner_"$BAMROOT".intervals 2> "$BAMROOT"_intervals.log
+/raid_md0/Software/java8/bin/java -Xmx20g -jar /home/kdaly/programs/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt $THREADS -R $REF -I "$BAMROOT".bam -o forIndelRealigner_"$BAMROOT".intervals 2> "$BAMROOT"_intervals.log
 
-java -Xmx100g -jar /home/kdaly/programs/GenomeAnalysisTK.jar -T IndelRealigner -R $REF -I "$BAMROOT".bam -targetIntervals forIndelRealigner_"$BAMROOT".intervals -o "$BAMROOT"_realigned.bam 2> "$BAMROOT"_realignment.log
+/raid_md0/Software/java8/bin/java -Xmx100g -jar /home/kdaly/programs/GenomeAnalysisTK.jar -T IndelRealigner -R $REF -I "$BAMROOT".bam -targetIntervals forIndelRealigner_"$BAMROOT".intervals -o "$BAMROOT"_realigned.bam 2> "$BAMROOT"_realignment.log

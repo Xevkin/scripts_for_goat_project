@@ -1,5 +1,9 @@
 #!/usr/bin/python
 """
+Update 3/7/22 : adding 7th variable to turn on outgroup ascertainment
+
+
+
 I apologize for the current state of this script, it was not envisioned as being shared but in hindsight that was very unwise. It is very much not-optimized, and can be slow to run given the
 size of input files
 
@@ -16,15 +20,17 @@ Within H4 I allow multiple groups to be defined; sites must be covered at least 
 
 H4 groups are delimited by the underscore _ character. Within each H4 group, genomes are comma seperated.
 
-A final variable is required to turn on "single" mode. All analyses reported in the Direkli paper did not use this option, so should be set to "no"
+A sixth variable is required to turn on "single" mode. All analyses reported in the Direkli paper did not use this option, so should be set to "no"
+
+A seventh variable turns on outgroup (H5) ascertainment ("yes" or "Yes" to turn on)
 
 Two example inputs are provided below:
 
 
-python extended_D_Direkli4_boot_group.py H1-Genome1,H1-Genome2 H2-Genome H3-Genome H4-Group1-Genome1,H4-Group1-Genome2_H4-Group2-Genome1_H4-Group3-Genome1 Outgroup-Genome1,Outgroup-Genome2 no
+python extended_D_Direkli4_boot_group.py H1-Genome1,H1-Genome2 H2-Genome H3-Genome H4-Group1-Genome1,H4-Group1-Genome2_H4-Group2-Genome1_H4-Group3-Genome1 Outgroup-Genome1,Outgroup-Genome2 no no
 
 
-python extended_D_Direkli4_boot_group.py Ganjdareh3,Ganjdareh22 Blagotin3 Direkli4 Direkli1-2,Direkli5_Ibex1,Falconeri1,Sibirica1,Tur1,Tur2_IranBezoar1,ZagrosBezoar1 Sheep1,Sheep2,Sheep3 no
+python extended_D_Direkli4_boot_group.py Ganjdareh3,Ganjdareh22 Blagotin3 Direkli4 Direkli1-2,Direkli5_Ibex1,Falconeri1,Sibirica1,Tur1,Tur2_IranBezoar1,ZagrosBezoar1 Sheep1,Sheep2,Sheep3 no no
 
 
 Typically I will run a parallelized loop across H2-Genomes.
@@ -53,7 +59,7 @@ import numpy
 #create the bootstrap regions
 BOOTS=[]
 
-with open("/home/kdaly/boots.list") as FILE:
+with open("/raid_md0/kdaly/papers/direkli4_paper2021/analyses/extended_D/boots.list") as FILE:
 
 	for LINE in FILE:
 
@@ -99,6 +105,8 @@ ALL_INDS.extend(H4)
 
 SINGLE = sys.argv[7]
 
+OUTGROUP_ASCERT = sys.argv[8]
+
 SINGLE_TOTAL_COUNT = 0
 
 SINGLE_B_COUNT = 0
@@ -118,6 +126,8 @@ with gzip.open(HAPLO_FILE) as FILE:
 			for IND in ALL_INDS:
 
 				if IND not in SPLINE:
+
+					print SPLINE
 
 					print IND + " is not in the header. Exiting..."
 
@@ -165,15 +175,25 @@ with gzip.open(HAPLO_FILE) as FILE:
 
 				H2_BASES = [SPLINE[INDEX] for INDEX in H2_INDICES]
 
+				DER_ALLELE = SPLINE[H3_INDEX]
+
 				if (len(''.join(set(H5_BASES)).replace("N","")) == 1):
 
 					ANC_ALLELE = ''.join(set(H5_BASES)).replace("N","")
 
 				else:
 
-					continue
+					if OUTGROUP_ASCERT not in ["yes", "Yes"]:
 
-				DER_ALLELE = SPLINE[H3_INDEX]
+						continue
+
+					else:
+
+						ANC_ALLELE = ''.join(set(H5_BASES)).replace("N","").replace(DER_ALLELE,"")
+
+						if (DER_ALLELE not in H5_BASES):
+
+							continue
 
 				if ANC_ALLELE == DER_ALLELE:
 

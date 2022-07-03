@@ -1,3 +1,4 @@
+s/-I15//g
 s/_merged//g
 s/-relaxed//g 
 s/ERR470103/French1/g 
@@ -135,7 +136,7 @@ s/tur/Tur/g
 s/yarm/Yarm/g 
 s/caucasus/Caucasus/g 
 s/falcon/Falcon/g 
-s/pyrenica/Pyrenica/g 
+s/pyrenica/Pyrenaica/g 
 s/ibex/Ibex/g 
 s/nubian/Nubian/g 
 s/walie/Walie/g 
