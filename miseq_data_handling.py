@@ -25,7 +25,7 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"goat" : "/home/kdaly/ARS1/ARS1.fa",
+	"goat" : "/raid_md0/Reference_Genomes/goat/ARS1.fa",
 
 	"sheep" : "/home/kdaly/st1/miseq/reference_genomes/oviAri3.fa",
 
@@ -175,7 +175,7 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim, pair):
 
 	        cut_adapt = "cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -O 1 -m 30 "
 
-        	fastq_screen = "/Software/fastq_screen --aligner bowtie --force --outdir ./"
+        	fastq_screen = "fastqscreen --conf ~/fastq_screen.conf --aligner bowtie --force --outdir ./"
 
 		adaptor_removal = "/home/kdaly/programs/adapterremoval-2.3.1/build/AdapterRemoval --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip --trimns --trimqualities "
 
@@ -320,7 +320,7 @@ def align(sample, alignment_option, reference, pair):
 def process_bam(sample_name):
 
 	#sort this bam
-	call("~/programs/samtools-HL/samtools sort " + sample_name + ".bam " + sample_name + "_sort",shell=True)
+	call("samtools sort " + sample_name + ".bam -O BAM -o " + sample_name + "_sort.bam",shell=True)
 
 	#remove duplicates from the sorted bam
 	call("samtools rmdup -s " + sample_name + "_sort.bam " + sample_name + "_rmdup.bam", shell=True)
