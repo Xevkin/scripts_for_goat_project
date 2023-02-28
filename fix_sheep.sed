@@ -189,7 +189,7 @@ s/^hallan3/Post-Neo Britain\/Ireland/g
 s/^hallan4/Post-Neo Britain\/Ireland/g
 s/^hallan5/Post-Neo Britain\/Ireland/g
 s/^hamedan1/Post-Neo Iran/g
-s/^herxheim3/Unknown/g
+s/^herxheim3/Post-Neo C Europe/g
 s/^herxheim7/Neo C Europe/g
 s/^herxheim8/Neo C Europe/g
 s/^hungate1/Post-Neo Britain\/Ireland/g

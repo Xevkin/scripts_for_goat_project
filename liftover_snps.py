@@ -1,3 +1,5 @@
+#! /usr/bin/python2
+
 from __future__ import print_function
 
 import sys
@@ -50,7 +52,7 @@ def main():
 
 				PROBLEM_SNP_COUNT += 1
 
-				#eprint(LINE + "\tGC don't print")
+				eprint(LINE + "\tGC don't print")
 
 				continue
 
@@ -80,7 +82,7 @@ def main():
 
 				MAJOR_REF_MATCH_COUNT += 1
 
-				#print(LINE)
+				print(LINE)
 
 				print(SPLINE[1])
 
@@ -90,7 +92,7 @@ def main():
 
 				print(SPLINE[1])
 
-				#print("\t".join(SPLINE[0:4]) + "\t" + SPLINE[5] + "\t" + SPLINE[4])
+				print("\t".join(SPLINE[0:4]) + "\t" + SPLINE[5] + "\t" + SPLINE[4])
 
 			else:
 
@@ -108,7 +110,7 @@ def main():
 
 					eprint(SPLINE[1])
 
-					#print("\t".join(SPLINE[0:4]) + "\t" + NEW_ALLELE_1 + "\t" + NEW_ALLELE_2)
+					print("\t".join(SPLINE[0:4]) + "\t" + NEW_ALLELE_1 + "\t" + NEW_ALLELE_2)
 
 				elif NEW_ALLELE_2 == BASE_IN_REF:
 
@@ -118,20 +120,20 @@ def main():
 
 					eprint(SPLINE[1])
 
-					#print("\t".join(SPLINE[0:4]) + "\t" + NEW_ALLELE_2 + "\t" + NEW_ALLELE_1 + "\tMINOR_FLIP")
+					print("\t".join(SPLINE[0:4]) + "\t" + NEW_ALLELE_2 + "\t" + NEW_ALLELE_1 + "\tMINOR_FLIP")
 
 				else:
 
 					FLIP_ISSUES += 1
 
-					#eprint(LINE + "\tFlip Issues")
+					eprint(LINE + "\tFlip Issues")
 
-	#print "Major allele matches reference " + str(MAJOR_REF_MATCH_COUNT) + " times."
-	#print "Minor allele matches reference " + str(MINOR_REF_MATCH_COUNT) + " times."
-	#print "Major allele flipped matches reference " + str(MAJOR_REF_FLIP_MATCH_COUNT) + " times."
-	#print "Minor allele flipped matches reference " + str(MINOR_REF_FLIP_MATCH_COUNT) + " times."
-	#print "Flipped alleles do not match " + str(FLIP_ISSUES) + " times."
-	#print "GC|AT sites occur " + str(PROBLEM_SNP_COUNT) + " times."
+	print("Major allele matches reference " + str(MAJOR_REF_MATCH_COUNT) + " times.")
+	print("Minor allele matches reference " + str(MINOR_REF_MATCH_COUNT) + " times.")
+	print("Major allele flipped matches reference " + str(MAJOR_REF_FLIP_MATCH_COUNT) + " times.")
+	print("Minor allele flipped matches reference " + str(MINOR_REF_FLIP_MATCH_COUNT) + " times.")
+	print("Flipped alleles do not match " + str(FLIP_ISSUES) + " times.")
+	print("GC|AT sites occur " + str(PROBLEM_SNP_COUNT) + " times.")
 
 def flip_base(BASE):
 

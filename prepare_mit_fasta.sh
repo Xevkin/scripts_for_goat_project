@@ -3,7 +3,7 @@
 
 STEM=`echo $1 | cut -f1 -d'.'`
 
-java -jar /home/kdaly/programs/picard/picard.jar CreateSequenceDictionary "R="$1 "O="$STEM".dict"
+java -jar /raid_md0/Software/picard.jar CreateSequenceDictionary "R="$1 "O="$STEM".dict"
 
 samtools faidx $1
 
