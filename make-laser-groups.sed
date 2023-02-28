@@ -60,6 +60,7 @@ s/^GanjDareh..\t/Neolithic GanjDareh\t/g
 s/^GanjDareh.\t/Neolithic GanjDareh\t/g
 s/^Ganjdareh..\t/Neolithic GanjDareh\t/g
 s/^Ganjdareh.\t/Neolithic GanjDareh\t/g
+s/^Komishani1.\t/Neolithic Komishani\t/g
 s/^Darre1\t/Chalcolithic Iran\t/g
 s/^Chalow.\t/Bronze Iran\t/g
 s/^Darre2\t/Iron Medieval Iran\t/g
