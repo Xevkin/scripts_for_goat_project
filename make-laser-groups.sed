@@ -37,6 +37,10 @@ s/^AP..\t/Neolithic SE Europe\t/g
 s/^Asikli..\t/Neolithic Asikli\t/g
 s/^Asikli.\t/Neolithic Asikli\t/g
 s/^Asikli14-33\t/Neolithic Asikli\t/g
+s/^SG.._.\t/Neolithic Asikli\t/g
+s/^SG...\t/Neolithic Asikli\t/g
+s/^Hemmeh9\t/Neolithic Levant\t/g
+s/^Sharh1\t/Bronze Iran\t/g
 s/^Azer3-5\t/Bronze Caucasus\t/g
 s/^Azer4\t/Iron Medieval Caucasus\t/g
 s/^Azer6\t/Chalcolithic Caucasus\t/g
