@@ -1,4 +1,21 @@
-s/Gadacharili/Gadachrili/g
+s/_IROV-AB8-1004//g
+s/_IROV-AB8-1005//g
+s/_IROV-AB8-1006//g
+s/_IROV-AD7-1002//g
+s/_IROO-C3-0001//g
+s/_IROO-E3-5492//g
+s/_IROO-E5-5146//g
+s/_IROO-J11-0602//g
+s/_IROO-J11-0905//g
+s/_IROO-K7-0642//g
+s/_IROO-N13-5061//g
+s/_IROO-C3-2743//g
+s/_IROO-K7-2301//g
+s/_IROO-K7-2303//g
+s/_IROO-K7-0639//g
+s/_IROO-M12-9997//g
+s/Anatolia-9/Anatolia/g
+s/8-9/8/g
 s/^AsiaticMouflon6/AsiaticMouflon/g
 s/^AsiaticMouflon7/AsiaticMouflon/g
 s/^AsiaticMouflon9/AsiaticMouflon/g
@@ -93,11 +110,13 @@ s/^OARI_ZD11/Tibet/g
 s/^BAT/Capra/g
 s/^ERR219544/Capra/g
 s/^ERR219545/Capra/g
-s/^OBI013/Obishir/g
-s/^OBI014/Obishir/g
-s/^OBI016/Obishir/g
-s/^OBI017/Obishir/g
-s/^OBI018/Obishir/g
+s/^OBI013/ObishirV/g
+s/^OBI014/ObishirV/g
+s/^OBI016/ObishirV/g
+s/^OBI017/ObishirV/g
+s/^OBI018/ObishirV/g
+s/^OB20-01/ObishirV/g
+s/^OB20-06/ObishirV/g
 s/^IROV-AB8-1004/Urial/g
 s/^IROV-AB8-1005/Urial/g
 s/^IROV-AB8-1006/Urial/g
@@ -304,3 +323,26 @@ s/^AH040/PPNA SE Turkey/g
 s/^shul[12]/Neo Iran\/Caucasus/g
 s/^yanik[1234]/Post-Neo Caucasus/g
 s/^ovcular[123]/Post-Neo Caucasus/g
+s/^SG2-P/PPN Anatolia/g
+s/^SG22/PPN Anatolia/g
+s/^SG24P/PPN Anatolia/g
+s/^SG24Q/PPN Anatolia/g
+s/^SG3-B/PPN Anatolia/g
+s/^SG3-E/PPN Anatolia/g
+s/^SG3-F/PPN Anatolia/g
+s/^SG3-G/PPN Anatolia/g
+s/^SG4-c/PPN Anatolia/g
+s/^SG4-d/PPN Anatolia/g
+s/^SG4-j/PPN Anatolia/g
+s/^SG4-l/PPN Anatolia/g
+s/^SG4-m/PPN Anatolia/g
+s/^SG4-n/PPN Anatolia/g
+s/^SG6-a/PPN Anatolia/g
+s/^SG6-b/PPN Anatolia/g
+s/^SG6-e/PPN Anatolia/g
+s/^SG6-g/PPN Anatolia/g
+s/^SG6-i/PPN Anatolia/g
+s/^SG6-k/PPN Anatolia/g
+s/^SG6-m/PPN Anatolia/g
+s/^SG6-p/PPN Anatolia/g
+s/^SG6-r/PPN Anatolia/g

@@ -4,7 +4,7 @@ chromosomes = []
 
 BLOCK = 5000000
 
-with open("/home/kdaly/chromosomes.length") as file:
+with open("/home/kdaly/raid/papers/hare2022/analyses/IBS/bootstrap/autosomes_sheep_chr_lengths.list") as file:
 
 	for line in file:
 
@@ -25,10 +25,10 @@ for chromosome in chromosomes:
 
 	while END < CHR_END:
 
-		print CHR + ":" + str(START) + "-" + str(END)
+		print(CHR + ":" + str(START) + "-" + str(END))
 
 		START = START + BLOCK
 
 		END = END + BLOCK
 
-	print CHR + ":" + str(CHR_END - BLOCK) + "-" + str(CHR_END)
+	print(CHR + ":" + str(CHR_END - BLOCK) + "-" + str(CHR_END))
