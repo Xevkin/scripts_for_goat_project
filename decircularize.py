@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
+
+#python2 decircularize.py N sample_name
 
 #remove N bps from both ends
 
@@ -14,7 +16,7 @@ with open(sys.argv[1]) as file:
 
 		if line.startswith(">"):
 
-			print ">" + sys.argv[1].rstrip("\n").split("_")[0]
+			print ">" + sys.argv[3].rstrip("\n")
 
 		else:
 
