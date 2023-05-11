@@ -1,3 +1,10 @@
+s/KD401-MBEX1-UDG1-48-180-PCR1/Carrick1/g
+s/IRCA121-A-MBEX1-UDG1/Carrick3/g
+s/mentese10/Mentese10/g
+s/SG23D-AH5007-20/SG23D/g
+s/SG23H-AH246-6/SG23H/g
+s/SG23n-M9058-30/SG23n/g
+s/SG23o-AH6128-1/SG23o/g
 s/-I15//g
 s/_merged//g
 s/-relaxed//g 

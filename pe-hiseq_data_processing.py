@@ -448,7 +448,9 @@ def merge_and_process_mit(RG_file, reference, trim):
 			print "samtools index -@ 24 " + bam_root + "_dups_q" + QC + ".bam"
 			call("samtools index -@ 24 " + bam_root + "_dups_q" + QC + ".bam",shell=True)
 
-			cmd="gatk -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_dups_q" + QC + ".bam --omitDepthOutputAtEachBase --omitIntervalStatistics"
+			interval = reference_path.replace(".fa",".intervals")
+
+			cmd="gatk -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_dups_q" + QC + ".bam --omitDepthOutputAtEachBase --omit-interval-statistics -L" + interval
 			print cmd
 			call(cmd, shell=True)
 
