@@ -462,7 +462,7 @@ def merge_and_process_mit(RG_file, reference, trim):
 				print "angsd -doFasta 2 -i " + bam_root + "_dups_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 20 minMapQ " + QC + " -trim 4"
 				call("angsd -doFasta 2 -i " + bam_root + "_dups_q" + QC + ".bam  -doCounts 1 -out " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + " -setMinDepth " + minD + " -minQ 20 -minMapQ " + QC + " -trim 4 ",shell=True)
 
-				call("gunzip " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa.gz; python ~/programs/scripts_for_goat_project/decircularize.py "  + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa 15 " + bam_root + " > " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + "_decirc.fa",shell=True)
+				call("gunzip " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa.gz; python2 ~/programs/scripts_for_goat_project/decircularize.py "  + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + ".fa 15 " + bam_root + " > " + bam_root + "_angsd-consensus-min" + minD + "_q" + QC + "_decirc.fa",shell=True)
 
 		call("mkdir " + bam_root + "_angsd-consensus ; mv *angsd-conse*fa *angsd-conse*arg *angsd*.fa* -t " + bam_root + "_angsd-consensus",shell=True)
 
@@ -785,9 +785,9 @@ def indel_realignment(dups_bam, reference_genome):
 
 def softclip_bam(bam,reference_genome, out_dir, to_clip = "4"):
 
-	call("samtools view -h " + bam + " | python ~/programs/scripts_for_goat_project/softclip_mod.py - " + to_clip + " | samtools view -Sb - > " + bam.split(".")[0] + "_softclipped.bam",shell=True)
+	call("samtools view -h " + bam + " | python2 ~/programs/scripts_for_goat_project/softclip_mod.py - " + to_clip + " | samtools view -Sb - > " + bam.split(".")[0] + "_softclipped.bam",shell=True)
 
-	call("echo samtools view -h " + bam + " \"|\" python ~/programs/scripts_for_goat_project/softclip_mod.py - " + to_clip + " \"|\" samtools view -Sb - \">\" " + bam.split(".")[0] + "_softclipped.bam",shell=True)
+	call("echo samtools view -h " + bam + " \"|\" python2 ~/programs/scripts_for_goat_project/softclip_mod.py - " + to_clip + " \"|\" samtools view -Sb - \">\" " + bam.split(".")[0] + "_softclipped.bam",shell=True)
 
 	call("sh /home/kdaly/programs/scripts_for_goat_project/run_DoC_autosomes.sh " + reference_genome + " " + bam.split(".")[0] + "_softclipped.bam",shell=True)
 
