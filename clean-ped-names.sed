@@ -1,3 +1,6 @@
+s/HOTU/Hotu/g
+s/SHULAVERIS1/Shulaveris5/g
+s/GURAN/Guran/g
 s/KD401-MBEX1-UDG1-48-180-PCR1/Carrick1/g
 s/IRCA121-A-MBEX1-UDG1/Carrick3/g
 s/mentese10/Mentese10/g

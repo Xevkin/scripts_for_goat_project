@@ -1,10 +1,13 @@
+s/Guran. /Tepe Guran /g
 s/^Ovcular1 /Bronze_Caucasus /g
-s/^Sharh[13] /Bronze_Age_East_Iran /g
+s/^Sharh[13] /Bronze_East_Iran /g
 s/^Carrick[13] /Medieval_Ireland /g
 s/^Mentese10 /Neolithic_West_Turkey /g
 s/^KO201479 /Bronze_Kazakh /g
 s/^Komishani1 /Neolithic_East_Iran /g
+s/^Hotu1 /Neolithic_East_Iran /g
 s/^Gadachrili. /Neolithic_Georgia /g
+s/^Shulaveris. /Neolithic_Georgia /g
 s/^Sarakenos. /Neolithic_Greece /g
 s/^Abd[uo]l4 /Zagros_Outlier /g
 s/^[Gg]anj[Dd]areh35 /Zagros_Outlier /g
@@ -56,8 +59,8 @@ s/^SG22 /Neolithic_Asikli /g
 s/^Azer3-5 /Bronze_Caucasus /g
 s/^Azer4 /Iron_Medieval_Caucasus /g
 s/^Azer6 /Chalcolithic_Caucasus /g
-s/^Blagotin.. /Neolithic_Serbia /g
-s/^Blagotin. /Neolithic_Serbia /g
+s/^Blagotin.. /Neolithic_SE_Europe /g
+s/^Blagotin. /Neolithic_SE_Europe /g
 s/^Banias. /Iron_Medieval_Levant /g
 s/^Draga. /Neolithic_Spain /g
 s/^Direkli1-2 /Epipaleolithic_Taurus /g
@@ -109,7 +112,7 @@ s/^Ghosh5 /Neolithic_Levant /g
 s/^Ulugh. /Bronze_Turkmenistan /g
 s/^Cov[69] /Neolithic_Spain /g
 s/^Szaz1 /Bronze_Hungary /g 
-s/^Qumis1 /Unknown_Iran /g
+s/^Qumis1 /Iron_Medieval_Iran /g
 s/^Dali1 /Bronze_Uzbek /g
 s/^Sheep[123456789] /Sheep /g
 s/^Sheep1[0123456789] /Sheep /g
