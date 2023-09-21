@@ -53,21 +53,21 @@ s/^Direkli[56]\t/Epipaleolithic Taurus\t/g
 s/^Fars2-5\t/Neolithic Zagros\t/g
 s/^Bulak.\t/Bronze Uzbek\t/g
 s/^Bouc\t/Levant\t/g
-s/^Abdul4/Zagros Outlier/g
-s/^[gG]anj[Dd]areh35/Zagros Outlier/g
+s/^Abdul4/Early Neolithic Zagros Outlier/g
+s/^[gG]anj[Dd]areh35/Early Neolithic Zagros Outlier/g
 s/^Fars.\t/Chalcolithic Iran\t/g
-s/^GanjDareh..\t/Neolithic GanjDareh\t/g
-s/^GanjDareh.\t/Neolithic GanjDareh\t/g
-s/^Ganjdareh..\t/Neolithic GanjDareh\t/g
-s/^Ganjdareh.\t/Neolithic GanjDareh\t/g
+s/^GanjDareh..\t/Early Neolithic Zagros\t/g
+s/^GanjDareh.\t/Early Neolithic Zagros\t/g
+s/^Ganjdareh..\t/Early Neolithic Zagros\t/g
+s/^Ganjdareh.\t/Early Neolithic Zagros\t/g
 s/^Komishani1.\t/Neolithic Komishani\t/g
 s/^Darre1\t/Chalcolithic Iran\t/g
 s/^Chalow.\t/Bronze Iran\t/g
 s/^Darre2\t/Iron Medieval Iran\t/g
 s/^Monjukli8\t/Neolithic East Iran\t/g
 s/^Monjukli.\t/Chalcolithic Turkmenistan\t/g
-s/^Lur12\t/Neolithic Abdul\t/g
-s/^Lur9\t/Neolithic Zagros\t/g
+s/^Lur12\t/Early Neolithic Zagros\t/g
+s/^Lur9\t/Late Neolithic Zagros\t/g
 s/^Kazbegi1\t/Iron Medieval Caucasus\t/g
 s/^Kov57\t/Neolithic SE Europe\t/g
 s/^Kohneh.\t/Bronze Caucasus\t/g
