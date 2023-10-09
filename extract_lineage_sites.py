@@ -46,7 +46,7 @@ with open(sys.argv[1]) as VCF_FILE:
 
 		# remember the sample columns start in column 9 (base 0)
 
-		for SAMPLE in range(9,SAMPLE_COUNT):
+		for SAMPLE in range(9,SAMPLE_COUNT + 9):
 
 			if SAMPLE in COLUMNS:
 
@@ -60,6 +60,6 @@ with open(sys.argv[1]) as VCF_FILE:
 
 		# if all the TARGET bases are the same, and all the BACKGROUND bases are the same, and TARGET and BACKGROUND bases differ, report the site
 
-		if (TARGET.count(TARGET[0]) == len(TARGET)) and  (BACKGROUND.count(BACKGROUND[0]) == len(BACKGROUND)) and (TARGET[0] == BACKGROUND[0]):
+		if (TARGET.count(TARGET[0]) == len(TARGET)) and  (BACKGROUND.count(BACKGROUND[0]) == len(BACKGROUND)) and (TARGET[0] != BACKGROUND[0]):
 
-			print LINE.rstrip("\n")
+			print " ".join([SPLINE[x] for x in [0,1,3,4]]) + " " + str(SPLINE[int(TARGET[0])+3])
