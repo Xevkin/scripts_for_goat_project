@@ -1,3 +1,5 @@
+from __future__ import division
+
 import sys
 
 
@@ -59,6 +61,23 @@ with open(sys.argv[1]) as VCF_FILE:
 				BACKGROUND.append(SPLINE[SAMPLE])
 
 		# if all the TARGET bases are the same, and all the BACKGROUND bases are the same, and TARGET and BACKGROUND bases differ, report the site
+
+		TAR_FREQ_REF = TARGET.count("0") / len(TARGET)
+
+		BACK_FREQ_REF = BACKGROUND.count("0") / len(BACKGROUND)
+
+		TAR_FREQ_ALT = TARGET.count("1") / len(TARGET)
+
+		BACK_FREQ_ALT = BACKGROUND.count("1") / len(BACKGROUND)
+
+		if (TAR_FREQ_REF > 0.9 and BACK_FREQ_REF < 0.1) or (TAR_FREQ_REF < 0.1 and BACK_FREQ_REF > 0.9):
+
+			print " ".join([SPLINE[x] for x in [0,1,3,4]]) + " " + str(SPLINE[int(TARGET[0])+3]) + " " + str(TAR_FREQ_REF) + " " +  str(BACK_FREQ_REF)
+
+		if (TAR_FREQ_ALT > 0.9 and BACK_FREQ_ALT < 0.1) or (TAR_FREQ_ALT < 0.1 and BACK_FREQ_ALT > 0.9):
+
+			print " ".join([SPLINE[x] for x in [0,1,3,4]]) + " " + str(SPLINE[int(TARGET[0])+3]) + " " + str(TAR_FREQ_ALT) + " " +  str(BACK_FREQ_ALT)
+
 
 		if (TARGET.count(TARGET[0]) == len(TARGET)) and  (BACKGROUND.count(BACKGROUND[0]) == len(BACKGROUND)) and (TARGET[0] != BACKGROUND[0]):
 
