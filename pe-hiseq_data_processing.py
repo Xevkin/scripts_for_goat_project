@@ -37,7 +37,7 @@ import os
 #dictionary of species names and genome paths
 nuclear_genomes = {
 
-	"ARS1" : "/raid_md0/Reference_Genomes/ARS1.fa",
+	"ARS1" : "/raid_md0/Reference_Genomes/goat/ARS1.fa",
 
 	"oviAri3" : "/raid_md0/Reference_Genomes/sheep/oviAri3_mod.fa",
 
@@ -232,7 +232,7 @@ def set_up(date_of_hiseq, meyer, threads ,species, mit, RG_file, output_dir, tri
 	#however, if trim option is not yes, then we use fastq files
 	if (trim != "yes"):
 
-		files = [file for file in os.listdir(".") if file.endswith("trimmed.fastq.gz")]
+		files = [file for file in os.listdir(".") if file.endswith(("trimmed.fastq.gz","collapsed.fastq.gz"))]
 
         	print "trimmed fastq files in current directory:"
 
