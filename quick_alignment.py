@@ -15,7 +15,7 @@ REF=REFPATH.split("/")[-1].split(".")[0]
 
 subprocess.call("bwa aln -l 1000 -n 0.01 -o 2 -t 10 " + REFPATH + " " + FASTQ + " > " + SAMPLE + "_" + REF + ".sai" ,shell=True)
 
-subprocess.call("bwa samse -r \'@ID:" + LB + "\\tSM:" + ID + "\\tPL:ILLUMINA\\tLB:" + LB + "\' "  + REFPATH + " " + SAMPLE + "_" + REF + ".sai " + FASTQ + " | samtools view -F4 -Sb - > " + SAMPLE + "_" + REF + "_F4.bam"  ,shell=True)
+subprocess.call("bwa samse -r \'@RG\\tID:" + LB + "\\tSM:" + ID + "\\tPL:ILLUMINA\\tLB:" + LB + "\' "  + REFPATH + " " + SAMPLE + "_" + REF + ".sai " + FASTQ + " | samtools view -F4 -Sb - > " + SAMPLE + "_" + REF + "_F4.bam"  ,shell=True)
 
 subprocess.call("samtools view -q30 -b " +  SAMPLE + "_" + REF + "_F4.bam > " +  SAMPLE + "_" + REF + "_F4-q30.bam"  ,shell=True)
 
