@@ -25,5 +25,5 @@ vcf.merged$sample<-args[3]
 
 vcf.merged$coverage<-as.numeric(args[4])
 
-write.table(x = vcf.merged,file=paste0(args[3],"_",args[4],"_validation.table"),row.names = F, col.names = F, sep = ",")
+write.table(x = vcf.merged,file=paste0(args[5]),row.names = F, col.names = F, sep = ",")
 

@@ -177,7 +177,7 @@ def set_up(date_of_miseq, meyer, species, mit,  output_dir, trim, pair):
 
         	fastq_screen = "fastqscreen --conf ~/fastq_screen.conf --aligner bowtie --force --outdir ./"
 
-		adaptor_removal = "/home/kdaly/programs/adapterremoval-2.3.1/build/AdapterRemoval --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip --trimns --trimqualities "
+		adaptor_removal = "AdapterRemoval --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip --trimns --trimqualities "
 
 	else:
 
@@ -276,26 +276,24 @@ def trim_fastq(current_sample, cut_adapt, out_dir ,fastqc, adaptor_removal, pair
 	#first we want to create an output directory if there is none to begin with
 	if (fastqc == "yes"):
 
-		call("~/programs/FastQC/fastqc " + fastq + " -o " + out_dir + "fastqc/", shell=True)
+		call("fastqc -t 12 " + fastq + " -o " + out_dir + "fastqc/", shell=True)
 
 		if  (pair == "pair") or (pair == "yes"):
 
-			call("~/programs/FastQC/fastqc " + current_sample  + "_trimmed.collapsed.gz -o " + out_dir + "fastqc/", shell=True)
+			call("fastqc " + current_sample  + "_trimmed.collapsed.gz -o " + out_dir + "fastqc/", shell=True)
 
 
 def run_fastq_screen(current_sample, out_dir, fastq_screen_option,pair):
 
 	call("mkdir " + out_dir + "fastq_screen/",shell=True)
 
-	call("mkdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
-
 	if (pair == "pair") or (pair == "yes"):
 
-		 call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.collapsed.fastq.gz --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
+		 call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.collapsed.fastq.gz --outdir " + out_dir + "fastq_screen/", shell=True)
 
 	else:
 
-		call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.fastq.gz --outdir " + out_dir + "fastq_screen/" + current_sample, shell=True)
+		call(fastq_screen_option + current_sample + " " + current_sample + "_trimmed.fastq.gz --outdir " + out_dir + "fastq_screen/", shell=True)
 
 
 def align(sample, alignment_option, reference, pair):

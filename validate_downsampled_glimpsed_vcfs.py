@@ -59,7 +59,12 @@ with gzip.open(sys.argv[1]) as TRUTH_GVCF:
 
 				SAMPLE_SPLINE = SAMPLE_LINE.split()
 
-				# skip to the matching variant and break if we go past
+#				print TRUTH_SPLINE
+#				print SAMPLE_SPLINE
+#				print "next"
+
+				# skip to the matching variant and break if we go  beyond
+
 				if int(TRUTH_SPLINE[1]) < int(SAMPLE_SPLINE[1]):
 
 					break

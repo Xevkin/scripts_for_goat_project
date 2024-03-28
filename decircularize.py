@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-#python2 decircularize.py N sample_name
+#python2 decircularize.py input.fa N sample_name
 
 #remove N bps from both ends
 

@@ -26,15 +26,15 @@ echo J='`'zcat ${R1} "|" wc -l "|" awk \'{print '$0 / 4' }\' '`' "&&" echo $R1 $
 
 echo fastqc $R1 $R2 >> fastqc.sh
 
-echo AdapterRemoval  --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip --trimns --trimqualities  --file1 $R1 --file2 $R2 -- basename $ROOT >> adaptor.sh
+echo AdapterRemoval  --threads 2 --collapse --minadapteroverlap 1 --adapter1 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC --adapter2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minlength 30 --gzip --trimns --trimqualities  --file1 $R1 --file2 $R2 --basename $ROOT >> adaptor.sh
 
-echo J='`'zcat ${ROOT}.collapsed.gz "|" wc -l "|" awk \'{print '$0 / 4' }\' '`' "&&" echo ${ROOT}.collapsed.gz $J ">>" counts.out >> counts.sh
+echo J='`'zcat ${ROOT}.collapsed.gz "|" wc -l "|" awk \'{print '$0 / 4' }\' '`' "&&" echo ${ROOT}.collapsed.gz '$J' ">>" counts.out >> counts.sh
 
-echo fastqc ${ROOT}.collapsed.gz >> fastqc_trim.sh
+echo fastqc -t 2 ${ROOT}.collapsed.gz >> fastqc_trim.sh
 
-echo fastqscreen --conf ~/fastq_screen.conf --aligner bowtie --force --outdir ./fastq_screen/ ${ROOT}.collapsed.gz >> fastqscreen.sh
+echo /raid_md0/Software/FastQ-Screen-0.15.2/fastq_screen  --threads $1 --conf ~/fastq_screen.conf --aligner bowtie --force --outdir ./fastq_screen/ ${ROOT}.collapsed.gz >> fastqscreen.sh
 
 done
 
-parallel -a fastqc.sh -j ${1} && mv *html fastqc && parallel -a adaptor.sh -j ${1} && parallel -a fastqc_trim.sh -j $1 &&  parallel -a fastqscreen.sh -j $1 && parallel -a counts.sh -j $1
+parallel -a fastqc.sh -j ${1} && mv *html fastqc && parallel -a adaptor.sh -j ${1} && parallel -a fastqc_trim.sh -j $1 && while read i; do $i; done < fastqscreen.sh  && parallel -a counts.sh -j $1
 

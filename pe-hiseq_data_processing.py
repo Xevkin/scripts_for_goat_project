@@ -232,7 +232,7 @@ def set_up(date_of_hiseq, meyer, threads ,species, mit, RG_file, output_dir, tri
 	#however, if trim option is not yes, then we use fastq files
 	if (trim != "yes"):
 
-		files = [file for file in os.listdir(".") if file.endswith(("trimmed.fastq.gz","collapsed.fastq.gz"))]
+		files = [file for file in os.listdir(".") if file.endswith(("trimmed.fastq.gz","collapsed.fastq.gz","collapsed.gz"))]
 
         	print "trimmed fastq files in current directory:"
 
