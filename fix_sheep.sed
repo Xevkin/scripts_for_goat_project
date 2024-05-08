@@ -153,6 +153,7 @@ s/^bakhtaran1/Unknown/g
 s/^blagotin10/Neo S Europe/g
 s/^blagotin11/Neo S Europe/g
 s/^blagotin13/Neo S Europe/g
+s/^blagotin15/Neo S Europe/g
 s/^blagotin17/Neo S Europe/g
 s/^blagotin18/Neo S Europe/g
 s/^blagotin20/Neo S Europe/g
@@ -164,6 +165,7 @@ s/^bornais1/Post-Neo Britain\/Ireland/g
 s/^brodgar1/Neo Britain\/Ireland/g
 s/^brodgar2/Neo Britain\/Ireland/g
 s/^bubanj1/Post-Neo S Europe/g
+s/^Pie1[012]/Post-Neo S Europe/g
 s/^danebury1/Post-Neo Britain\/Ireland/g
 s/^danebury2/Post-Neo Britain\/Ireland/g
 s/^danebury3/Post-Neo Britain\/Ireland/g
