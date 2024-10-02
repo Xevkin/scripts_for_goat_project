@@ -1,10 +1,10 @@
 rm collapselist.sh
 
-for R1 in $(ls *R1.fastq.gz);
+for R2 in $(ls *R2.fastq.gz *_2.fastq.gz);
 
 do
 
-R2=`echo $R1 | sed -e "s/_R1.fastq/_R2.fastq/g" | sed -e "s/-R1.fastq/-R2.fastq/g"`
+R1=`echo $R2 | sed -e "s/_R2.fastq/_R1.fastq/g" | sed -e "s/-R2.fastq/-R1.fastq/g" | sed -e "s/_2.fastq/_1.fastq/g"`
 
 ROOT=`echo $R1 | sed -e "s/_R1.fastq.gz//g" | sed -e "s/-R1.fastq.gz//g"`
 
