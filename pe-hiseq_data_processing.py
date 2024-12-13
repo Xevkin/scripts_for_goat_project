@@ -7,7 +7,7 @@ Script is run in a directory with bam files to be aligned to either goat, wild g
 Reads will be trimmed, aligned, read groups added, duplicates removed, indel realignment performed, and then softclipped
 
 Also need to supply a date for the Hiseq run - will automatically make results file
-python script <date_of_hiseq> <meyer> <species> <mit_file> <trim> <skip mit alignment> <align> <process_individual_bams> <merge+process> <clip> <read group file> <directory in which to place output dir/>
+python script <date_of_hiseq> <meyer> <species> <mit_file> <skip mit alignment> <skip> <align> <process_individual_bams> <merge+process> <clip> <read group file> <directory in which to place output dir/>
 
 mit_file should be tab deliminated, col1 with name of reference, col2 with path
 
@@ -39,7 +39,9 @@ nuclear_genomes = {
 
 	"ARS1" : "/raid_md0/Reference_Genomes/goat/ARS1.fa",
 
-	"oviAri3" : "/raid_md0/Reference_Genomes/sheep/oviAri3_mod.fa",
+	"oviAri3" : "/raid_md0/Reference_Genomes/sheep/oviAri3.fa",
+
+	"oviAri3_mod" : "/raid_md0/Reference_Genomes/sheep/oviAri3_mod.fa",
 
 	"oviAri4" : "/raid_md0/Reference_Genomes/sheep/OvisAries4_mod.fa",
 
@@ -49,7 +51,9 @@ nuclear_genomes = {
 
 	"Ram" : "/raid_md0/Reference_Genomes/sheep/OarRambouillet.fa",
 
-	"Ram2" : "/raid_md0/Reference_Genomes/sheep/rambouillet_v2_mod.fa"
+	"Ram2" : "/raid_md0/Reference_Genomes/sheep/rambouillet_v2_mod.fa",
+
+	"Human" : "/raid_md0/Reference_Genomes/For_Fastq_Screen/hg38.fa"
 }
 
 #define paths to some tools
