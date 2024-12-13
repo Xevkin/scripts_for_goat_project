@@ -348,3 +348,5 @@ s/^SG6-k/PPN Anatolia/g
 s/^SG6-m/PPN Anatolia/g
 s/^SG6-p/PPN Anatolia/g
 s/^SG6-r/PPN Anatolia/g
+s/^Guran8/Neo Iran\/Caucasus/g
+s/^Qabrestan1/Post-Neo Iran/g

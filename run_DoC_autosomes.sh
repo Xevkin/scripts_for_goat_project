@@ -23,6 +23,6 @@ fi
 --omit-interval-statistics \
 -I $2 \
 -O "DoC-autosomes_"$out \
--L /home/kdaly/raid/angsd/autosomes_ARS1.list
+-L /home/kdaly/autosomes_ARS1.list
 
 for i in $(ls DoC* | grep -v "sample_summary"); do rm $i; done
