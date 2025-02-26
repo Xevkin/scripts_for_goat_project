@@ -454,7 +454,7 @@ def merge_and_process_mit(RG_file, reference, trim):
 
 			interval = reference_path.replace(".fa",".intervals")
 
-			cmd="gatk -T DepthOfCoverage -nt 24 -R " + reference_path + " -o DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_dups_q" + QC + ".bam --omitDepthOutputAtEachBase --omit-interval-statistics -L" + interval
+			cmd="gatk DepthOfCoverage -R " + reference_path + " -O DoC_" + bam_root + "_q" + QC + " -I " + bam_root + "_dups_q" + QC + ".bam --omit-interval-statistics --omit-depth-output-at-each-base -L" + interval
 			print cmd
 			call(cmd, shell=True)
 
