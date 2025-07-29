@@ -1,3 +1,11 @@
+s/^Falconeri1/Possible_Barbary_Sheep/g
+s/^Falconeri2/Capra_falconeri/g
+s/^Tur[12]/Capra_caucasica/g
+s/^Walie1/Capra_walia/g
+s/^Ibex[12]/Capra_ibex/g
+s/^Pyrenica2/Capra_pyrenica/g
+s/^Nubiana1/Capra_nubiana/g
+s/^Sibirica[12]/Capra_sibirica_unknown/g
 s/^Moroccan[12].\t/Moroccan\t/g
 s/^Moroccan.\t/Moroccan\t/g
 s/^TOG\t/Togolese\t/g
@@ -49,7 +57,10 @@ s/^Blagotin.\t/Neolithic Serbia\t/g
 s/^Banias.\t/Iron Medieval Levant\t/g
 s/^Draga.\t/Neolithic Spain\t/g
 s/^Direkli1-2\t/Epipaleolithic Taurus\t/g
-s/^Direkli[56]\t/Epipaleolithic Taurus\t/g
+s/^Direkli[569]\t/Epipaleolithic Taurus\t/g
+s/^Direkli1[2345]\t/Epipaleolithic Taurus\t/g
+s/^Direkli4\t/Epipaleolithic Taurus Tur\t/g
+s/^Direkli1[67]\t/Epipaleolithic Taurus Tur\t/g
 s/^Fars2-5\t/Neolithic Zagros\t/g
 s/^Bulak.\t/Bronze Uzbek\t/g
 s/^Bouc\t/Levant\t/g

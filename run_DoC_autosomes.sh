@@ -2,7 +2,7 @@
 #Quick script to run DoC on a bam
 #reference_path input_bam
 
-out=$(ls $2 |  cut -f1 -d'_')
+out=$(ls $2 |  rev | cut -f1 -d'/' | rev | cut -f1 -d'_' )
 
 root=`echo $i | cut -f1 -d'.'`
 
